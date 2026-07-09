@@ -29,6 +29,6 @@ class ContactController extends Controller
 
         Contact::create($request->all());
 
-        return back()->with('success', 'Thanks for contacting us!');
+        return redirect()->route('contact')->with('success', 'Thanks for contacting us! We\'ll get back to you within 24 hours.');
     }
 }
