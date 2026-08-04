@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Service;
+
 class PageController extends Controller
 {
     public function about()
@@ -12,7 +14,7 @@ class PageController extends Controller
     public function services()
     {
         return view('frontend.pages.services', [
-            'services' => config('xcodrix.services'),
+            'services' => Service::query()->active()->ordered()->get(),
         ]);
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BlogPost;
+use App\Models\Service;
 
 class HomeController extends Controller
 {
@@ -14,8 +15,14 @@ class HomeController extends Controller
             ->take(3)
             ->get();
 
+        $services = Service::query()
+            ->active()
+            ->ordered()
+            ->get();
+
         return view('frontend.pages.home', [
             'blogPosts' => $blogPosts,
+            'services' => $services,
         ]);
     }
 }

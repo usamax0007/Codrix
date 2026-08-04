@@ -24,7 +24,7 @@
     @include('frontend.sections.clients')
     @include('frontend.sections.stats')
     @include('frontend.sections.about', ['preview' => true])
-    @include('frontend.sections.services', ['preview' => true])
+    @include('frontend.sections.services', ['services' => $services, 'preview' => true])
     @include('frontend.sections.why-choose-us', ['preview' => true])
     @include('frontend.sections.process', ['preview' => true])
     @include('frontend.sections.industries-preview')

@@ -13,20 +13,25 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class BlogPostResource extends Resource
 {
     protected static ?string $model = BlogPost::class;
 
-    protected static ?string $navigationLabel = 'Blog Posts';
+    protected static string|UnitEnum|null $navigationGroup = 'Pages';
 
-    protected static ?string $modelLabel = 'Blog Post';
+    protected static ?string $navigationLabel = 'Blog';
 
-    protected static ?string $pluralModelLabel = 'Blog Posts';
+    protected static ?string $modelLabel = 'Blog';
+
+    protected static ?string $pluralModelLabel = 'Blog';
 
     protected static ?string $recordTitleAttribute = 'title';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
