@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BlogPost;
 use Illuminate\Http\Response;
 
 class SitemapController extends Controller
@@ -33,6 +34,17 @@ class SitemapController extends Controller
             $xml .= '    <lastmod>' . date('Y-m-d') . "</lastmod>\n";
             $xml .= '    <changefreq>' . $page['changefreq'] . "</changefreq>\n";
             $xml .= '    <priority>' . $page['priority'] . "</priority>\n";
+            $xml .= "  </url>\n";
+        }
+
+        $posts = BlogPost::query()->published()->latest('published_at')->get(['slug', 'updated_at']);
+
+        foreach ($posts as $post) {
+            $xml .= "  <url>\n";
+            $xml .= '    <loc>' . $domain . '/blog/' . $post->slug . "</loc>\n";
+            $xml .= '    <lastmod>' . $post->updated_at->format('Y-m-d') . "</lastmod>\n";
+            $xml .= "    <changefreq>monthly</changefreq>\n";
+            $xml .= "    <priority>0.6</priority>\n";
             $xml .= "  </url>\n";
         }
 

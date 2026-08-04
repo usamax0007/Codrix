@@ -32,7 +32,7 @@
     @include('frontend.sections.portfolio', ['preview' => true])
     @include('frontend.sections.testimonials', ['preview' => true])
     @include('frontend.sections.faq', ['preview' => true])
-    @include('frontend.sections.blog', ['preview' => true])
+    @include('frontend.sections.blog', ['posts' => $blogPosts, 'preview' => true])
     @include('frontend.components.cta-banner')
     @include('frontend.sections.contact', ['preview' => true])
 @endsection

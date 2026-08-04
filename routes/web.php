@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
@@ -17,7 +18,8 @@ Route::get('/portfolio', [PageController::class, 'portfolio']);
 Route::get('/technologies', [PageController::class, 'technologies']);
 Route::get('/testimonials', [PageController::class, 'testimonials']);
 Route::get('/faq', [PageController::class, 'faq']);
-Route::get('/blog', [PageController::class, 'blog']);
+Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store']);

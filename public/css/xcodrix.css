@@ -216,6 +216,32 @@ body {
 }
 .skip-link:focus { top: 1rem; }
 
+/* Blog article body */
+.blog-content p {
+    margin-bottom: 1.25rem;
+}
+.blog-content h2,
+.blog-content h3 {
+    color: #fff;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+}
+.blog-content a {
+    color: #00E5C0;
+}
+.blog-content ul,
+.blog-content ol {
+    margin: 1rem 0 1.25rem 1.25rem;
+}
+.blog-content li {
+    margin-bottom: 0.5rem;
+}
+.blog-content img {
+    border-radius: 0.75rem;
+    margin: 1.5rem 0;
+}
+
 @media (max-width: 768px) {
     .stat-value { font-size: 2rem; }
 }

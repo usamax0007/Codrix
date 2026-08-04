@@ -50,9 +50,4 @@ class PageController extends Controller
     {
         return view('frontend.pages.faq');
     }
-
-    public function blog()
-    {
-        return view('frontend.pages.blog');
-    }
 }

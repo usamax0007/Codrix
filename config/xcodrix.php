@@ -242,15 +242,6 @@ return [
         ['q' => 'Can you help with AI integration?', 'a' => 'Yes. We build AI features including chatbots, document processing, predictive analytics, and LLM integrations using OpenAI, Claude, and custom models.'],
     ],
 
-    'blog' => [
-        ['slug' => 'why-laravel-best-saas-2026', 'title' => 'Why Laravel Is Still the Best Choice for SaaS in 2026', 'excerpt' => 'Laravel\'s ecosystem, performance improvements, and developer experience make it the top framework for building scalable SaaS products.', 'date' => '2026-06-15', 'category' => 'Laravel', 'read_time' => '5 min'],
-        ['slug' => 'twilio-voice-integration-guide', 'title' => 'Building Production Twilio Voice Systems: A Complete Guide', 'excerpt' => 'Learn how to build reliable IVR systems, call routing, and voice bots with Twilio and Laravel.', 'date' => '2026-06-01', 'category' => 'Twilio', 'read_time' => '8 min'],
-        ['slug' => 'ai-chatbot-business-roi', 'title' => 'How AI Chatbots Deliver 60% Support Cost Reduction', 'excerpt' => 'Real-world case study on implementing LLM-powered customer support and measuring ROI.', 'date' => '2026-05-20', 'category' => 'AI', 'read_time' => '6 min'],
-        ['slug' => 'vue-nuxt-seo-best-practices', 'title' => 'Vue.js vs Nuxt.js: Choosing the Right Frontend for SEO', 'excerpt' => 'When to use SPA vs SSR for your next project and how it impacts Google rankings and AI discoverability.', 'date' => '2026-05-10', 'category' => 'Frontend', 'read_time' => '7 min'],
-        ['slug' => 'mvp-development-checklist', 'title' => 'The Ultimate MVP Development Checklist for Startups', 'excerpt' => 'Everything you need to know before building your first product — from tech stack to launch strategy.', 'date' => '2026-04-28', 'category' => 'Startups', 'read_time' => '10 min'],
-        ['slug' => 'laravel-api-design-patterns', 'title' => 'Laravel API Design Patterns for Scalable Applications', 'excerpt' => 'Best practices for versioning, authentication, rate limiting, and documentation in Laravel APIs.', 'date' => '2026-04-15', 'category' => 'Laravel', 'read_time' => '9 min'],
-    ],
-
     'pages' => [
         'home' => [
             'title' => 'XCodrix — Custom Software Development Agency | AI, SaaS, Laravel & Mobile Apps',

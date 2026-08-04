@@ -27,7 +27,7 @@
     </div>
 </section>
 
-@include('frontend.sections.blog', ['preview' => false])
+@include('frontend.sections.blog', ['posts' => $posts, 'preview' => false])
 
 @include('frontend.components.cta-banner')
 @endsection
