@@ -13,9 +13,9 @@
         @if($posts->isEmpty())
             <p class="text-center text-slate-400">No articles published yet. Check back soon.</p>
         @else
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-end">
                 @foreach($posts as $post)
-                    <article class="xc-card scroll-reveal">
+                    <article class="xc-card scroll-reveal flex flex-col justify-end h-full">
                         <a href="{{ url('/blog/' . $post->slug) }}" class="block group">
                             @if($post->image)
                                 <img src="{{ asset('storage/' . $post->image) }}" alt="{{ $post->title }}" class="w-full h-40 object-cover rounded-lg mb-4">
