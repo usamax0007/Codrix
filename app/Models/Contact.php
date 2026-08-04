@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
+#[Fillable(['name', 'email', 'subject', 'message'])]
 class Contact extends Model
 {
-    protected $fillable = ['name','email','subject','message'];
+    //
 }

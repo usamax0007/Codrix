@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\AboutSetting;
 use App\Models\FaqSetting;
+use App\Models\PortfolioSetting;
 use App\Models\ProcessSetting;
 use App\Models\Service;
 use App\Models\ServiceSetting;
@@ -47,6 +48,10 @@ class AppServiceProvider extends ServiceProvider
 
         if (Schema::hasTable('faq_settings')) {
             View::share('faqSettings', FaqSetting::current());
+        }
+
+        if (Schema::hasTable('portfolio_settings')) {
+            View::share('portfolioSettings', PortfolioSetting::current());
         }
 
         if (Schema::hasTable('services')) {

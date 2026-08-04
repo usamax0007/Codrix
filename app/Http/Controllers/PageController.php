@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Faq;
+use App\Models\Portfolio;
 use App\Models\Service;
 
 class PageController extends Controller
@@ -36,7 +37,9 @@ class PageController extends Controller
 
     public function portfolio()
     {
-        return view('frontend.pages.portfolio');
+        return view('frontend.pages.portfolio', [
+            'portfolios' => Portfolio::query()->active()->ordered()->get(),
+        ]);
     }
 
     public function technologies()

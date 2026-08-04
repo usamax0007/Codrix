@@ -24,6 +24,8 @@ class DatabaseSeeder extends Seeder
             ProcessSettingSeeder::class,
             FaqSeeder::class,
             FaqSettingSeeder::class,
+            PortfolioSeeder::class,
+            PortfolioSettingSeeder::class,
         ]);
     }
 }

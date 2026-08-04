@@ -29,7 +29,7 @@
     @include('frontend.sections.process', ['preview' => true])
     @include('frontend.sections.industries-preview')
     @include('frontend.sections.technologies', ['preview' => true])
-    @include('frontend.sections.portfolio', ['preview' => true])
+    @include('frontend.sections.portfolio', ['portfolios' => $portfolios, 'preview' => true])
     @include('frontend.sections.testimonials', ['preview' => true])
     @include('frontend.sections.faq', ['faqs' => $faqs, 'preview' => true])
     @include('frontend.sections.blog', ['posts' => $blogPosts, 'preview' => true])

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BlogPost;
 use App\Models\Faq;
+use App\Models\Portfolio;
 use App\Models\Service;
 
 class HomeController extends Controller
@@ -26,10 +27,16 @@ class HomeController extends Controller
             ->ordered()
             ->get();
 
+        $portfolios = Portfolio::query()
+            ->active()
+            ->ordered()
+            ->get();
+
         return view('frontend.pages.home', [
             'blogPosts' => $blogPosts,
             'services' => $services,
             'faqs' => $faqs,
+            'portfolios' => $portfolios,
         ]);
     }
 }
