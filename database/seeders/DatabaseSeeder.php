@@ -26,6 +26,14 @@ class DatabaseSeeder extends Seeder
             FaqSettingSeeder::class,
             PortfolioSeeder::class,
             PortfolioSettingSeeder::class,
+            WhyChooseUsSeeder::class,
+            WhyChooseUsSettingSeeder::class,
+            IndustrySeeder::class,
+            IndustrySettingSeeder::class,
+            TechnologyCategorySeeder::class,
+            TechnologySettingSeeder::class,
+            TestimonialSeeder::class,
+            TestimonialSettingSeeder::class,
         ]);
     }
 }

@@ -4,11 +4,15 @@ namespace App\Providers;
 
 use App\Models\AboutSetting;
 use App\Models\FaqSetting;
+use App\Models\IndustrySetting;
 use App\Models\PortfolioSetting;
 use App\Models\ProcessSetting;
 use App\Models\Service;
 use App\Models\ServiceSetting;
 use App\Models\SiteSetting;
+use App\Models\TechnologySetting;
+use App\Models\TestimonialSetting;
+use App\Models\WhyChooseUsSetting;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -52,6 +56,22 @@ class AppServiceProvider extends ServiceProvider
 
         if (Schema::hasTable('portfolio_settings')) {
             View::share('portfolioSettings', PortfolioSetting::current());
+        }
+
+        if (Schema::hasTable('why_choose_us_settings')) {
+            View::share('whyChooseUsSettings', WhyChooseUsSetting::current());
+        }
+
+        if (Schema::hasTable('industry_settings')) {
+            View::share('industrySettings', IndustrySetting::current());
+        }
+
+        if (Schema::hasTable('technology_settings')) {
+            View::share('technologySettings', TechnologySetting::current());
+        }
+
+        if (Schema::hasTable('testimonial_settings')) {
+            View::share('testimonialSettings', TestimonialSetting::current());
         }
 
         if (Schema::hasTable('services')) {

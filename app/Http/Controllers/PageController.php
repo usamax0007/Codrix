@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Faq;
+use App\Models\Industry;
 use App\Models\Portfolio;
 use App\Models\Service;
+use App\Models\TechnologyCategory;
+use App\Models\Testimonial;
+use App\Models\WhyChooseUs;
 
 class PageController extends Controller
 {
@@ -22,7 +26,9 @@ class PageController extends Controller
 
     public function whyChooseUs()
     {
-        return view('frontend.pages.why-choose-us');
+        return view('frontend.pages.why-choose-us', [
+            'whyChooseUsItems' => WhyChooseUs::query()->active()->ordered()->get(),
+        ]);
     }
 
     public function process()
@@ -32,7 +38,9 @@ class PageController extends Controller
 
     public function industries()
     {
-        return view('frontend.pages.industries');
+        return view('frontend.pages.industries', [
+            'industries' => Industry::query()->active()->ordered()->get(),
+        ]);
     }
 
     public function portfolio()
@@ -44,12 +52,16 @@ class PageController extends Controller
 
     public function technologies()
     {
-        return view('frontend.pages.technologies');
+        return view('frontend.pages.technologies', [
+            'technologyCategories' => TechnologyCategory::query()->active()->ordered()->get(),
+        ]);
     }
 
     public function testimonials()
     {
-        return view('frontend.pages.testimonials');
+        return view('frontend.pages.testimonials', [
+            'testimonials' => Testimonial::query()->active()->ordered()->get(),
+        ]);
     }
 
     public function faq()
