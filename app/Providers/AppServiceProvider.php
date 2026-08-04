@@ -74,7 +74,9 @@ class AppServiceProvider extends ServiceProvider
             View::share('testimonialSettings', TestimonialSetting::current());
         }
 
-        if (Schema::hasTable('services')) {
+        // Guard on column too: `services` may exist before the CMS migration adds `is_active`.
+        // Querying too early (e.g. during `artisan migrate`) would break boot.
+        if (Schema::hasTable('services') && Schema::hasColumn('services', 'is_active')) {
             View::share(
                 'footerServices',
                 Service::query()->active()->ordered()->take(6)->get()
