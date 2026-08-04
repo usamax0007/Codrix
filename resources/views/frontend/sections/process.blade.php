@@ -4,18 +4,24 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if($preview)
             @include('frontend.components.section-heading', [
-                'badge' => 'Our Process',
-                'title' => "How We <span class='xc-gradient-text'>Build</span> Software",
-                'subtitle' => 'A proven 6-step process from idea to launch and beyond.',
+                'badge' => $processSettings->section_badge ?: 'Our Process',
+                'title' => $processSettings->section_title ?: "How We <span class='xc-gradient-text'>Build</span> Software",
+                'subtitle' => $processSettings->section_subtitle ?: 'A proven 6-step process from idea to launch and beyond.',
             ])
         @endif
 
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach(config('xcodrix.process') as $step)
+            @foreach($processSettings->steps() as $step)
                 <div class="xc-card scroll-reveal relative">
-                    <span class="text-3xl font-extrabold xc-gradient-text mb-3 block">{{ $step['step'] }}</span>
-                    <h3 class="text-lg font-bold text-white mb-2">{{ $step['title'] }}</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">{{ $step['description'] }}</p>
+                    @if($step['step'])
+                        <span class="text-3xl font-extrabold xc-gradient-text mb-3 block">{{ $step['step'] }}</span>
+                    @endif
+                    @if($step['title'])
+                        <h3 class="text-lg font-bold text-white mb-2">{{ $step['title'] }}</h3>
+                    @endif
+                    @if($step['description'])
+                        <p class="text-slate-400 text-sm leading-relaxed">{{ $step['description'] }}</p>
+                    @endif
                 </div>
             @endforeach
         </div>

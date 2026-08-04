@@ -34,6 +34,15 @@ class Service extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (Service $service): void {
+            if (filled($service->summary) && blank($service->description)) {
+                $service->description = $service->summary;
+            }
+        });
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(ServiceItem::class);

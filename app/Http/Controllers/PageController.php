@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Faq;
 use App\Models\Service;
 
 class PageController extends Controller
@@ -50,6 +51,8 @@ class PageController extends Controller
 
     public function faq()
     {
-        return view('frontend.pages.faq');
+        return view('frontend.pages.faq', [
+            'faqs' => Faq::query()->active()->ordered()->get(),
+        ]);
     }
 }

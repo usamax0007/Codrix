@@ -21,6 +21,9 @@ class DatabaseSeeder extends Seeder
             AboutSettingSeeder::class,
             ServiceSeeder::class,
             ServiceSettingSeeder::class,
+            ProcessSettingSeeder::class,
+            FaqSeeder::class,
+            FaqSettingSeeder::class,
         ]);
     }
 }
