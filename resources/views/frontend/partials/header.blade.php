@@ -20,27 +20,28 @@
                 <a href="{{ url('/contact') }}" class="hidden sm:inline-flex xc-btn-primary text-sm !py-2.5 !px-5">
                     Book a Call
                 </a>
-                <button id="mobile-menu-btn" type="button" class="lg:hidden text-white p-2" aria-label="Open menu" aria-expanded="false">
+                <button id="mobile-menu-btn" type="button" class="lg:hidden text-white p-2" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
             </div>
         </div>
-
-        <div id="mobile-menu" class="fixed inset-0 bg-xc-darker z-[60] hidden lg:hidden" aria-hidden="true">
-            <div class="p-6 h-full overflow-y-auto">
-                <div class="flex justify-between items-center mb-10">
-                    <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->site_name }}" class="h-9 w-auto">
-                    <button id="close-menu-btn" type="button" class="text-white p-2" aria-label="Close menu">
-                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
-                </div>
-                <ul class="space-y-5 text-lg">
-                    @foreach(['About' => '/about', 'Services' => '/services', 'Process' => '/process', 'Portfolio' => '/portfolio', 'Insights' => '/blog', 'FAQ' => '/faq', 'Contact' => '/contact'] as $label => $path)
-                        <li><a href="{{ url($path) }}" class="block text-slate-300 hover:text-white">{{ $label }}</a></li>
-                    @endforeach
-                    <li class="pt-4"><a href="{{ url('/contact') }}" class="xc-btn-primary w-full text-center">Book a Call</a></li>
-                </ul>
-            </div>
-        </div>
     </nav>
+
+    {{-- Outside #navbar: backdrop-blur on nav creates a containing block that breaks fixed inset-0 --}}
+    <div id="mobile-menu" class="fixed inset-0 bg-xc-darker z-[60] hidden lg:hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+        <div class="p-6 h-full overflow-y-auto">
+            <div class="flex justify-between items-center mb-10">
+                <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->site_name }}" class="h-9 w-auto">
+                <button id="close-menu-btn" type="button" class="text-white p-2" aria-label="Close menu">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <ul class="space-y-5 text-lg">
+                @foreach(['About' => '/about', 'Services' => '/services', 'Process' => '/process', 'Portfolio' => '/portfolio', 'Insights' => '/blog', 'FAQ' => '/faq', 'Contact' => '/contact'] as $label => $path)
+                    <li><a href="{{ url($path) }}" class="block text-slate-300 hover:text-white">{{ $label }}</a></li>
+                @endforeach
+                <li class="pt-4"><a href="{{ url('/contact') }}" class="xc-btn-primary w-full text-center">Book a Call</a></li>
+            </ul>
+        </div>
+    </div>
 </header>
