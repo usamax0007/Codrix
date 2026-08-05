@@ -7,8 +7,6 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
@@ -16,13 +14,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
-/**
- * @property-read Schema $form
- */
-class ManageTechnologySettings extends Page
+class ManageTechnologySettings extends ManageSettingsPage
 {
-    protected string $view = 'filament.pages.manage-technology-settings';
-
     protected static string|UnitEnum|null $navigationGroup = 'Settings';
 
     protected static ?string $navigationLabel = 'Technologies Settings';
@@ -33,14 +26,14 @@ class ManageTechnologySettings extends Page
 
     protected static ?int $navigationSort = 7;
 
-    /**
-     * @var array<string, mixed>|null
-     */
-    public ?array $data = [];
-
-    public function mount(): void
+    protected function settingsModel(): string
     {
-        $this->form->fill($this->getRecord()?->attributesToArray() ?? TechnologySetting::defaults());
+        return TechnologySetting::class;
+    }
+
+    protected function savedNotificationTitle(): string
+    {
+        return 'Technologies settings saved';
     }
 
     public function form(Schema $schema): Schema
@@ -87,29 +80,5 @@ class ManageTechnologySettings extends Page
             ])
             ->record($this->getRecord())
             ->statePath('data');
-    }
-
-    public function save(): void
-    {
-        $data = $this->form->getState();
-
-        $record = $this->getRecord() ?? new TechnologySetting;
-
-        $record->fill($data);
-        $record->save();
-
-        if ($record->wasRecentlyCreated) {
-            $this->form->record($record)->saveRelationships();
-        }
-
-        Notification::make()
-            ->success()
-            ->title('Technologies settings saved')
-            ->send();
-    }
-
-    public function getRecord(): ?TechnologySetting
-    {
-        return TechnologySetting::query()->first();
     }
 }

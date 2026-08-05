@@ -8,8 +8,6 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
@@ -17,13 +15,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
-/**
- * @property-read Schema $form
- */
-class ManageSiteSettings extends Page
+class ManageSiteSettings extends ManageSettingsPage
 {
-    protected string $view = 'filament.pages.manage-site-settings';
-
     protected static string|UnitEnum|null $navigationGroup = 'Settings';
 
     protected static ?string $navigationLabel = 'Site Settings';
@@ -34,14 +27,24 @@ class ManageSiteSettings extends Page
 
     protected static ?int $navigationSort = 1;
 
-    /**
-     * @var array<string, mixed>|null
-     */
-    public ?array $data = [];
-
-    public function mount(): void
+    protected function settingsModel(): string
     {
-        $this->form->fill($this->getRecord()?->attributesToArray());
+        return SiteSetting::class;
+    }
+
+    protected function savedNotificationTitle(): string
+    {
+        return 'Site settings saved';
+    }
+
+    /**
+     * Preserve prior behavior: empty form when no site settings row exists.
+     *
+     * @return array<string, mixed>
+     */
+    protected function formFillState(): array
+    {
+        return $this->getRecord()?->attributesToArray() ?? [];
     }
 
     public function form(Schema $schema): Schema
@@ -113,29 +116,5 @@ class ManageSiteSettings extends Page
             ])
             ->record($this->getRecord())
             ->statePath('data');
-    }
-
-    public function save(): void
-    {
-        $data = $this->form->getState();
-
-        $record = $this->getRecord() ?? new SiteSetting;
-
-        $record->fill($data);
-        $record->save();
-
-        if ($record->wasRecentlyCreated) {
-            $this->form->record($record)->saveRelationships();
-        }
-
-        Notification::make()
-            ->success()
-            ->title('Site settings saved')
-            ->send();
-    }
-
-    public function getRecord(): ?SiteSetting
-    {
-        return SiteSetting::query()->first();
     }
 }

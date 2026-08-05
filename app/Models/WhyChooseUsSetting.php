@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSingletonSettings;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -22,24 +23,13 @@ use Illuminate\Support\Facades\Storage;
 ])]
 class WhyChooseUsSetting extends Model
 {
-    protected static ?self $cached = null;
+    use HasSingletonSettings;
 
     protected function casts(): array
     {
         return [
             'partner_points' => 'array',
         ];
-    }
-
-    public static function current(): self
-    {
-        if (static::$cached instanceof self) {
-            return static::$cached;
-        }
-
-        static::$cached = static::query()->first() ?? new static(static::defaults());
-
-        return static::$cached;
     }
 
     public static function defaults(): array
@@ -63,17 +53,6 @@ class WhyChooseUsSetting extends Model
             'meta_title' => config('xcodrix.pages.why-choose-us.title'),
             'meta_description' => config('xcodrix.pages.why-choose-us.description'),
         ];
-    }
-
-    public static function clearCache(): void
-    {
-        static::$cached = null;
-    }
-
-    protected static function booted(): void
-    {
-        static::saved(fn () => static::clearCache());
-        static::deleted(fn () => static::clearCache());
     }
 
     public function partnerImageUrl(): string

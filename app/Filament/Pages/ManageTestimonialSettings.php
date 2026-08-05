@@ -7,8 +7,6 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
@@ -16,13 +14,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
-/**
- * @property-read Schema $form
- */
-class ManageTestimonialSettings extends Page
+class ManageTestimonialSettings extends ManageSettingsPage
 {
-    protected string $view = 'filament.pages.manage-testimonial-settings';
-
     protected static string|UnitEnum|null $navigationGroup = 'Settings';
 
     protected static ?string $navigationLabel = 'Testimonials Settings';
@@ -33,14 +26,14 @@ class ManageTestimonialSettings extends Page
 
     protected static ?int $navigationSort = 8;
 
-    /**
-     * @var array<string, mixed>|null
-     */
-    public ?array $data = [];
-
-    public function mount(): void
+    protected function settingsModel(): string
     {
-        $this->form->fill($this->getRecord()?->attributesToArray() ?? TestimonialSetting::defaults());
+        return TestimonialSetting::class;
+    }
+
+    protected function savedNotificationTitle(): string
+    {
+        return 'Testimonials settings saved';
     }
 
     public function form(Schema $schema): Schema
@@ -80,29 +73,5 @@ class ManageTestimonialSettings extends Page
             ])
             ->record($this->getRecord())
             ->statePath('data');
-    }
-
-    public function save(): void
-    {
-        $data = $this->form->getState();
-
-        $record = $this->getRecord() ?? new TestimonialSetting;
-
-        $record->fill($data);
-        $record->save();
-
-        if ($record->wasRecentlyCreated) {
-            $this->form->record($record)->saveRelationships();
-        }
-
-        Notification::make()
-            ->success()
-            ->title('Testimonials settings saved')
-            ->send();
-    }
-
-    public function getRecord(): ?TestimonialSetting
-    {
-        return TestimonialSetting::query()->first();
     }
 }

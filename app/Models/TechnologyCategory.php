@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasActiveOrderedScopes;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 class TechnologyCategory extends Model
 {
+    use HasActiveOrderedScopes;
+
     protected function casts(): array
     {
         return [
@@ -23,14 +25,9 @@ class TechnologyCategory extends Model
         ];
     }
 
-    public function scopeActive(Builder $query): Builder
+    protected function orderedByColumn(): string
     {
-        return $query->where('is_active', true);
-    }
-
-    public function scopeOrdered(Builder $query): Builder
-    {
-        return $query->orderBy('sort_order')->orderBy('name');
+        return 'name';
     }
 
     /**

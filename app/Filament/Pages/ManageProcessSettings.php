@@ -7,8 +7,6 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
@@ -16,13 +14,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
-/**
- * @property-read Schema $form
- */
-class ManageProcessSettings extends Page
+class ManageProcessSettings extends ManageSettingsPage
 {
-    protected string $view = 'filament.pages.manage-process-settings';
-
     protected static string|UnitEnum|null $navigationGroup = 'Pages';
 
     protected static ?string $navigationLabel = 'Process';
@@ -33,14 +26,14 @@ class ManageProcessSettings extends Page
 
     protected static ?int $navigationSort = 4;
 
-    /**
-     * @var array<string, mixed>|null
-     */
-    public ?array $data = [];
-
-    public function mount(): void
+    protected function settingsModel(): string
     {
-        $this->form->fill($this->getRecord()?->attributesToArray() ?? ProcessSetting::defaults());
+        return ProcessSetting::class;
+    }
+
+    protected function savedNotificationTitle(): string
+    {
+        return 'Process page saved';
     }
 
     public function form(Schema $schema): Schema
@@ -106,29 +99,5 @@ class ManageProcessSettings extends Page
             ])
             ->record($this->getRecord())
             ->statePath('data');
-    }
-
-    public function save(): void
-    {
-        $data = $this->form->getState();
-
-        $record = $this->getRecord() ?? new ProcessSetting;
-
-        $record->fill($data);
-        $record->save();
-
-        if ($record->wasRecentlyCreated) {
-            $this->form->record($record)->saveRelationships();
-        }
-
-        Notification::make()
-            ->success()
-            ->title('Process page saved')
-            ->send();
-    }
-
-    public function getRecord(): ?ProcessSetting
-    {
-        return ProcessSetting::query()->first();
     }
 }

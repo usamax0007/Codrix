@@ -7,8 +7,6 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
@@ -16,13 +14,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
-/**
- * @property-read Schema $form
- */
-class ManagePortfolioSettings extends Page
+class ManagePortfolioSettings extends ManageSettingsPage
 {
-    protected string $view = 'filament.pages.manage-portfolio-settings';
-
     protected static string|UnitEnum|null $navigationGroup = 'Settings';
 
     protected static ?string $navigationLabel = 'Portfolio Settings';
@@ -33,14 +26,14 @@ class ManagePortfolioSettings extends Page
 
     protected static ?int $navigationSort = 4;
 
-    /**
-     * @var array<string, mixed>|null
-     */
-    public ?array $data = [];
-
-    public function mount(): void
+    protected function settingsModel(): string
     {
-        $this->form->fill($this->getRecord()?->attributesToArray() ?? PortfolioSetting::defaults());
+        return PortfolioSetting::class;
+    }
+
+    protected function savedNotificationTitle(): string
+    {
+        return 'Portfolio settings saved';
     }
 
     public function form(Schema $schema): Schema
@@ -80,29 +73,5 @@ class ManagePortfolioSettings extends Page
             ])
             ->record($this->getRecord())
             ->statePath('data');
-    }
-
-    public function save(): void
-    {
-        $data = $this->form->getState();
-
-        $record = $this->getRecord() ?? new PortfolioSetting;
-
-        $record->fill($data);
-        $record->save();
-
-        if ($record->wasRecentlyCreated) {
-            $this->form->record($record)->saveRelationships();
-        }
-
-        Notification::make()
-            ->success()
-            ->title('Portfolio settings saved')
-            ->send();
-    }
-
-    public function getRecord(): ?PortfolioSetting
-    {
-        return PortfolioSetting::query()->first();
     }
 }

@@ -8,8 +8,6 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Form;
 use Filament\Schemas\Components\Section;
@@ -17,13 +15,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
-/**
- * @property-read Schema $form
- */
-class ManageAboutSettings extends Page
+class ManageAboutSettings extends ManageSettingsPage
 {
-    protected string $view = 'filament.pages.manage-about-settings';
-
     protected static string|UnitEnum|null $navigationGroup = 'Pages';
 
     protected static ?string $navigationLabel = 'About';
@@ -34,14 +27,14 @@ class ManageAboutSettings extends Page
 
     protected static ?int $navigationSort = 3;
 
-    /**
-     * @var array<string, mixed>|null
-     */
-    public ?array $data = [];
-
-    public function mount(): void
+    protected function settingsModel(): string
     {
-        $this->form->fill($this->getRecord()?->attributesToArray() ?? AboutSetting::defaults());
+        return AboutSetting::class;
+    }
+
+    protected function savedNotificationTitle(): string
+    {
+        return 'About page saved';
     }
 
     public function form(Schema $schema): Schema
@@ -159,29 +152,5 @@ class ManageAboutSettings extends Page
             ])
             ->record($this->getRecord())
             ->statePath('data');
-    }
-
-    public function save(): void
-    {
-        $data = $this->form->getState();
-
-        $record = $this->getRecord() ?? new AboutSetting;
-
-        $record->fill($data);
-        $record->save();
-
-        if ($record->wasRecentlyCreated) {
-            $this->form->record($record)->saveRelationships();
-        }
-
-        Notification::make()
-            ->success()
-            ->title('About page saved')
-            ->send();
-    }
-
-    public function getRecord(): ?AboutSetting
-    {
-        return AboutSetting::query()->first();
     }
 }

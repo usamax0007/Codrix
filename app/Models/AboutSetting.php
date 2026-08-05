@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSingletonSettings;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -37,18 +38,7 @@ use Illuminate\Support\Facades\Storage;
 ])]
 class AboutSetting extends Model
 {
-    protected static ?self $cached = null;
-
-    public static function current(): self
-    {
-        if (static::$cached instanceof self) {
-            return static::$cached;
-        }
-
-        static::$cached = static::query()->first() ?? new static(static::defaults());
-
-        return static::$cached;
-    }
+    use HasSingletonSettings;
 
     public static function defaults(): array
     {
@@ -79,17 +69,6 @@ class AboutSetting extends Model
             'meta_title' => 'About XCodrix — Expert Software Development Team',
             'meta_description' => 'Learn about XCodrix, a premium software development agency with 12+ years of experience building SaaS, AI, Laravel, and mobile solutions for startups and enterprises.',
         ];
-    }
-
-    public static function clearCache(): void
-    {
-        static::$cached = null;
-    }
-
-    protected static function booted(): void
-    {
-        static::saved(fn () => static::clearCache());
-        static::deleted(fn () => static::clearCache());
     }
 
     public function image1Url(): string

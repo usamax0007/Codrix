@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSingletonSettings;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,18 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 ])]
 class TechnologySetting extends Model
 {
-    protected static ?self $cached = null;
-
-    public static function current(): self
-    {
-        if (static::$cached instanceof self) {
-            return static::$cached;
-        }
-
-        static::$cached = static::query()->first() ?? new static(static::defaults());
-
-        return static::$cached;
-    }
+    use HasSingletonSettings;
 
     public static function defaults(): array
     {
@@ -48,16 +38,5 @@ class TechnologySetting extends Model
             'meta_title' => config('xcodrix.pages.technologies.title'),
             'meta_description' => config('xcodrix.pages.technologies.description'),
         ];
-    }
-
-    public static function clearCache(): void
-    {
-        static::$cached = null;
-    }
-
-    protected static function booted(): void
-    {
-        static::saved(fn () => static::clearCache());
-        static::deleted(fn () => static::clearCache());
     }
 }

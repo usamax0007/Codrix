@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasSingletonSettings;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -19,35 +20,18 @@ use Illuminate\Support\Facades\Storage;
 ])]
 class SiteSetting extends Model
 {
-    protected static ?self $cached = null;
+    use HasSingletonSettings;
 
-    public static function current(): self
+    public static function defaults(): array
     {
-        if (static::$cached instanceof self) {
-            return static::$cached;
-        }
-
-        static::$cached = static::query()->first() ?? new static([
+        return [
             'site_name' => config('xcodrix.name', 'XCodrix'),
             'email' => config('xcodrix.email'),
             'short_description' => 'XCodrix is a premium software development agency building AI-powered SaaS platforms, Laravel backends, Vue.js frontends, mobile apps, and Twilio communication systems.',
             'linkedin' => config('xcodrix.social.linkedin'),
             'twitter' => config('xcodrix.social.twitter'),
             'github' => config('xcodrix.social.github'),
-        ]);
-
-        return static::$cached;
-    }
-
-    public static function clearCache(): void
-    {
-        static::$cached = null;
-    }
-
-    protected static function booted(): void
-    {
-        static::saved(fn () => static::clearCache());
-        static::deleted(fn () => static::clearCache());
+        ];
     }
 
     public function logoUrl(): string

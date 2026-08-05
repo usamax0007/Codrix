@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasActiveOrderedScopes;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'slug',
@@ -23,6 +22,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class Service extends Model
 {
+    use HasActiveOrderedScopes;
+
     protected function casts(): array
     {
         return [
@@ -43,18 +44,8 @@ class Service extends Model
         });
     }
 
-    public function items(): HasMany
+    protected function orderedByColumn(): string
     {
-        return $this->hasMany(ServiceItem::class);
-    }
-
-    public function scopeActive(Builder $query): Builder
-    {
-        return $query->where('is_active', true);
-    }
-
-    public function scopeOrdered(Builder $query): Builder
-    {
-        return $query->orderBy('sort_order')->orderBy('title');
+        return 'title';
     }
 }

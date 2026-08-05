@@ -4,19 +4,11 @@ return [
     'name' => 'XCodrix',
     'domain' => 'https://xcodrix.com',
     'email' => 'hello@xcodrix.com',
-    'tagline' => 'Premium Software Development Agency',
 
     'social' => [
         'linkedin' => 'https://linkedin.com/company/xcodrix',
         'twitter' => 'https://twitter.com/xcodrix',
         'github' => 'https://github.com/xcodrix',
-    ],
-
-    'stats' => [
-        ['value' => '150+', 'label' => 'Projects Delivered'],
-        ['value' => '85+', 'label' => 'Happy Clients'],
-        ['value' => '12+', 'label' => 'Years Experience'],
-        ['value' => '98%', 'label' => 'Client Retention'],
     ],
 
     'clients' => [
