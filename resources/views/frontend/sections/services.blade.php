@@ -4,9 +4,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if($preview)
             @include('frontend.components.section-heading', [
-                'badge' => $serviceSettings->section_badge ?: 'Our Services',
-                'title' => $serviceSettings->section_title ?: "What We <span class='xc-gradient-text'>Build</span>",
-                'subtitle' => $serviceSettings->section_subtitle ?: 'End-to-end software development services for modern businesses.',
+                'badge' => $serviceSettings->section_badge,
+                'title' => $serviceSettings->section_title,
+                'subtitle' => $serviceSettings->section_subtitle,
             ])
         @endif
 

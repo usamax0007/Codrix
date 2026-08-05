@@ -4,9 +4,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if($preview)
             @include('frontend.components.section-heading', [
-                'badge' => $testimonialSettings->section_badge ?: 'Testimonials',
-                'title' => $testimonialSettings->section_title ?: "What Our <span class='xc-gradient-text'>Clients Say</span>",
-                'subtitle' => $testimonialSettings->section_subtitle ?: 'Trusted by startups and enterprises worldwide.',
+                'badge' => $testimonialSettings->section_badge,
+                'title' => $testimonialSettings->section_title,
+                'subtitle' => $testimonialSettings->section_subtitle,
             ])
         @endif
 

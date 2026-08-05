@@ -43,27 +43,24 @@ class ProcessSetting extends Model
 
     public static function defaults(): array
     {
-        $steps = config('xcodrix.process', []);
-
         $data = [
-            'hero_badge' => 'Development Process',
-            'hero_title' => "Our Development <span class='xc-gradient-text'>Process</span>",
-            'hero_subtitle' => 'A proven 6-step process that takes your idea from concept to production with full transparency.',
-            'section_badge' => 'Our Process',
-            'section_title' => "How We <span class='xc-gradient-text'>Build</span> Software",
-            'section_subtitle' => 'A proven 6-step process from idea to launch and beyond.',
-            'footer_title' => 'How Does Our Development Process Work?',
-            'footer_content_1' => 'XCodrix follows an agile methodology tailored for software agencies. After an initial discovery call, we deliver a detailed proposal within 48 hours. Once approved, we move through design, development sprints, QA, and launch — with weekly demos so you always see real progress.',
-            'footer_content_2' => 'Our process is designed for clarity: you know what\'s being built, when it ships, and how much it costs at every stage. No surprises, no scope creep without discussion.',
-            'meta_title' => config('xcodrix.pages.process.title'),
-            'meta_description' => config('xcodrix.pages.process.description'),
+            'hero_badge' => null,
+            'hero_title' => null,
+            'hero_subtitle' => null,
+            'section_badge' => null,
+            'section_title' => null,
+            'section_subtitle' => null,
+            'footer_title' => null,
+            'footer_content_1' => null,
+            'footer_content_2' => null,
+            'meta_title' => null,
+            'meta_description' => null,
         ];
 
-        foreach (array_values($steps) as $index => $step) {
-            $n = $index + 1;
-            $data["step_{$n}_number"] = $step['step'] ?? sprintf('%02d', $n);
-            $data["step_{$n}_title"] = $step['title'] ?? null;
-            $data["step_{$n}_description"] = $step['description'] ?? null;
+        for ($n = 1; $n <= 6; $n++) {
+            $data["step_{$n}_number"] = null;
+            $data["step_{$n}_title"] = null;
+            $data["step_{$n}_description"] = null;
         }
 
         return $data;

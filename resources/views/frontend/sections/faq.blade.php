@@ -4,9 +4,9 @@
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         @if($preview)
             @include('frontend.components.section-heading', [
-                'badge' => $faqSettings->section_badge ?: 'FAQ',
-                'title' => $faqSettings->section_title ?: "Frequently Asked <span class='xc-gradient-text'>Questions</span>",
-                'subtitle' => $faqSettings->section_subtitle ?: 'Common questions about XCodrix services, process, and pricing.',
+                'badge' => $faqSettings->section_badge,
+                'title' => $faqSettings->section_title,
+                'subtitle' => $faqSettings->section_subtitle,
             ])
         @endif
 

@@ -23,14 +23,14 @@ class TestimonialSetting extends Model
     public static function defaults(): array
     {
         return [
-            'hero_badge' => 'Testimonials',
-            'hero_title' => "Client <span class='xc-gradient-text'>Testimonials</span>",
-            'hero_subtitle' => 'Hear from the founders and CTOs who trusted XCodrix with their most important projects.',
-            'section_badge' => 'Testimonials',
-            'section_title' => "What Our <span class='xc-gradient-text'>Clients Say</span>",
-            'section_subtitle' => 'Trusted by startups and enterprises worldwide.',
-            'meta_title' => config('xcodrix.pages.testimonials.title'),
-            'meta_description' => config('xcodrix.pages.testimonials.description'),
+            'hero_badge' => null,
+            'hero_title' => null,
+            'hero_subtitle' => null,
+            'section_badge' => null,
+            'section_title' => null,
+            'section_subtitle' => null,
+            'meta_title' => null,
+            'meta_description' => null,
         ];
     }
 }

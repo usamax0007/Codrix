@@ -4,9 +4,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if($preview)
             @include('frontend.components.section-heading', [
-                'badge' => $processSettings->section_badge ?: 'Our Process',
-                'title' => $processSettings->section_title ?: "How We <span class='xc-gradient-text'>Build</span> Software",
-                'subtitle' => $processSettings->section_subtitle ?: 'A proven 6-step process from idea to launch and beyond.',
+                'badge' => $processSettings->section_badge,
+                'title' => $processSettings->section_title,
+                'subtitle' => $processSettings->section_subtitle,
             ])
         @endif
 

@@ -4,9 +4,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if($preview)
             @include('frontend.components.section-heading', [
-                'badge' => $aboutSettings->section_badge ?: 'About XCodrix',
-                'title' => $aboutSettings->section_title ?: "Who We <span class='xc-gradient-text'>Are</span>",
-                'subtitle' => $aboutSettings->section_subtitle ?: 'A premium software development agency helping businesses build scalable digital products.',
+                'badge' => $aboutSettings->section_badge,
+                'title' => $aboutSettings->section_title,
+                'subtitle' => $aboutSettings->section_subtitle,
             ])
         @endif
 

@@ -35,23 +35,18 @@ class WhyChooseUsSetting extends Model
     public static function defaults(): array
     {
         return [
-            'hero_badge' => 'Why Choose Us',
-            'hero_title' => "Why Choose <span class='xc-gradient-text'>XCodrix</span>",
-            'hero_subtitle' => '85+ companies trust XCodrix to build their most important software products.',
-            'section_badge' => 'Why Choose Us',
-            'section_title' => "Why Companies Trust <span class='xc-gradient-text'>XCodrix</span>",
-            'section_subtitle' => 'We combine technical excellence with a partnership mindset.',
+            'hero_badge' => null,
+            'hero_title' => null,
+            'hero_subtitle' => null,
+            'section_badge' => null,
+            'section_title' => null,
+            'section_subtitle' => null,
             'partner_image' => null,
-            'partner_title' => 'A Partner, Not Just a Vendor',
-            'partner_content' => 'XCodrix takes ownership of your project\'s success. We proactively suggest improvements, flag risks early, and align our work with your business goals — not just your feature list.',
-            'partner_points' => [
-                'Direct access to senior developers',
-                'Weekly progress demos and transparent reporting',
-                'Fixed-price proposals with no hidden costs',
-                'Post-launch support and maintenance plans',
-            ],
-            'meta_title' => config('xcodrix.pages.why-choose-us.title'),
-            'meta_description' => config('xcodrix.pages.why-choose-us.description'),
+            'partner_title' => null,
+            'partner_content' => null,
+            'partner_points' => [],
+            'meta_title' => null,
+            'meta_description' => null,
         ];
     }
 

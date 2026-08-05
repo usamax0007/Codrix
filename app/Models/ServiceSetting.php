@@ -25,16 +25,16 @@ class ServiceSetting extends Model
     public static function defaults(): array
     {
         return [
-            'hero_badge' => 'Services',
-            'hero_title' => "Our <span class='xc-gradient-text'>Services</span>",
-            'hero_subtitle' => 'Comprehensive software development services — from AI and SaaS to Laravel, Vue.js, Twilio, and mobile apps.',
-            'section_badge' => 'Our Services',
-            'section_title' => "What We <span class='xc-gradient-text'>Build</span>",
-            'section_subtitle' => 'End-to-end software development services for modern businesses.',
-            'footer_title' => 'Why Choose XCodrix for Your Project?',
-            'footer_content' => 'Every XCodrix service is delivered by senior engineers with deep domain expertise. We don\'t outsource, we don\'t cut corners, and we don\'t disappear after launch. From the first consultation to post-launch support, you work directly with the team building your product.',
-            'meta_title' => 'Our Services — AI, SaaS, Laravel, Vue.js & More | XCodrix',
-            'meta_description' => 'Explore XCodrix services: AI development, SaaS platforms, Laravel backends, Vue.js frontends, Twilio voice systems, CRM, APIs, cloud DevOps, and mobile apps.',
+            'hero_badge' => null,
+            'hero_title' => null,
+            'hero_subtitle' => null,
+            'section_badge' => null,
+            'section_title' => null,
+            'section_subtitle' => null,
+            'footer_title' => null,
+            'footer_content' => null,
+            'meta_title' => null,
+            'meta_description' => null,
         ];
     }
 }

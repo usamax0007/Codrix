@@ -27,7 +27,7 @@ class SiteSetting extends Model
         return [
             'site_name' => config('xcodrix.name', 'XCodrix'),
             'email' => config('xcodrix.email'),
-            'short_description' => 'XCodrix is a premium software development agency building AI-powered SaaS platforms, Laravel backends, Vue.js frontends, mobile apps, and Twilio communication systems.',
+            'short_description' => null,
             'linkedin' => config('xcodrix.social.linkedin'),
             'twitter' => config('xcodrix.social.twitter'),
             'github' => config('xcodrix.social.github'),

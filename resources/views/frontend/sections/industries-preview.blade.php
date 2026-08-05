@@ -3,9 +3,9 @@
 <section class="py-20 bg-xc-dark/40" aria-labelledby="industries-heading">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @include('frontend.components.section-heading', [
-            'badge' => $industrySettings->section_badge ?: 'Industries',
-            'title' => $industrySettings->section_title ?: "Industries We <span class='xc-gradient-text'>Serve</span>",
-            'subtitle' => $industrySettings->section_subtitle ?: 'Deep domain expertise across multiple sectors.',
+            'badge' => $industrySettings->section_badge,
+            'title' => $industrySettings->section_title,
+            'subtitle' => $industrySettings->section_subtitle,
         ])
 
         <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">

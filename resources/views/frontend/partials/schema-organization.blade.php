@@ -7,8 +7,7 @@
         'name' => $siteSettings->site_name,
         'url' => $domain,
         'logo' => $siteSettings->logoUrl(),
-        'description' => $siteSettings->short_description
-            ?: 'XCodrix is a software development agency specializing in AI, SaaS, Laravel, Vue.js, mobile apps, and Twilio communication systems.',
+        'description' => $siteSettings->short_description,
         'email' => $siteSettings->email,
         'telephone' => $siteSettings->phone,
         'sameAs' => array_values($siteSettings->socialLinks()),
@@ -21,6 +20,6 @@
         ];
     }
 
-    $org = array_filter($org, fn ($value) => $value !== null && $value !== []);
+    $org = array_filter($org, fn ($value) => filled($value));
 @endphp
 <script type="application/ld+json">{!! json_encode($org, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}</script>

@@ -4,9 +4,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if($preview)
             @include('frontend.components.section-heading', [
-                'badge' => $technologySettings->section_badge ?: 'Technologies',
-                'title' => $technologySettings->section_title ?: "Tech Stack We <span class='xc-gradient-text'>Master</span>",
-                'subtitle' => $technologySettings->section_subtitle ?: 'Modern, battle-tested technologies chosen for performance and scalability.',
+                'badge' => $technologySettings->section_badge,
+                'title' => $technologySettings->section_title,
+                'subtitle' => $technologySettings->section_subtitle,
             ])
         @endif
 

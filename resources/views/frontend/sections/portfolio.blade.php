@@ -4,9 +4,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if($preview)
             @include('frontend.components.section-heading', [
-                'badge' => $portfolioSettings->section_badge ?: 'Portfolio',
-                'title' => $portfolioSettings->section_title ?: "Case Studies & <span class='xc-gradient-text'>Projects</span>",
-                'subtitle' => $portfolioSettings->section_subtitle ?: 'Real solutions built for real businesses.',
+                'badge' => $portfolioSettings->section_badge,
+                'title' => $portfolioSettings->section_title,
+                'subtitle' => $portfolioSettings->section_subtitle,
             ])
         @endif
 

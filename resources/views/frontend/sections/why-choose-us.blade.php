@@ -4,9 +4,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if($preview)
             @include('frontend.components.section-heading', [
-                'badge' => $whyChooseUsSettings->section_badge ?: 'Why Choose Us',
-                'title' => $whyChooseUsSettings->section_title ?: "Why Companies Trust <span class='xc-gradient-text'>XCodrix</span>",
-                'subtitle' => $whyChooseUsSettings->section_subtitle ?: 'We combine technical excellence with a partnership mindset.',
+                'badge' => $whyChooseUsSettings->section_badge,
+                'title' => $whyChooseUsSettings->section_title,
+                'subtitle' => $whyChooseUsSettings->section_subtitle,
             ])
         @endif
 
