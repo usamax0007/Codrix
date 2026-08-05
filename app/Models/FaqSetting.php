@@ -23,14 +23,14 @@ class FaqSetting extends Model
     public static function defaults(): array
     {
         return [
-            'hero_badge' => null,
-            'hero_title' => null,
-            'hero_subtitle' => null,
-            'section_badge' => null,
-            'section_title' => null,
-            'section_subtitle' => null,
-            'meta_title' => null,
-            'meta_description' => null,
+            'hero_badge' => 'FAQ',
+            'hero_title' => "Frequently Asked <span class='xc-gradient-text'>Questions</span>",
+            'hero_subtitle' => 'Everything you need to know about working with XCodrix.',
+            'section_badge' => 'FAQ',
+            'section_title' => "Frequently Asked <span class='xc-gradient-text'>Questions</span>",
+            'section_subtitle' => 'Common questions about XCodrix services, process, and pricing.',
+            'meta_title' => config('xcodrix.pages.faq.title'),
+            'meta_description' => config('xcodrix.pages.faq.description'),
         ];
     }
 }

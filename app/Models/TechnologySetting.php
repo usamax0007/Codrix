@@ -26,17 +26,17 @@ class TechnologySetting extends Model
     public static function defaults(): array
     {
         return [
-            'hero_badge' => null,
-            'hero_title' => null,
-            'hero_subtitle' => null,
-            'section_badge' => null,
-            'section_title' => null,
-            'section_subtitle' => null,
-            'bottom_title' => null,
-            'bottom_content' => null,
-            'bottom_content_2' => null,
-            'meta_title' => null,
-            'meta_description' => null,
+            'hero_badge' => 'Technologies',
+            'hero_title' => "Technologies We <span class='xc-gradient-text'>Use</span>",
+            'hero_subtitle' => 'Modern, battle-tested technologies chosen for performance, security, and scalability.',
+            'section_badge' => 'Technologies',
+            'section_title' => "Tech Stack We <span class='xc-gradient-text'>Master</span>",
+            'section_subtitle' => 'Modern, battle-tested technologies chosen for performance and scalability.',
+            'bottom_title' => 'What Technologies Does XCodrix Specialize In?',
+            'bottom_content' => 'XCodrix specializes in the Laravel and PHP ecosystem for backends, Vue.js and Nuxt.js for frontends, React Native and Flutter for mobile, and Twilio for communication systems. We deploy on AWS and GCP with Docker, and integrate AI via OpenAI and Claude APIs.',
+            'bottom_content_2' => 'We choose technologies based on your project requirements — not trends. Every stack decision is documented and justified during the discovery phase.',
+            'meta_title' => config('xcodrix.pages.technologies.title'),
+            'meta_description' => config('xcodrix.pages.technologies.description'),
         ];
     }
 }

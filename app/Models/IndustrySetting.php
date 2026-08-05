@@ -25,16 +25,16 @@ class IndustrySetting extends Model
     public static function defaults(): array
     {
         return [
-            'hero_badge' => null,
-            'hero_title' => null,
-            'hero_subtitle' => null,
-            'section_badge' => null,
-            'section_title' => null,
-            'section_subtitle' => null,
-            'bottom_title' => null,
-            'bottom_content' => null,
-            'meta_title' => null,
-            'meta_description' => null,
+            'hero_badge' => 'Industries',
+            'hero_title' => "Industries We <span class='xc-gradient-text'>Serve</span>",
+            'hero_subtitle' => 'Deep domain expertise across SaaS, healthcare, FinTech, e-commerce, and more.',
+            'section_badge' => 'Industries',
+            'section_title' => "Industries We <span class='xc-gradient-text'>Serve</span>",
+            'section_subtitle' => 'Deep domain expertise across multiple sectors.',
+            'bottom_title' => 'Which Industries Does XCodrix Serve?',
+            'bottom_content' => 'XCodrix works with companies across eight major industries. We understand the compliance requirements, user expectations, and technical challenges unique to each sector — whether that\'s HIPAA for healthcare, PCI for FinTech, or real-time communication for telecommunications.',
+            'meta_title' => config('xcodrix.pages.industries.title'),
+            'meta_description' => config('xcodrix.pages.industries.description'),
         ];
     }
 }

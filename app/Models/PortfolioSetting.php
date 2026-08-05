@@ -23,14 +23,14 @@ class PortfolioSetting extends Model
     public static function defaults(): array
     {
         return [
-            'hero_badge' => null,
-            'hero_title' => null,
-            'hero_subtitle' => null,
-            'section_badge' => null,
-            'section_title' => null,
-            'section_subtitle' => null,
-            'meta_title' => null,
-            'meta_description' => null,
+            'hero_badge' => 'Portfolio',
+            'hero_title' => "Case Studies & <span class='xc-gradient-text'>Projects</span>",
+            'hero_subtitle' => 'Real solutions built for SaaS startups, healthcare, FinTech, and enterprise clients.',
+            'section_badge' => 'Portfolio',
+            'section_title' => "Case Studies & <span class='xc-gradient-text'>Projects</span>",
+            'section_subtitle' => 'Real solutions built for real businesses.',
+            'meta_title' => config('xcodrix.pages.portfolio.title'),
+            'meta_description' => config('xcodrix.pages.portfolio.description'),
         ];
     }
 }
