@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Attendances\Pages;
 
 use App\Filament\Resources\Attendances\AttendanceResource;
+use App\Models\User;
+use App\Services\Attendance\AttendanceService;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -27,6 +29,16 @@ class ListAttendances extends ListRecords
 
         if (blank($userId)) {
             return $query->whereRaw('0 = 1');
+        }
+
+        $user = User::query()->find($userId);
+
+        if ($user) {
+            app(AttendanceService::class)->ensureAbsentsForUser(
+                $user,
+                now()->subDays(60)->startOfDay(),
+                now(),
+            );
         }
 
         return $query->where('user_id', $userId);

@@ -7,7 +7,7 @@
     $openPayload = $openSession ? [
         'id' => $openSession->id,
         'work_date' => $openSession->work_date->format('Y-m-d'),
-        'check_in_at' => $openSession->check_in_at->format('h:i A'),
+        'check_in_at' => $openSession->check_in_at?->format('h:i A'),
     ] : null;
 @endphp
 
@@ -109,10 +109,15 @@
         hide(checkOut);
         hide(done);
 
-        if (openSession) {
+        if (openSession || todayRecord?.is_open) {
             show(checkOut);
-        } else if (todayRecord && !todayRecord.is_open) {
+        } else if (todayRecord) {
             show(done);
+            if (done && todayRecord.status === 'absent') {
+                done.textContent = 'Marked absent for today.';
+            } else if (done && todayRecord.status === 'late') {
+                done.textContent = 'Attendance completed (late).';
+            }
         } else {
             show(checkIn);
         }

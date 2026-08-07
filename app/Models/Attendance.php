@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'check_in_at',
     'check_out_at',
     'worked_minutes',
+    'status',
 ])]
 class Attendance extends Model
 {
@@ -23,6 +24,7 @@ class Attendance extends Model
             'check_in_at' => 'datetime',
             'check_out_at' => 'datetime',
             'worked_minutes' => 'integer',
+            'status' => AttendanceStatus::class,
         ];
     }
 
@@ -33,14 +35,12 @@ class Attendance extends Model
 
     public function isOpen(): bool
     {
-        return $this->check_out_at === null;
+        return $this->check_in_at !== null && $this->check_out_at === null;
     }
 
-    public function status(): AttendanceStatus
+    public function isAbsent(): bool
     {
-        return $this->isOpen()
-            ? AttendanceStatus::Open
-            : AttendanceStatus::Completed;
+        return $this->status === AttendanceStatus::Absent;
     }
 
     public function durationLabel(): string

@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Attendances\Schemas;
 
-use App\Models\Attendance;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -25,18 +24,18 @@ class AttendanceInfolist
                             ->label('Date')
                             ->date('M d, Y'),
                         TextEntry::make('status')
-                            ->badge()
-                            ->getStateUsing(fn (Attendance $record) => $record->status()),
+                            ->badge(),
                         TextEntry::make('check_in_at')
                             ->label('Check in')
-                            ->dateTime('M d, Y h:i A'),
+                            ->dateTime('M d, Y h:i A')
+                            ->placeholder('—'),
                         TextEntry::make('check_out_at')
                             ->label('Check out')
                             ->dateTime('M d, Y h:i A')
-                            ->placeholder('Still checked in'),
+                            ->placeholder('—'),
                         TextEntry::make('worked_minutes')
                             ->label('Duration')
-                            ->formatStateUsing(fn (?int $state, Attendance $record): string => $record->durationLabel()),
+                            ->formatStateUsing(fn (?int $state, $record): string => $record->durationLabel()),
                     ]),
             ]);
     }

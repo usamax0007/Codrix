@@ -39,7 +39,7 @@
                             {{ $attendance->work_date->format('M d, Y') }}
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap">
-                            {{ $attendance->check_in_at->format('h:i A') }}
+                            {{ $attendance->check_in_at?->format('h:i A') ?? '—' }}
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap">
                             {{ $attendance->check_out_at?->format('h:i A') ?? '—' }}
@@ -48,7 +48,7 @@
                             {{ $attendance->durationLabel() }}
                         </td>
                         <td class="px-4 py-3">
-                            <x-user.status-badge :status="$attendance->status()" />
+                            <x-user.status-badge :status="$attendance->status" />
                         </td>
                     </tr>
                 @empty

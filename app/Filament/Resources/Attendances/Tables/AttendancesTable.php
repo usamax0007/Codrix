@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Attendances\Tables;
 
-use App\Enums\AttendanceStatus;
 use App\Enums\UserRole;
 use App\Models\Attendance;
 use Filament\Actions\BulkActionGroup;
@@ -19,7 +18,7 @@ class AttendancesTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->defaultSort('check_in_at', 'desc')
+            ->defaultSort('work_date', 'desc')
             ->columns([
                 TextColumn::make('work_date')
                     ->label('Date')
@@ -28,6 +27,7 @@ class AttendancesTable
                 TextColumn::make('check_in_at')
                     ->label('Check in')
                     ->dateTime('h:i A')
+                    ->placeholder('—')
                     ->sortable(),
                 TextColumn::make('check_out_at')
                     ->label('Check out')
@@ -40,7 +40,7 @@ class AttendancesTable
                     ->sortable(),
                 TextColumn::make('status')
                     ->badge()
-                    ->getStateUsing(fn (Attendance $record): AttendanceStatus => $record->status()),
+                    ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('user_id')
