@@ -10,6 +10,7 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -36,11 +37,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return match ($panel->getId()) {
-            'admin' => $this->isAdmin(),
-            'user' => $this->isUser(),
-            default => false,
-        };
+        return $panel->getId() === 'admin' && $this->isAdmin();
     }
 
     public function isAdmin(): bool
@@ -51,5 +48,10 @@ class User extends Authenticatable implements FilamentUser
     public function isUser(): bool
     {
         return $this->role === UserRole::User;
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
     }
 }
