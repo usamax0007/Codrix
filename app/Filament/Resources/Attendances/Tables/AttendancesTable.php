@@ -2,15 +2,12 @@
 
 namespace App\Filament\Resources\Attendances\Tables;
 
-use App\Enums\UserRole;
 use App\Models\Attendance;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\FiltersLayout;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class AttendancesTable
@@ -19,6 +16,10 @@ class AttendancesTable
     {
         return $table
             ->defaultSort('work_date', 'desc')
+            ->header(fn (Table $table) => view(
+                'filament.resources.attendances.table-user-filter',
+                ['livewire' => $table->getLivewire()],
+            ))
             ->columns([
                 TextColumn::make('work_date')
                     ->label('Date')
@@ -42,31 +43,15 @@ class AttendancesTable
                     ->badge()
                     ->sortable(),
             ])
-            ->filters([
-                SelectFilter::make('user_id')
-                    ->label('Select user')
-                    ->relationship(
-                        name: 'user',
-                        titleAttribute: 'name',
-                        modifyQueryUsing: fn ($query) => $query
-                            ->where('role', UserRole::User)
-                            ->orderBy('name'),
-                    )
-                    ->searchable()
-                    ->preload()
-                    ->native(false)
-                    ->placeholder('Select a user'),
-            ], layout: FiltersLayout::AboveContent)
-            ->filtersFormColumns(1)
-            ->deferFilters(false)
+            ->filters([])
             ->columnManager(false)
             ->emptyStateHeading(function ($livewire): string {
-                return blank(data_get($livewire->tableFilters, 'user_id.value'))
+                return blank($livewire->userId ?? null)
                     ? 'Select a user'
                     : 'No attendance records';
             })
             ->emptyStateDescription(function ($livewire): string {
-                return blank(data_get($livewire->tableFilters, 'user_id.value'))
+                return blank($livewire->userId ?? null)
                     ? 'Choose a user to view their attendance records.'
                     : 'This user has no attendance records yet.';
             })

@@ -2,8 +2,14 @@
     'openSession' => null,
     'statusByDate' => [],
     'showDate' => true,
+    'workingDays' => null,
 ])
 @php
+    $workingDays = array_map(
+        'strval',
+        $workingDays ?? \App\Models\AttendanceSetting::current()->working_days ?? [],
+    );
+
     $openPayload = $openSession ? [
         'id' => $openSession->id,
         'work_date' => $openSession->work_date->format('Y-m-d'),
@@ -16,6 +22,7 @@
     data-attendance-punch
     data-status='@json($statusByDate)'
     data-open='@json($openPayload)'
+    data-working-days='@json($workingDays)'
 >
     @if ($showDate)
         <div class="rounded-xl border border-white/10 bg-xc-darker/60 px-4 py-3 sm:min-w-[14rem]">
@@ -57,6 +64,10 @@
         <p data-punch-done class="hidden text-sm text-white/60 sm:text-right">
             Attendance completed for today.
         </p>
+
+        <p data-punch-offday class="hidden text-sm text-white/60 sm:text-right">
+            Non-working day — check-in is not available.
+        </p>
     </div>
 </div>
 
@@ -96,11 +107,14 @@
 
         const statusByDate = JSON.parse(root.dataset.status || '{}');
         const openSession = JSON.parse(root.dataset.open || 'null');
+        const workingDays = JSON.parse(root.dataset.workingDays || '[]').map(String);
         const todayRecord = statusByDate[today] || null;
+        const isWorkingDay = workingDays.includes(String(now.getDay()));
 
         const checkIn = root.querySelector('[data-punch-check-in]');
         const checkOut = root.querySelector('[data-punch-check-out]');
         const done = root.querySelector('[data-punch-done]');
+        const offDay = root.querySelector('[data-punch-offday]');
 
         const show = (el) => el?.classList.remove('hidden');
         const hide = (el) => el?.classList.add('hidden');
@@ -108,6 +122,7 @@
         hide(checkIn);
         hide(checkOut);
         hide(done);
+        hide(offDay);
 
         if (openSession || todayRecord?.is_open) {
             show(checkOut);
@@ -118,6 +133,8 @@
             } else if (done && todayRecord.status === 'late') {
                 done.textContent = 'Attendance completed (late).';
             }
+        } else if (!isWorkingDay) {
+            show(offDay);
         } else {
             show(checkIn);
         }

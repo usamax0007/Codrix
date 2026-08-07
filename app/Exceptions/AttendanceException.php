@@ -25,4 +25,9 @@ class AttendanceException extends Exception
     {
         return new self('You already completed attendance for today.');
     }
+
+    public static function nonWorkingDay(): self
+    {
+        return new self('Today is not a working day. Check-in is not available.');
+    }
 }

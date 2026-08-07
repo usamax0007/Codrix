@@ -49,6 +49,27 @@ class AttendanceSetting extends Model
         ];
     }
 
+    public function workingDayLabels(): array
+    {
+        $options = static::weekdayOptions();
+
+        return collect($this->working_days ?? [])
+            ->map(fn ($day) => $options[(string) $day] ?? null)
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    public function workFromLabel(): string
+    {
+        return Carbon::parse($this->normalizedTime($this->work_from))->format('h:i A');
+    }
+
+    public function workToLabel(): string
+    {
+        return Carbon::parse($this->normalizedTime($this->work_to))->format('h:i A');
+    }
+
     public function isWorkingDay(CarbonInterface $date): bool
     {
         $days = array_map('strval', $this->working_days ?? []);

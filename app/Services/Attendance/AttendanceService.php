@@ -27,16 +27,37 @@ class AttendanceService
             ->first();
     }
 
+    public function firstCheckInDate(User $user): ?Carbon
+    {
+        $date = Attendance::query()
+            ->where('user_id', $user->id)
+            ->whereNotNull('check_in_at')
+            ->min('work_date');
+
+        return $date ? Carbon::parse($date)->startOfDay() : null;
+    }
+
     /**
      * @return array<string, array{id: int, check_in_at: string|null, check_out_at: string|null, is_open: bool, status: string}>
      */
     public function statusByDate(User $user, int $days = 14): array
     {
-        $this->ensureAbsentsForUser($user, now()->subDays($days)->startOfDay(), now());
+        $requestedFrom = now()->subDays($days)->startOfDay();
+        $from = $this->timelineStart($user, $requestedFrom);
 
-        return Attendance::query()
-            ->where('user_id', $user->id)
-            ->whereDate('work_date', '>=', now()->subDays($days)->toDateString())
+        if ($from) {
+            $this->ensureAbsentsForUser($user, $from, now());
+        }
+
+        $query = Attendance::query()->where('user_id', $user->id);
+
+        if ($from) {
+            $query->whereDate('work_date', '>=', $from->toDateString());
+        } else {
+            $query->whereRaw('0 = 1');
+        }
+
+        return $query
             ->get()
             ->mapWithKeys(fn (Attendance $attendance): array => [
                 $attendance->work_date->format('Y-m-d') => [
@@ -55,18 +76,28 @@ class AttendanceService
         AttendanceHistoryRange $range = AttendanceHistoryRange::Last7,
         int $perPage = 15,
     ): LengthAwarePaginator {
-        $from = $range->fromDate()
+        $this->pruneAbsentsBeforeFirstCheckIn($user);
+
+        $firstCheckIn = $this->firstCheckInDate($user);
+
+        if (! $firstCheckIn) {
+            return Attendance::query()
+                ->whereRaw('0 = 1')
+                ->paginate($perPage)
+                ->withQueryString();
+        }
+
+        $requestedFrom = $range->fromDate()
             ? Carbon::parse($range->fromDate())->startOfDay()
-            : now()->subYear()->startOfDay();
+            : $firstCheckIn->copy();
+
+        $from = $requestedFrom->lt($firstCheckIn) ? $firstCheckIn->copy() : $requestedFrom;
 
         $this->ensureAbsentsForUser($user, $from, now());
 
         return Attendance::query()
             ->where('user_id', $user->id)
-            ->when(
-                $range->fromDate(),
-                fn ($query, string $date) => $query->whereDate('work_date', '>=', $date),
-            )
+            ->whereDate('work_date', '>=', $from->toDateString())
             ->latest('work_date')
             ->paginate($perPage)
             ->withQueryString();
@@ -83,6 +114,11 @@ class AttendanceService
             }
 
             $settings = AttendanceSetting::current();
+
+            if (! $settings->isWorkingDay($occurredAt)) {
+                throw AttendanceException::nonWorkingDay();
+            }
+
             $workDate = $occurredAt->toDateString();
             $status = $settings->isLateCheckIn($occurredAt)
                 ? AttendanceStatus::Late
@@ -135,7 +171,6 @@ class AttendanceService
 
             $minutes = max(0, (int) $attendance->check_in_at->diffInMinutes($occurredAt));
 
-            // Keep Late if they checked in late; otherwise mark Present.
             $status = $attendance->status === AttendanceStatus::Late
                 ? AttendanceStatus::Late
                 : AttendanceStatus::Present;
@@ -152,8 +187,14 @@ class AttendanceService
 
     public function ensureAbsentsForUser(User $user, CarbonInterface $from, CarbonInterface $to): void
     {
+        $start = $this->timelineStart($user, $from);
+
+        if (! $start) {
+            return;
+        }
+
         $settings = AttendanceSetting::current();
-        $cursor = $from->copy()->startOfDay();
+        $cursor = $start->copy()->startOfDay();
         $end = $to->copy()->startOfDay();
 
         while ($cursor->lte($end)) {
@@ -168,31 +209,62 @@ class AttendanceService
     public function markAbsentsForAllStaff(?CarbonInterface $now = null): int
     {
         $now ??= now();
-        $settings = AttendanceSetting::current();
-        $from = $now->copy()->subDays(60)->startOfDay();
         $created = 0;
 
         User::query()
             ->where('role', UserRole::User)
-            ->each(function (User $user) use ($settings, $from, $now, &$created): void {
-                $cursor = $from->copy();
+            ->each(function (User $user) use ($now, &$created): void {
+                $this->pruneAbsentsBeforeFirstCheckIn($user);
 
-                while ($cursor->lte($now->copy()->startOfDay())) {
-                    if ($settings->shouldMarkAbsentForDate($cursor, $now)) {
-                        if ($this->markAbsentIfMissing($user, $cursor->toDateString())) {
-                            $created++;
-                        }
-                    }
+                $firstCheckIn = $this->firstCheckInDate($user);
 
-                    $cursor->addDay();
+                if (! $firstCheckIn) {
+                    return;
                 }
+
+                $before = Attendance::query()
+                    ->where('user_id', $user->id)
+                    ->where('status', AttendanceStatus::Absent)
+                    ->count();
+
+                $this->ensureAbsentsForUser($user, $firstCheckIn, $now);
+
+                $after = Attendance::query()
+                    ->where('user_id', $user->id)
+                    ->where('status', AttendanceStatus::Absent)
+                    ->count();
+
+                $created += max(0, $after - $before);
             });
 
         return $created;
     }
 
+    public function pruneAbsentsBeforeFirstCheckIn(User $user): void
+    {
+        $firstCheckIn = $this->firstCheckInDate($user);
+
+        $query = Attendance::query()
+            ->where('user_id', $user->id)
+            ->where('status', AttendanceStatus::Absent);
+
+        if (! $firstCheckIn) {
+            $query->delete();
+
+            return;
+        }
+
+        $query->whereDate('work_date', '<', $firstCheckIn->toDateString())->delete();
+    }
+
     public function markAbsentIfMissing(User $user, string $workDate): bool
     {
+        $firstCheckIn = $this->firstCheckInDate($user);
+
+        if (! $firstCheckIn || Carbon::parse($workDate)->lt($firstCheckIn)) {
+            return false;
+        }
+
         $exists = Attendance::query()
             ->where('user_id', $user->id)
             ->whereDate('work_date', $workDate)
@@ -212,6 +284,19 @@ class AttendanceService
         ]);
 
         return true;
+    }
+
+    private function timelineStart(User $user, CarbonInterface $requestedFrom): ?Carbon
+    {
+        $firstCheckIn = $this->firstCheckInDate($user);
+
+        if (! $firstCheckIn) {
+            return null;
+        }
+
+        $requested = $requestedFrom->copy()->startOfDay();
+
+        return $requested->lt($firstCheckIn) ? $firstCheckIn->copy() : $requested;
     }
 
     private function lockedOpenSession(User $user): ?Attendance
