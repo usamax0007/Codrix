@@ -17,7 +17,7 @@ class LoginController extends Controller
     {
         if (auth()->check()) {
             return redirect()->to(
-                auth()->user()->isAdmin() ? '/admin' : route('user.dashboard')
+                auth()->user()->isSuperAdmin() ? '/admin' : route('user.dashboard')
             );
         }
 

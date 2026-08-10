@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'user' => EnsureUserRole::class,
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
 
         $middleware->redirectGuestsTo(function (Request $request): string {
@@ -33,7 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo(function (Request $request): string {
             $user = $request->user();
 
-            return $user?->isAdmin() ? '/admin' : route('user.dashboard');
+            return $user?->isSuperAdmin() ? '/admin' : route('user.dashboard');
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {

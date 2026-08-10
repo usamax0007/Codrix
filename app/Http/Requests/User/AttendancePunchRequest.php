@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\User;
 
+use App\Support\AppPermission;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Http\FormRequest;
@@ -10,7 +11,7 @@ abstract class AttendancePunchRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->isUser() ?? false;
+        return $this->user()?->can(AppPermission::ATTENDANCE_ACCESS) ?? false;
     }
 
     /**

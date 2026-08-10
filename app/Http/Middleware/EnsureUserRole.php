@@ -12,7 +12,7 @@ class EnsureUserRole
     {
         $user = $request->user();
 
-        if (! $user?->isUser()) {
+        if (! $user?->canAccessUserPortal()) {
             abort(403, 'You do not have access to the user area.');
         }
 

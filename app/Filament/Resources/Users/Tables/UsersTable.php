@@ -37,7 +37,7 @@ class UsersTable
             ])
             ->filters([
                 SelectFilter::make('role')
-                    ->options(UserRole::class),
+                    ->options(UserRole::assignableOptions()),
             ])
             ->recordActions([
                 EditAction::make(),

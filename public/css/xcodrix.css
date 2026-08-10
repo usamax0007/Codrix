@@ -234,3 +234,16 @@ body {
 @media (max-width: 768px) {
     .stat-value { font-size: 2rem; }
 }
+
+/* Dark theme native date picker */
+.date-input {
+    color-scheme: dark;
+    cursor: pointer;
+}
+.date-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 1;
+    filter: invert(1);
+    width: 1.1rem;
+    height: 1.1rem;
+}

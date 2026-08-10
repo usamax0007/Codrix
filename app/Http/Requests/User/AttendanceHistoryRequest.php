@@ -3,6 +3,7 @@
 namespace App\Http\Requests\User;
 
 use App\Enums\AttendanceHistoryRange;
+use App\Support\AppPermission;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -10,7 +11,7 @@ class AttendanceHistoryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->isUser() ?? false;
+        return $this->user()?->can(AppPermission::ATTENDANCE_ACCESS) ?? false;
     }
 
     /**

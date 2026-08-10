@@ -1,5 +1,6 @@
 @props([
     'title' => null,
+    'wide' => false,
 ])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -68,12 +69,23 @@
                     Dashboard
                 </x-user.nav-link>
 
-                <x-user.nav-link :href="route('user.attendance.index')" :active="request()->routeIs('user.attendance.*')">
-                    <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    Attendance
-                </x-user.nav-link>
+                @can(\App\Support\AppPermission::TASKS_ACCESS)
+                    <x-user.nav-link :href="route('user.tasks.index')" :active="request()->routeIs('user.tasks.*')">
+                        <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                        </svg>
+                        Tasks
+                    </x-user.nav-link>
+                @endcan
+
+                @can(\App\Support\AppPermission::ATTENDANCE_ACCESS)
+                    <x-user.nav-link :href="route('user.attendance.index')" :active="request()->routeIs('user.attendance.*')">
+                        <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Attendance
+                    </x-user.nav-link>
+                @endcan
             </nav>
 
             <div class="border-t border-white/10 p-4 shrink-0">
@@ -105,7 +117,11 @@
                 <span class="font-semibold tracking-tight">{{ $title ?? 'Portal' }}</span>
             </header>
 
-            <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8">
+            <main @class([
+                'flex-1 w-full mx-auto px-4 sm:px-6 py-8',
+                'max-w-7xl' => $wide,
+                'max-w-6xl' => ! $wide,
+            ])>
                 <x-user.flash />
                 {{ $slot }}
             </main>

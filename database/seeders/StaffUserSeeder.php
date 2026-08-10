@@ -10,7 +10,7 @@ class StaffUserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::query()->updateOrCreate(
+        $user = User::query()->updateOrCreate(
             ['email' => 'user@xcoderix.com'],
             [
                 'name' => 'Staff User',
@@ -19,5 +19,6 @@ class StaffUserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
+        $user->syncSpatieRole();
     }
 }

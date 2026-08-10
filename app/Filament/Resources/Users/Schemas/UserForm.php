@@ -23,9 +23,10 @@ class UserForm
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
                 Select::make('role')
-                    ->options(UserRole::class)
+                    ->options(UserRole::assignableOptions())
                     ->required()
-                    ->default(UserRole::User),
+                    ->default(UserRole::User->value)
+                    ->helperText('Admin and User both sign in to the user portal. Permissions come from the role checkboxes.'),
                 TextInput::make('password')
                     ->password()
                     ->revealable()

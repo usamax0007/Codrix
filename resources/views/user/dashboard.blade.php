@@ -6,11 +6,13 @@
             </h1>
         </div>
 
-        <x-user.card title="Attendance">
-            <x-user.attendance-punch
-                :open-session="$openSession"
-                :status-by-date="$statusByDate"
-            />
-        </x-user.card>
+        @if ($canAttendance)
+            <x-user.card title="Attendance">
+                <x-user.attendance-punch
+                    :open-session="$openSession"
+                    :status-by-date="$statusByDate"
+                />
+            </x-user.card>
+        @endif
     </div>
 </x-user.layout>

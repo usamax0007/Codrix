@@ -49,13 +49,20 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => UserRole::Admin,
-        ]);
+        ])->afterCreating(fn (User $user) => $user->syncSpatieRole());
+    }
+
+    public function superAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::SuperAdmin,
+        ])->afterCreating(fn (User $user) => $user->syncSpatieRole());
     }
 
     public function user(): static
     {
         return $this->state(fn (array $attributes) => [
             'role' => UserRole::User,
-        ]);
+        ])->afterCreating(fn (User $user) => $user->syncSpatieRole());
     }
 }

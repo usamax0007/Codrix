@@ -20,7 +20,7 @@ class AuthService
         /** @var User $user */
         $user = Auth::user();
 
-        if (! $user->isUser()) {
+        if (! $user->canAccessUserPortal()) {
             Auth::logout();
 
             throw ValidationException::withMessages([
