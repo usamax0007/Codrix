@@ -19,6 +19,10 @@ final class AppPermission
     public const PROJECTS_MANAGE = 'projects.manage';
 
     public const USERS_MANAGE = 'users.manage';
+    
+    public const TASKS_CREATE = 'tasks.create';
+    
+    public const TASKS_CREATE_SUBTASK = 'tasks.create_subtask';
 
     /**
      * @return array<string, string>
@@ -34,6 +38,8 @@ final class AppPermission
             self::PROJECTS_ACCESS => 'Projects access',
             self::PROJECTS_MANAGE => 'Manage projects',
             self::USERS_MANAGE => 'Manage users',
+            self::TASKS_CREATE => 'Create Task',
+            self::TASKS_CREATE_SUBTASK => 'Create Subtask',
         ];
     }
 

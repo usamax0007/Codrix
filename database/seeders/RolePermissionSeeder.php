@@ -24,6 +24,8 @@ class RolePermissionSeeder extends Seeder
             AppPermission::PROJECTS_ACCESS,
             AppPermission::PROJECTS_MANAGE,
             AppPermission::USERS_MANAGE,
+            AppPermission::TASKS_CREATE,
+            AppPermission::TASKS_CREATE_SUBTASK,
         ])->map(
             fn (string $name) => Permission::query()->firstOrCreate([
                 'name' => $name,
@@ -52,6 +54,8 @@ class RolePermissionSeeder extends Seeder
             $permissions[AppPermission::PROJECTS_ACCESS],
             $permissions[AppPermission::PROJECTS_MANAGE],
             $permissions[AppPermission::USERS_MANAGE],
+            $permissions[AppPermission::TASKS_CREATE],
+            $permissions[AppPermission::TASKS_CREATE_SUBTASK],
         ]);
 
         $user->syncPermissions([

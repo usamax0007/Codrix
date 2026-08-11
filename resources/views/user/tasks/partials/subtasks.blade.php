@@ -7,7 +7,9 @@
     <div class="mb-3 flex items-center justify-between gap-3">
         <h3 class="text-xs font-semibold uppercase tracking-wider text-white/40">Subtasks</h3>
         @if ($canManageSubtasks)
+            @can(\App\Support\AppPermission::TASKS_CREATE_SUBTASK)
             <button type="button" class="text-xs font-medium text-xc-cyan hover:underline" data-open-add-subtask>+ Add Subtask</button>
+            @endcan
         @endif
     </div>
 
@@ -57,9 +59,11 @@
             >
                 <div class="flex items-start gap-2.5" data-subtask-view>
                     @if ($canManageSubtasks)
+                    @can(\App\Support\AppPermission::TASKS_CREATE_SUBTASK)
                         <button type="button" class="subtask-handle mt-0.5 cursor-grab rounded p-0.5 text-white/30 hover:text-white/60 active:cursor-grabbing" aria-label="Drag to reorder">
                             <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4a1 1 0 11-2 0 1 1 0 012 0zm0 6a1 1 0 11-2 0 1 1 0 012 0zm0 6a1 1 0 11-2 0 1 1 0 012 0zm8-12a1 1 0 11-2 0 1 1 0 012 0zm0 6a1 1 0 11-2 0 1 1 0 012 0zm0 6a1 1 0 11-2 0 1 1 0 012 0z"/></svg>
                         </button>
+                    @endcan
                         <form method="POST" action="{{ route('user.tasks.subtasks.toggle', [$task, $subtask]) }}" data-subtask-toggle-form>
                             @csrf
                             @method('PATCH')
@@ -79,6 +83,7 @@
                             <p class="mt-0.5 text-xs text-white/40">{{ $subtask->description }}</p>
                         @endif
                     </div>
+                    @can(\App\Support\AppPermission::TASKS_CREATE_SUBTASK)
 
                     @if ($canManageSubtasks)
                         <div class="flex shrink-0 items-center gap-1">
@@ -94,6 +99,7 @@
                             </form>
                         </div>
                     @endif
+                    @endcan
                 </div>
 
                 @if ($canManageSubtasks)

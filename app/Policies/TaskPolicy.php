@@ -28,7 +28,7 @@ class TaskPolicy
 
     public function create(User $user): bool
     {
-        return $user->can(AppPermission::TASKS_ACCESS);
+        return $user->can(AppPermission::TASKS_CREATE);
     }
 
     public function update(User $user, Task $task): bool
