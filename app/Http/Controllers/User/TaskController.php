@@ -180,7 +180,7 @@ class TaskController extends Controller
             'panel' => $panel,
             'task_id' => $task->id,
             'task_url' => route('user.tasks.show', $task),
-            'comments_count' => (int) ($task->comments_count ?? $task->allComments()->count()),
+            'comments_count' => (int) ($task->comments_count ?? $task->comments()->count()),
             'progress' => $task->subtaskProgress(),
             'assignees_html' => view('components.user.assignee-stack', [
                 'assignees' => $task->assignees,

@@ -37,7 +37,6 @@
                         :progress="$progress"
                         empty-label="No tasks · 0%"
                         :show-counts="false"
-                        :show-ascii="true"
                         size="lg"
                     />
                 </div>

@@ -7,6 +7,7 @@ use App\Http\Controllers\User\ProjectController;
 use App\Http\Controllers\User\SubtaskController;
 use App\Http\Controllers\User\TaskController;
 use App\Http\Controllers\User\TaskStatusController;
+use App\Http\Controllers\User\UserController;
 use App\Support\AppPermission;
 use Illuminate\Support\Facades\Route;
 
@@ -24,10 +25,10 @@ Route::middleware(['auth', 'user'])->group(function (): void {
         Route::get('tasks/columns/{task_status}', [TaskController::class, 'column'])->name('tasks.columns');
         Route::post('tasks', [TaskController::class, 'store'])->name('tasks.store');
         Route::get('tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
-        Route::patch('tasks/{task}/assignees', [TaskController::class, 'updateAssignees'])->name('tasks.assignees.update');
+        Route::patch('tasks/{task}/assignees', [TaskController::class, 'updateAssignees'])->name('tasks.assignees.update')->middleware('can:'.AppPermission::TASKS_ASSIGN);
         Route::post('tasks/{task}/comments', [TaskController::class, 'storeComment'])->name('tasks.comments.store');
         Route::patch('tasks/{task}/move', [TaskController::class, 'move'])->name('tasks.move');
-        Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+        Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy')->middleware('can:'.AppPermission::TASKS_DELETE);
 
         Route::post('tasks/{task}/subtasks', [SubtaskController::class, 'store'])->name('tasks.subtasks.store');
         Route::patch('tasks/{task}/subtasks/reorder', [SubtaskController::class, 'reorder'])->name('tasks.subtasks.reorder');
@@ -51,6 +52,11 @@ Route::middleware(['auth', 'user'])->group(function (): void {
         Route::put('{task_status}', [TaskStatusController::class, 'update'])->name('update');
         Route::patch('{task_status}/toggle', [TaskStatusController::class, 'toggle'])->name('toggle');
         Route::delete('{task_status}', [TaskStatusController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::middleware('can:'.AppPermission::USERS_MANAGE)->prefix('users')->name('users.')->group(function (): void {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::post('/', [UserController::class, 'store'])->name('store');
     });
 
     Route::middleware('can:'.AppPermission::ATTENDANCE_ACCESS)->group(function (): void {

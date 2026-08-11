@@ -20,6 +20,7 @@ use App\Models\User;
 use App\Policies\ProjectPolicy;
 use App\Policies\TaskPolicy;
 use App\Policies\TaskStatusPolicy;
+use App\Policies\UserPolicy;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
@@ -55,6 +56,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Task::class, TaskPolicy::class);
         Gate::policy(TaskStatus::class, TaskStatusPolicy::class);
         Gate::policy(Project::class, ProjectPolicy::class);
+        Gate::policy(User::class, UserPolicy::class);
 
         if (Schema::hasTable('site_settings')) {
             View::share('siteSettings', SiteSetting::current());

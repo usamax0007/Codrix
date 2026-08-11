@@ -38,11 +38,7 @@ class TaskPolicy
 
     public function delete(User $user, Task $task): bool
     {
-        if ($user->can(AppPermission::TASKS_ASSIGN)) {
-            return true;
-        }
-
-        return $task->created_by === $user->id && $task->isAssignedTo($user);
+        return $user->can(AppPermission::TASKS_DELETE);
     }
 
     public function assign(User $user): bool

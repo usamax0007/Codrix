@@ -27,17 +27,14 @@
             </div>
         </div>
 
-        <div
-            class="grid items-stretch gap-4"
-            style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));"
-        >
+        <div class="task-board-scroll flex w-full min-w-0 items-stretch gap-4 overflow-x-auto overscroll-x-contain pb-1">
             @forelse ($statuses as $status)
                 @php
                     $columnTasks = $columns[$status->id] ?? collect();
                     $columnTotal = (int) ($columnTotals[$status->id] ?? $columnTasks->count());
                     $hasMore = $columnTasks->count() < $columnTotal;
                 @endphp
-                <section class="task-board-column flex h-[calc(100dvh-10.5rem)] min-h-[24rem] flex-col overflow-hidden rounded-2xl border border-white/10 bg-xc-card/60">
+                <section class="task-board-column flex h-[calc(100dvh-10.5rem)] min-h-[24rem] w-[min(100%,18rem)] min-w-[16.5rem] max-w-[20rem] shrink-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-xc-card/60">
                     <header class="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 px-3.5 py-3">
                         <div class="flex min-w-0 items-center gap-2">
                             <span class="h-2.5 w-2.5 shrink-0 rounded-full" style="background-color: {{ $status->color }}"></span>
@@ -61,7 +58,7 @@
                     </div>
                 </section>
             @empty
-                <div class="col-span-full rounded-2xl border border-dashed border-white/15 px-6 py-16 text-center text-sm text-white/45">
+                <div class="w-full rounded-2xl border border-dashed border-white/15 px-6 py-16 text-center text-sm text-white/45">
                     No enabled statuses. @if ($canManageStatuses ?? false)<a href="{{ route('user.task-statuses.index') }}" class="text-xc-cyan hover:underline">Create a status</a> to start the board.@endif
                 </div>
             @endforelse
@@ -454,14 +451,33 @@
             .task-description h1:first-child,
             .task-description h2:first-child,
             .task-description h3:first-child { margin-top: 0; }
-            .task-column-scroll {
+            .task-column-scroll,
+            .task-board-scroll {
                 scrollbar-width: none;
                 -ms-overflow-style: none;
             }
-            .task-column-scroll::-webkit-scrollbar {
+            .task-column-scroll::-webkit-scrollbar,
+            .task-board-scroll::-webkit-scrollbar {
                 display: none;
                 width: 0;
                 height: 0;
+            }
+            .task-board-scroll {
+                cursor: grab;
+                user-select: none;
+            }
+            .task-board-scroll.is-panning {
+                cursor: grabbing;
+            }
+            .task-board-scroll .task-card,
+            .task-board-scroll a,
+            .task-board-scroll button,
+            .task-board-scroll input,
+            .task-board-scroll textarea,
+            .task-board-scroll select,
+            .task-board-scroll label {
+                cursor: auto;
+                user-select: auto;
             }
         </style>
         <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
@@ -476,6 +492,57 @@
                 const backdrop = document.getElementById('task-modal-backdrop');
                 const form = document.getElementById('create-task-form');
                 const descriptionInput = document.getElementById('description');
+                const boardScroll = root?.querySelector('.task-board-scroll');
+
+                // Click and drag to pan the board horizontally.
+                if (boardScroll) {
+                    let isPanning = false;
+                    let panStartX = 0;
+                    let panScrollLeft = 0;
+                    let panMoved = false;
+
+                    const stopPanning = () => {
+                        if (! isPanning) return;
+                        isPanning = false;
+                        boardScroll.classList.remove('is-panning');
+                    };
+
+                    boardScroll.addEventListener('pointerdown', (event) => {
+                        if (event.button !== 0) return;
+                        if (event.target.closest('.task-card, a, button, input, textarea, select, label, [draggable="true"]')) {
+                            return;
+                        }
+                        if (boardScroll.scrollWidth <= boardScroll.clientWidth + 1) return;
+
+                        isPanning = true;
+                        panMoved = false;
+                        panStartX = event.clientX;
+                        panScrollLeft = boardScroll.scrollLeft;
+                        boardScroll.classList.add('is-panning');
+                        boardScroll.setPointerCapture?.(event.pointerId);
+                    });
+
+                    boardScroll.addEventListener('pointermove', (event) => {
+                        if (! isPanning) return;
+                        const deltaX = event.clientX - panStartX;
+                        if (Math.abs(deltaX) > 3) {
+                            panMoved = true;
+                        }
+                        boardScroll.scrollLeft = panScrollLeft - deltaX;
+                    });
+
+                    boardScroll.addEventListener('pointerup', stopPanning);
+                    boardScroll.addEventListener('pointercancel', stopPanning);
+                    boardScroll.addEventListener('lostpointercapture', stopPanning);
+
+                    // Prevent accidental clicks after a drag pan.
+                    boardScroll.addEventListener('click', (event) => {
+                        if (! panMoved) return;
+                        event.preventDefault();
+                        event.stopPropagation();
+                        panMoved = false;
+                    }, true);
+                }
 
                 let quill = null;
                 if (document.getElementById('description-editor') && window.Quill) {

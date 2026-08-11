@@ -64,7 +64,7 @@ class ProjectService
         $tasksQuery = $project->tasks()
             ->with(['status', 'assignees:id,name', 'project:id,name'])
             ->withCount([
-                'allComments as comments_count',
+                'comments as comments_count',
                 'attachments',
                 'subtasks',
                 'subtasks as completed_subtasks_count' => fn (Builder $query) => $query->where('is_completed', true),

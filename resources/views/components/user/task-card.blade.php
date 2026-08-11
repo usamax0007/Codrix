@@ -25,15 +25,17 @@
                 {{ $task->summary }}
             </h3>
         </div>
-        <form method="POST" action="{{ route('user.tasks.destroy', $task) }}" class="task-card-actions shrink-0 opacity-0 transition group-hover:opacity-100" onsubmit="return confirm('Delete this task?')">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="rounded p-1 text-white/40 hover:bg-red-500/10 hover:text-red-300" title="Delete" aria-label="Delete task">
-                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </form>
+        @can('delete', $task)
+            <form method="POST" action="{{ route('user.tasks.destroy', $task) }}" class="task-card-actions shrink-0 opacity-0 transition group-hover:opacity-100" onsubmit="return confirm('Delete this task?')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="rounded p-1 text-white/40 hover:bg-red-500/10 hover:text-red-300" title="Delete" aria-label="Delete task">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </form>
+        @endcan
     </div>
 
     @if ($preview = $task->plainDescriptionPreview(90))

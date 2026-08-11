@@ -122,7 +122,7 @@ class TaskBoardService
         $query = Task::query()
             ->with(['assignees:id,name,email', 'creator:id,name', 'status', 'project:id,name'])
             ->withCount([
-                'allComments as comments_count',
+                'comments as comments_count',
                 'attachments',
                 'subtasks',
                 'subtasks as completed_subtasks_count' => fn ($query) => $query->where('is_completed', true),
@@ -149,7 +149,7 @@ class TaskBoardService
                 ->withCount('replies')
                 ->latest(),
         ])->loadCount([
-            'allComments as comments_count',
+            'comments as comments_count',
             'subtasks',
             'subtasks as completed_subtasks_count' => fn ($query) => $query->where('is_completed', true),
         ]);
