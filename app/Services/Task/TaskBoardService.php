@@ -3,11 +3,11 @@
 namespace App\Services\Task;
 
 use App\Enums\TaskPriority;
-use App\Enums\TaskStatus;
 use App\Enums\UserRole;
 use App\Models\Task;
 use App\Models\TaskAttachment;
 use App\Models\TaskComment;
+use App\Models\TaskStatus;
 use App\Models\User;
 use App\Support\AppPermission;
 use Illuminate\Http\UploadedFile;
@@ -17,14 +17,18 @@ use Illuminate\Support\Facades\Storage;
 
 class TaskBoardService
 {
+    public function __construct(private readonly TaskStatusService $statuses) {}
+
     /**
-     * @return array<string, Collection<int, Task>>
+     * @return array{statuses: Collection<int, TaskStatus>, columns: array<int, Collection<int, Task>>}
      */
     public function boardFor(User $user): array
     {
+        $statuses = $this->statuses->enabledOrdered();
+
         $query = Task::query()
-            ->with(['assignee:id,name,email', 'creator:id,name'])
-            ->withCount(['comments', 'attachments'])
+            ->with(['assignee:id,name,email', 'creator:id,name', 'status', 'project:id,name'])
+            ->withCount(['allComments as comments_count', 'attachments'])
             ->orderBy('sort_order')
             ->orderBy('id');
 
@@ -32,22 +36,52 @@ class TaskBoardService
             $query->where('assignee_id', $user->id);
         }
 
-        $tasks = $query->get()->groupBy(fn (Task $task): string => $task->status->value);
+        $tasks = $query->get()->groupBy(fn (Task $task): int => (int) $task->task_status_id);
 
-        return collect(TaskStatus::cases())
+        $columns = $statuses
             ->mapWithKeys(fn (TaskStatus $status): array => [
-                $status->value => $tasks->get($status->value, collect()),
+                $status->id => $tasks->get($status->id, collect()),
             ])
             ->all();
+
+        return [
+            'statuses' => $statuses,
+            'columns' => $columns,
+        ];
     }
 
     public function loadDetails(Task $task): Task
     {
         return $task->load([
+            'project:id,name,slug',
+            'status',
             'assignee:id,name,email',
             'creator:id,name,email',
             'attachments.uploader:id,name',
-            'comments.user:id,name',
+            'comments' => fn ($query) => $query
+                ->with(['user:id,name', 'replies' => fn ($replies) => $replies->with('user:id,name')->oldest()])
+                ->withCount('replies')
+                ->latest(),
+        ])->loadCount('allComments as comments_count');
+    }
+
+    public function addComment(Task $task, User $actor, string $body, ?int $parentId = null): TaskComment
+    {
+        if ($parentId !== null) {
+            $parent = TaskComment::query()
+                ->where('task_id', $task->id)
+                ->whereKey($parentId)
+                ->firstOrFail();
+
+            // Keep replies one level deep under the root comment.
+            $parentId = $parent->parent_id ?: $parent->id;
+        }
+
+        return TaskComment::query()->create([
+            'task_id' => $task->id,
+            'user_id' => $actor->id,
+            'parent_id' => $parentId,
+            'body' => $body,
         ]);
     }
 
@@ -63,7 +97,7 @@ class TaskBoardService
     }
 
     /**
-     * @param  array{summary: string, description?: ?string, status?: string, priority?: string, assignee_id?: int, due_date?: ?string}  $data
+     * @param  array{summary: string, description?: ?string, project_id: int, task_status_id?: int, priority?: string, assignee_id?: int, due_date?: ?string}  $data
      * @param  array<int, UploadedFile>  $files
      */
     public function create(User $actor, array $data, array $files = []): Task
@@ -72,17 +106,22 @@ class TaskBoardService
             ? (int) $data['assignee_id']
             : $actor->id;
 
-        $status = TaskStatus::from($data['status'] ?? TaskStatus::Todo->value);
+        $status = isset($data['task_status_id'])
+            ? TaskStatus::query()->enabled()->whereKey($data['task_status_id'])->firstOrFail()
+            : $this->statuses->defaultStatus();
+
+        $projectId = (int) $data['project_id'];
 
         $sortOrder = (int) Task::query()
-            ->where('status', $status->value)
+            ->where('task_status_id', $status->id)
             ->max('sort_order') + 1;
 
-        return DB::transaction(function () use ($actor, $data, $files, $assigneeId, $status, $sortOrder): Task {
+        return DB::transaction(function () use ($actor, $data, $files, $assigneeId, $status, $sortOrder, $projectId): Task {
             $task = Task::query()->create([
                 'summary' => $data['summary'],
                 'description' => $data['description'] ?? null,
-                'status' => $status,
+                'project_id' => $projectId,
+                'task_status_id' => $status->id,
                 'priority' => TaskPriority::from($data['priority'] ?? TaskPriority::Medium->value),
                 'assignee_id' => $assigneeId,
                 'created_by' => $actor->id,
@@ -120,30 +159,25 @@ class TaskBoardService
         }
     }
 
-    public function addComment(Task $task, User $actor, string $body): TaskComment
-    {
-        return TaskComment::query()->create([
-            'task_id' => $task->id,
-            'user_id' => $actor->id,
-            'body' => $body,
-        ]);
-    }
-
     /**
      * @param  list<int>  $orderedIds
      */
     public function move(Task $task, TaskStatus $status, array $orderedIds): void
     {
+        if (! $status->is_enabled) {
+            abort(422, 'Cannot move tasks into a disabled status.');
+        }
+
         DB::transaction(function () use ($task, $status, $orderedIds): void {
             $task->update([
-                'status' => $status,
+                'task_status_id' => $status->id,
             ]);
 
             foreach ($orderedIds as $index => $id) {
                 Task::query()
                     ->whereKey($id)
                     ->update([
-                        'status' => $status->value,
+                        'task_status_id' => $status->id,
                         'sort_order' => $index,
                     ]);
             }

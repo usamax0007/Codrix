@@ -3,7 +3,9 @@
 use App\Http\Controllers\User\AttendanceController;
 use App\Http\Controllers\User\Auth\LoginController;
 use App\Http\Controllers\User\DashboardController;
+use App\Http\Controllers\User\ProjectController;
 use App\Http\Controllers\User\TaskController;
+use App\Http\Controllers\User\TaskStatusController;
 use App\Support\AppPermission;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +25,23 @@ Route::middleware(['auth', 'user'])->group(function (): void {
         Route::post('tasks/{task}/comments', [TaskController::class, 'storeComment'])->name('tasks.comments.store');
         Route::patch('tasks/{task}/move', [TaskController::class, 'move'])->name('tasks.move');
         Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+    });
+
+    Route::middleware('can:'.AppPermission::PROJECTS_ACCESS)->prefix('projects')->name('projects.')->group(function (): void {
+        Route::get('/', [ProjectController::class, 'index'])->name('index');
+        Route::get('{project}', [ProjectController::class, 'show'])->name('show');
+        Route::post('/', [ProjectController::class, 'store'])->name('store')->middleware('can:'.AppPermission::PROJECTS_MANAGE);
+        Route::put('{project}', [ProjectController::class, 'update'])->name('update')->middleware('can:'.AppPermission::PROJECTS_MANAGE);
+        Route::delete('{project}', [ProjectController::class, 'destroy'])->name('destroy')->middleware('can:'.AppPermission::PROJECTS_MANAGE);
+    });
+
+    Route::middleware('can:'.AppPermission::TASKS_MANAGE_STATUSES)->prefix('task-statuses')->name('task-statuses.')->group(function (): void {
+        Route::get('/', [TaskStatusController::class, 'index'])->name('index');
+        Route::post('/', [TaskStatusController::class, 'store'])->name('store');
+        Route::patch('reorder', [TaskStatusController::class, 'reorder'])->name('reorder');
+        Route::put('{task_status}', [TaskStatusController::class, 'update'])->name('update');
+        Route::patch('{task_status}/toggle', [TaskStatusController::class, 'toggle'])->name('toggle');
+        Route::delete('{task_status}', [TaskStatusController::class, 'destroy'])->name('destroy');
     });
 
     Route::middleware('can:'.AppPermission::ATTENDANCE_ACCESS)->group(function (): void {

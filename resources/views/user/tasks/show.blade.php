@@ -106,7 +106,10 @@
                     <dl class="space-y-4 text-sm">
                         <div>
                             <dt class="text-white/40">Status</dt>
-                            <dd class="mt-1 font-medium">{{ $task->status->getLabel() }}</dd>
+                            <dd class="mt-1 flex items-center gap-2 font-medium">
+                                <span class="h-2.5 w-2.5 rounded-full" style="background-color: {{ $task->status?->color ?? '#94A3B8' }}"></span>
+                                {{ $task->status?->name ?? '—' }}
+                            </dd>
                         </div>
                         <div>
                             <dt class="text-white/40">Priority</dt>
@@ -144,8 +147,31 @@
             .task-description a { color: #00E5C0; text-decoration: underline; }
             .task-description ul { list-style: disc; margin-left: 1.25rem; }
             .task-description ol { list-style: decimal; margin-left: 1.25rem; }
-            .task-description p { margin-bottom: 0.75rem; }
-            .task-description h1, .task-description h2, .task-description h3 { font-weight: 600; margin: 0.75rem 0 0.5rem; }
+            .task-description p { margin-bottom: 0.75rem; font-size: 0.875rem; line-height: 1.55; }
+            .task-description h1 {
+                font-size: 1.75rem !important;
+                font-weight: 700 !important;
+                line-height: 1.25;
+                margin: 0.85rem 0 0.45rem;
+                color: #fff;
+            }
+            .task-description h2 {
+                font-size: 1.375rem !important;
+                font-weight: 600 !important;
+                line-height: 1.3;
+                margin: 0.75rem 0 0.4rem;
+                color: #fff;
+            }
+            .task-description h3 {
+                font-size: 1.125rem !important;
+                font-weight: 600 !important;
+                line-height: 1.35;
+                margin: 0.65rem 0 0.35rem;
+                color: #fff;
+            }
+            .task-description h1:first-child,
+            .task-description h2:first-child,
+            .task-description h3:first-child { margin-top: 0; }
         </style>
     @endpush
 </x-user.layout>

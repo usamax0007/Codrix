@@ -3,7 +3,6 @@
 namespace App\Http\Requests\User;
 
 use App\Enums\TaskPriority;
-use App\Enums\TaskStatus;
 use App\Enums\UserRole;
 use App\Support\AppPermission;
 use Illuminate\Foundation\Http\FormRequest;
@@ -27,7 +26,12 @@ class StoreTaskRequest extends FormRequest
         return [
             'summary' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:20000'],
-            'status' => ['nullable', Rule::enum(TaskStatus::class)],
+            'project_id' => ['required', 'integer', 'exists:projects,id'],
+            'task_status_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('task_statuses', 'id')->where(fn ($query) => $query->where('is_enabled', true)),
+            ],
             'priority' => ['required', Rule::enum(TaskPriority::class)],
             'due_date' => ['nullable', 'date'],
             'assignee_id' => [
@@ -42,14 +46,15 @@ class StoreTaskRequest extends FormRequest
     }
 
     /**
-     * @return array{summary: string, description?: ?string, status?: string, priority: string, assignee_id?: int, due_date?: ?string}
+     * @return array{summary: string, description?: ?string, project_id: int, task_status_id?: int, priority: string, assignee_id?: int, due_date?: ?string}
      */
     public function taskData(): array
     {
         return $this->safe()->only([
             'summary',
             'description',
-            'status',
+            'project_id',
+            'task_status_id',
             'priority',
             'assignee_id',
             'due_date',

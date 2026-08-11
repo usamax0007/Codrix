@@ -7,6 +7,7 @@ use App\Http\Requests\User\MoveTaskRequest;
 use App\Http\Requests\User\StoreTaskCommentRequest;
 use App\Http\Requests\User\StoreTaskRequest;
 use App\Models\Task;
+use App\Services\Project\ProjectService;
 use App\Services\Task\TaskBoardService;
 use App\Support\AppPermission;
 use Illuminate\Http\JsonResponse;
@@ -16,31 +17,45 @@ use Illuminate\View\View;
 
 class TaskController extends Controller
 {
-    public function __construct(private readonly TaskBoardService $tasks) {}
+    public function __construct(
+        private readonly TaskBoardService $tasks,
+        private readonly ProjectService $projects,
+    ) {}
 
     public function index(Request $request): View
     {
         $this->authorize('viewAny', Task::class);
 
         $user = $request->user();
+        $board = $this->tasks->boardFor($user);
 
         return view('user.tasks.index', [
             'user' => $user,
-            'columns' => $this->tasks->boardFor($user),
+            'statuses' => $board['statuses'],
+            'columns' => $board['columns'],
+            'projects' => $this->projects->optionsForTaskForm($user),
             'canAssign' => $user->can(AppPermission::TASKS_ASSIGN),
+            'canManageStatuses' => $user->can(AppPermission::TASKS_MANAGE_STATUSES),
             'assignees' => $user->can(AppPermission::TASKS_ASSIGN)
                 ? $this->tasks->assignableUsers()
                 : collect(),
         ]);
     }
 
-    public function show(Request $request, Task $task): View
+    public function show(Request $request, Task $task): View|JsonResponse
     {
         $this->authorize('view', $task);
 
+        $task = $this->tasks->loadDetails($task);
+        $panel = $request->query('panel') === 'comments' ? 'comments' : 'details';
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json($this->taskModalPayload($task, $panel));
+        }
+
         return view('user.tasks.show', [
             'user' => $request->user(),
-            'task' => $this->tasks->loadDetails($task),
+            'task' => $task,
             'canAssign' => $request->user()->can(AppPermission::TASKS_ASSIGN),
         ]);
     }
@@ -54,12 +69,18 @@ class TaskController extends Controller
             ->with('success', 'Task created successfully.');
     }
 
-    public function storeComment(StoreTaskCommentRequest $request, Task $task): RedirectResponse
+    public function storeComment(StoreTaskCommentRequest $request, Task $task): RedirectResponse|JsonResponse
     {
-        $this->tasks->addComment($task, $request->user(), $request->body());
+        $this->tasks->addComment($task, $request->user(), $request->body(), $request->parentId());
+
+        if ($request->wantsJson() || $request->ajax()) {
+            $task = $this->tasks->loadDetails($task->fresh());
+
+            return response()->json($this->taskModalPayload($task, $request->returnPanel()));
+        }
 
         return redirect()
-            ->route('user.tasks.show', $task)
+            ->route('user.tasks.index')
             ->with('success', 'Comment added.');
     }
 
@@ -97,5 +118,26 @@ class TaskController extends Controller
         return redirect()
             ->route('user.tasks.index')
             ->with('success', 'Task deleted.');
+    }
+
+    /**
+     * @return array{summary: string, panel: string, html: string, task_url: string, comments_count: int}
+     */
+    private function taskModalPayload(Task $task, string $panel = 'details'): array
+    {
+        $panel = $panel === 'comments' ? 'comments' : 'details';
+
+        return [
+            'summary' => $task->summary,
+            'panel' => $panel,
+            'task_url' => route('user.tasks.show', $task),
+            'comments_count' => (int) ($task->comments_count ?? $task->allComments()->count()),
+            'html' => view(
+                $panel === 'comments'
+                    ? 'user.tasks.partials.comments-panel'
+                    : 'user.tasks.partials.show-content',
+                ['task' => $task]
+            )->render(),
+        ];
     }
 }

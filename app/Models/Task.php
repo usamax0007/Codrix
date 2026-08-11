@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\TaskPriority;
-use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,7 +13,8 @@ class Task extends Model
     protected $fillable = [
         'summary',
         'description',
-        'status',
+        'project_id',
+        'task_status_id',
         'priority',
         'assignee_id',
         'created_by',
@@ -25,11 +25,22 @@ class Task extends Model
     protected function casts(): array
     {
         return [
-            'status' => TaskStatus::class,
             'priority' => TaskPriority::class,
             'due_date' => 'date',
             'sort_order' => 'integer',
+            'task_status_id' => 'integer',
+            'project_id' => 'integer',
         ];
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(TaskStatus::class, 'task_status_id');
     }
 
     public function assignee(): BelongsTo
@@ -49,7 +60,12 @@ class Task extends Model
 
     public function comments(): HasMany
     {
-        return $this->hasMany(TaskComment::class)->oldest();
+        return $this->hasMany(TaskComment::class)->whereNull('parent_id')->latest();
+    }
+
+    public function allComments(): HasMany
+    {
+        return $this->hasMany(TaskComment::class);
     }
 
     public function plainDescriptionPreview(int $limit = 120): ?string

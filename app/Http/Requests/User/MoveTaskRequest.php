@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\User;
 
-use App\Enums\TaskStatus;
 use App\Models\Task;
+use App\Models\TaskStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,7 +23,11 @@ class MoveTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', Rule::enum(TaskStatus::class)],
+            'task_status_id' => [
+                'required',
+                'integer',
+                Rule::exists('task_statuses', 'id')->where(fn ($query) => $query->where('is_enabled', true)),
+            ],
             'ordered_ids' => ['required', 'array', 'min:1'],
             'ordered_ids.*' => ['integer', 'distinct', Rule::exists('tasks', 'id')],
         ];
@@ -31,7 +35,7 @@ class MoveTaskRequest extends FormRequest
 
     public function status(): TaskStatus
     {
-        return TaskStatus::from($this->validated('status'));
+        return TaskStatus::query()->findOrFail((int) $this->validated('task_status_id'));
     }
 
     /**

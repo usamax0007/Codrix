@@ -10,6 +10,12 @@ final class AppPermission
 
     public const TASKS_ASSIGN = 'tasks.assign';
 
+    public const TASKS_MANAGE_STATUSES = 'tasks.manage_statuses';
+
+    public const PROJECTS_ACCESS = 'projects.access';
+
+    public const PROJECTS_MANAGE = 'projects.manage';
+
     /**
      * @return array<string, string>
      */
@@ -19,6 +25,9 @@ final class AppPermission
             self::ATTENDANCE_ACCESS => 'Attendance access',
             self::TASKS_ACCESS => 'Tasks access',
             self::TASKS_ASSIGN => 'Assign tasks',
+            self::TASKS_MANAGE_STATUSES => 'Manage task statuses',
+            self::PROJECTS_ACCESS => 'Projects access',
+            self::PROJECTS_MANAGE => 'Manage projects',
         ];
     }
 

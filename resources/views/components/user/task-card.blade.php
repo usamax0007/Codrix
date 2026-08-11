@@ -14,9 +14,16 @@
     class="task-card group cursor-grab rounded-xl border border-white/10 bg-xc-darker/90 p-3.5 shadow-sm shadow-black/20 active:cursor-grabbing hover:border-xc-cyan/30"
 >
     <div class="flex items-start justify-between gap-2">
-        <h3 class="task-card-open text-sm font-medium leading-snug text-white cursor-pointer hover:text-xc-cyan">
-            {{ $task->summary }}
-        </h3>
+        <div class="min-w-0">
+            @if ($task->project)
+                <p class="task-card-open mb-1 truncate text-[10px] font-semibold uppercase tracking-wider text-xc-cyan/80 cursor-pointer">
+                    {{ $task->project->name }}
+                </p>
+            @endif
+            <h3 class="task-card-open text-sm font-medium leading-snug text-white cursor-pointer hover:text-xc-cyan">
+                {{ $task->summary }}
+            </h3>
+        </div>
         <form method="POST" action="{{ route('user.tasks.destroy', $task) }}" class="task-card-actions shrink-0 opacity-0 transition group-hover:opacity-100" onsubmit="return confirm('Delete this task?')">
             @csrf
             @method('DELETE')

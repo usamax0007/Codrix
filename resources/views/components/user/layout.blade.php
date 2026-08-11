@@ -78,6 +78,24 @@
                     </x-user.nav-link>
                 @endcan
 
+                @can(\App\Support\AppPermission::PROJECTS_ACCESS)
+                    <x-user.nav-link :href="route('user.projects.index')" :active="request()->routeIs('user.projects.*')">
+                        <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                        </svg>
+                        Projects
+                    </x-user.nav-link>
+                @endcan
+
+                @can(\App\Support\AppPermission::TASKS_MANAGE_STATUSES)
+                    <x-user.nav-link :href="route('user.task-statuses.index')" :active="request()->routeIs('user.task-statuses.*')">
+                        <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+                        </svg>
+                        Task Statuses
+                    </x-user.nav-link>
+                @endcan
+
                 @can(\App\Support\AppPermission::ATTENDANCE_ACCESS)
                     <x-user.nav-link :href="route('user.attendance.index')" :active="request()->routeIs('user.attendance.*')">
                         <svg class="h-4 w-4 shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
