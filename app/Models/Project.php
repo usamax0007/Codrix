@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Progress\ProgressService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -64,19 +65,6 @@ class Project extends Model
      */
     public function progressStats(): array
     {
-        $total = (int) ($this->tasks_count ?? $this->tasks()->count());
-        $completed = (int) ($this->completed_tasks_count ?? $this->tasks()
-            ->whereHas('status', fn ($query) => $query->where('is_completed', true))
-            ->count());
-
-        $remaining = max(0, $total - $completed);
-        $percent = $total > 0 ? (int) round(($completed / $total) * 100) : 0;
-
-        return [
-            'total' => $total,
-            'completed' => $completed,
-            'remaining' => $remaining,
-            'percent' => $percent,
-        ];
+        return app(ProgressService::class)->forProject($this);
     }
 }

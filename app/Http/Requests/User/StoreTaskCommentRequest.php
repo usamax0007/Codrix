@@ -26,28 +26,41 @@ class StoreTaskCommentRequest extends FormRequest
             'body' => ['required', 'string', 'max:5000'],
             'parent_id' => ['nullable', 'integer', 'exists:task_comments,id'],
             'return_panel' => ['nullable', 'in:details,comments'],
+            'thread_id' => ['nullable', 'integer', 'exists:task_comments,id'],
         ];
     }
 
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
-            $parentId = $this->input('parent_id');
-
-            if (! $parentId) {
-                return;
-            }
-
             /** @var Task $task */
             $task = $this->route('task');
 
-            $belongsToTask = TaskComment::query()
-                ->whereKey($parentId)
-                ->where('task_id', $task->id)
-                ->exists();
+            $parentId = $this->input('parent_id');
 
-            if (! $belongsToTask) {
-                $validator->errors()->add('parent_id', 'Reply must belong to this task.');
+            if ($parentId) {
+                $belongsToTask = TaskComment::query()
+                    ->whereKey($parentId)
+                    ->where('task_id', $task->id)
+                    ->exists();
+
+                if (! $belongsToTask) {
+                    $validator->errors()->add('parent_id', 'Reply must belong to this task.');
+                }
+            }
+
+            $threadId = $this->input('thread_id');
+
+            if ($threadId) {
+                $threadBelongs = TaskComment::query()
+                    ->whereKey($threadId)
+                    ->where('task_id', $task->id)
+                    ->whereNull('parent_id')
+                    ->exists();
+
+                if (! $threadBelongs) {
+                    $validator->errors()->add('thread_id', 'Thread must belong to this task.');
+                }
             }
         });
     }
@@ -67,5 +80,12 @@ class StoreTaskCommentRequest extends FormRequest
     public function returnPanel(): string
     {
         return (string) ($this->validated('return_panel') ?? 'comments');
+    }
+
+    public function threadId(): ?int
+    {
+        $threadId = $this->validated('thread_id') ?? $this->parentId();
+
+        return $threadId !== null ? (int) $threadId : null;
     }
 }

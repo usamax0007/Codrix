@@ -4,6 +4,7 @@ use App\Http\Controllers\User\AttendanceController;
 use App\Http\Controllers\User\Auth\LoginController;
 use App\Http\Controllers\User\DashboardController;
 use App\Http\Controllers\User\ProjectController;
+use App\Http\Controllers\User\SubtaskController;
 use App\Http\Controllers\User\TaskController;
 use App\Http\Controllers\User\TaskStatusController;
 use App\Support\AppPermission;
@@ -20,11 +21,19 @@ Route::middleware(['auth', 'user'])->group(function (): void {
 
     Route::middleware('can:'.AppPermission::TASKS_ACCESS)->group(function (): void {
         Route::get('tasks', [TaskController::class, 'index'])->name('tasks.index');
+        Route::get('tasks/columns/{task_status}', [TaskController::class, 'column'])->name('tasks.columns');
         Route::post('tasks', [TaskController::class, 'store'])->name('tasks.store');
         Route::get('tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
+        Route::patch('tasks/{task}/assignees', [TaskController::class, 'updateAssignees'])->name('tasks.assignees.update');
         Route::post('tasks/{task}/comments', [TaskController::class, 'storeComment'])->name('tasks.comments.store');
         Route::patch('tasks/{task}/move', [TaskController::class, 'move'])->name('tasks.move');
         Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+
+        Route::post('tasks/{task}/subtasks', [SubtaskController::class, 'store'])->name('tasks.subtasks.store');
+        Route::patch('tasks/{task}/subtasks/reorder', [SubtaskController::class, 'reorder'])->name('tasks.subtasks.reorder');
+        Route::put('tasks/{task}/subtasks/{subtask}', [SubtaskController::class, 'update'])->name('tasks.subtasks.update');
+        Route::patch('tasks/{task}/subtasks/{subtask}/toggle', [SubtaskController::class, 'toggle'])->name('tasks.subtasks.toggle');
+        Route::delete('tasks/{task}/subtasks/{subtask}', [SubtaskController::class, 'destroy'])->name('tasks.subtasks.destroy');
     });
 
     Route::middleware('can:'.AppPermission::PROJECTS_ACCESS)->prefix('projects')->name('projects.')->group(function (): void {

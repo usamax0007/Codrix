@@ -30,22 +30,30 @@
 
         <div class="grid gap-4 lg:grid-cols-3">
             <div class="rounded-2xl border border-white/10 bg-xc-card/60 p-5 lg:col-span-2">
-                <h2 class="text-sm font-semibold uppercase tracking-wider text-white/40">Progress</h2>
-                <div class="mt-4 flex items-end justify-between gap-3">
-                    <p class="text-3xl font-semibold tracking-tight">{{ $progress['percent'] }}%</p>
-                    <p class="text-sm text-white/45">{{ $progress['completed'] }} / {{ $progress['total'] }} tasks complete</p>
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-white/40">Project overview</h2>
+                <p class="mt-3 text-xl font-semibold tracking-tight">{{ $project->name }}</p>
+                <div class="mt-4">
+                    <x-user.progress-meter
+                        :progress="$progress"
+                        empty-label="No tasks · 0%"
+                        :show-counts="false"
+                        :show-ascii="true"
+                        size="lg"
+                    />
                 </div>
-                <div class="mt-3 h-3 overflow-hidden rounded-full bg-white/10">
-                    <div class="h-full rounded-full bg-gradient-to-r from-xc-cyan to-xc-blue transition-all" style="width: {{ $progress['percent'] }}%"></div>
-                </div>
-                <p class="mt-3 font-mono text-sm tracking-wide text-xc-cyan/90">
-                    {{ str_repeat('█', (int) floor($progress['percent'] / 5)) }}{{ str_repeat('░', 20 - (int) floor($progress['percent'] / 5)) }}
-                    {{ $progress['percent'] }}%
-                </p>
-                <div class="mt-3 flex flex-wrap gap-4 text-sm text-white/50">
-                    <span>{{ $progress['completed'] }} completed</span>
-                    <span>{{ $progress['remaining'] }} remaining</span>
-                    <span>{{ $progress['total'] }} total</span>
+                <div class="mt-4 grid gap-3 sm:grid-cols-3">
+                    <div class="rounded-xl border border-white/10 bg-xc-darker/40 px-4 py-3">
+                        <p class="text-2xl font-semibold tracking-tight">{{ $progress['completed'] }}</p>
+                        <p class="mt-1 text-xs uppercase tracking-wider text-white/40">Completed</p>
+                    </div>
+                    <div class="rounded-xl border border-white/10 bg-xc-darker/40 px-4 py-3">
+                        <p class="text-2xl font-semibold tracking-tight">{{ $progress['remaining'] }}</p>
+                        <p class="mt-1 text-xs uppercase tracking-wider text-white/40">Remaining</p>
+                    </div>
+                    <div class="rounded-xl border border-white/10 bg-xc-darker/40 px-4 py-3">
+                        <p class="text-2xl font-semibold tracking-tight">{{ $progress['total'] }}</p>
+                        <p class="mt-1 text-xs uppercase tracking-wider text-white/40">Total Tasks</p>
+                    </div>
                 </div>
             </div>
 
@@ -75,15 +83,28 @@
             </div>
             <div class="divide-y divide-white/5">
                 @forelse ($project->visibleTasks as $task)
-                    <a href="{{ route('user.tasks.show', $task) }}" class="flex flex-col gap-2 px-5 py-4 transition hover:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between">
-                        <div class="min-w-0">
+                    @php $taskProgress = $task->subtaskProgress(); @endphp
+                    <a href="{{ route('user.tasks.show', $task) }}" class="flex flex-col gap-3 px-5 py-4 transition hover:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between">
+                        <div class="min-w-0 flex-1">
                             <p class="truncate font-medium text-white">{{ $task->summary }}</p>
                             <p class="mt-1 text-xs text-white/40">
-                                {{ $task->assignee?->name ?? 'Unassigned' }}
+                                @if ($task->assignees->isNotEmpty())
+                                    {{ $task->assignees->pluck('name')->implode(', ') }}
+                                @else
+                                    Unassigned
+                                @endif
                                 @if ($task->due_date)
                                     · Due {{ $task->due_date->format('M j, Y') }}
                                 @endif
                             </p>
+                            <div class="mt-2 max-w-xs">
+                                <x-user.progress-meter
+                                    :progress="$taskProgress"
+                                    empty-label="No subtasks"
+                                    count-noun="completed"
+                                    size="sm"
+                                />
+                            </div>
                         </div>
                         <span class="inline-flex items-center gap-2 text-xs text-white/60">
                             <span class="h-2 w-2 rounded-full" style="background-color: {{ $task->status?->color ?? '#94A3B8' }}"></span>

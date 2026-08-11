@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+PHP_BIN="${PHP_BIN:-/usr/bin/php8.4}"
+PORT="${PORT:-8000}"
+HOST="${HOST:-127.0.0.1}"
+
+# Leading colon keeps the default conf.d scan path, then adds project overrides.
+export PHP_INI_SCAN_DIR=":${ROOT}/.php-ini"
+
+exec "$PHP_BIN" "$ROOT/artisan" serve --host="$HOST" --port="$PORT"

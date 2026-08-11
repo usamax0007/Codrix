@@ -23,3 +23,13 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Allow task attachments (app validates max 10MB x 5 files).
+<IfModule mod_php.c>
+    php_value upload_max_filesize 20M
+    php_value post_max_size 64M
+</IfModule>
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 20M
+    php_value post_max_size 64M
+</IfModule>

@@ -2,6 +2,7 @@
     <div
         class="space-y-5"
         data-move-url-template="{{ url('/user/tasks/__TASK__/move') }}"
+        data-column-url-template="{{ url('/user/tasks/columns/__STATUS__') }}"
         data-csrf="{{ csrf_token() }}"
         id="task-board-root"
     >
@@ -27,27 +28,32 @@
         </div>
 
         <div
-            class="grid gap-4"
+            class="grid items-stretch gap-4"
             style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));"
         >
             @forelse ($statuses as $status)
                 @php
                     $columnTasks = $columns[$status->id] ?? collect();
+                    $columnTotal = (int) ($columnTotals[$status->id] ?? $columnTasks->count());
+                    $hasMore = $columnTasks->count() < $columnTotal;
                 @endphp
-                <section class="flex min-h-[28rem] flex-col rounded-2xl border border-white/10 bg-xc-card/60">
-                    <header class="flex items-center justify-between gap-2 border-b border-white/10 px-3.5 py-3">
-                        <div class="flex items-center gap-2 min-w-0">
+                <section class="task-board-column flex h-[calc(100dvh-10.5rem)] min-h-[24rem] flex-col overflow-hidden rounded-2xl border border-white/10 bg-xc-card/60">
+                    <header class="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 px-3.5 py-3">
+                        <div class="flex min-w-0 items-center gap-2">
                             <span class="h-2.5 w-2.5 shrink-0 rounded-full" style="background-color: {{ $status->color }}"></span>
                             <h2 class="truncate text-sm font-semibold tracking-tight">{{ $status->name }}</h2>
                         </div>
                         <span class="rounded-md bg-white/5 px-2 py-0.5 text-xs text-white/50" data-column-count="{{ $status->id }}">
-                            {{ $columnTasks->count() }}
+                            {{ $columnTotal }}
                         </span>
                     </header>
 
                     <div
-                        class="task-column flex flex-1 flex-col gap-2.5 overflow-y-auto p-3"
+                        class="task-column task-column-scroll flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-3"
                         data-status-id="{{ $status->id }}"
+                        data-total="{{ $columnTotal }}"
+                        data-has-more="{{ $hasMore ? '1' : '0' }}"
+                        data-loading="0"
                     >
                         @foreach ($columnTasks as $task)
                             <x-user.task-card :task="$task" />
@@ -149,8 +155,13 @@
                             name="attachments[]"
                             type="file"
                             multiple
+                            data-max-bytes="{{ min(10 * 1024 * 1024, \Illuminate\Http\UploadedFile::getMaxFilesize()) }}"
                             class="sr-only"
                         >
+                        <p class="text-xs text-white/35">
+                            Server upload limit right now:
+                            {{ number_format(min(10 * 1024 * 1024, \Illuminate\Http\UploadedFile::getMaxFilesize()) / 1024 / 1024, 0) }}MB per file.
+                        </p>
                         @error('attachments')
                             <p class="text-xs text-red-300">{{ $message }}</p>
                         @enderror
@@ -161,24 +172,75 @@
 
                     <div class="grid gap-4 sm:grid-cols-2">
                         @if ($canAssign)
-                            <div class="space-y-1.5 sm:col-span-2">
-                                <label for="assignee_id" class="block text-sm font-medium text-white/80">
-                                    Assignee <span class="text-xc-cyan">*</span>
+                            <div class="space-y-1.5 sm:col-span-2" data-assignee-multiselect>
+                                <label for="assignee-dropdown-toggle" class="block text-sm font-medium text-white/80">
+                                    Assignees <span class="text-xc-cyan">*</span>
                                 </label>
-                                <select
-                                    id="assignee_id"
-                                    name="assignee_id"
-                                    required
-                                    class="w-full rounded-xl border border-white/10 bg-xc-darker/90 px-3.5 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-xc-cyan/40 focus:border-xc-cyan/40"
-                                >
-                                    <option value="">Select user</option>
-                                    @foreach ($assignees as $assignee)
-                                        <option value="{{ $assignee->id }}" @selected((string) old('assignee_id') === (string) $assignee->id)>
-                                            {{ $assignee->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('assignee_id')
+
+                                <div class="relative">
+                                    <button
+                                        type="button"
+                                        id="assignee-dropdown-toggle"
+                                        data-assignee-toggle
+                                        class="flex w-full items-center justify-between gap-2 rounded-xl border border-white/10 bg-xc-darker/90 px-3.5 py-2.5 text-left text-sm text-white focus:outline-none focus:ring-2 focus:ring-xc-cyan/40 focus:border-xc-cyan/40"
+                                    >
+                                        <span data-assignee-placeholder class="truncate text-white/45">Select users</span>
+                                        <svg class="h-4 w-4 shrink-0 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </button>
+
+                                    <div
+                                        data-assignee-menu
+                                        class="absolute z-20 mt-2 hidden w-full overflow-hidden rounded-xl border border-white/10 bg-xc-card shadow-xl shadow-black/40"
+                                    >
+                                        <div class="border-b border-white/10 p-2">
+                                            <input
+                                                type="search"
+                                                data-assignee-search
+                                                placeholder="Search users…"
+                                                class="w-full rounded-lg border border-white/10 bg-xc-darker/90 px-3 py-2 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-xc-cyan/40"
+                                            >
+                                        </div>
+                                        <ul class="max-h-48 overflow-y-auto p-1" data-assignee-options>
+                                            @forelse ($assignees as $assignee)
+                                                @php
+                                                    $selected = collect(old('assignee_ids', []))->map(fn ($id) => (string) $id)->contains((string) $assignee->id);
+                                                @endphp
+                                                <li>
+                                                    <label
+                                                        class="flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-white/80 transition hover:bg-white/5"
+                                                        data-assignee-option
+                                                        data-name="{{ strtolower($assignee->name) }}"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            name="assignee_ids[]"
+                                                            value="{{ $assignee->id }}"
+                                                            data-assignee-checkbox
+                                                            data-label="{{ $assignee->name }}"
+                                                            @checked($selected)
+                                                            class="h-4 w-4 rounded border-white/20 bg-xc-darker text-xc-cyan focus:ring-xc-cyan/40"
+                                                        >
+                                                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-xc-blue/30 text-[10px] font-semibold text-xc-cyan">
+                                                            {{ strtoupper(substr($assignee->name, 0, 1)) }}
+                                                        </span>
+                                                        <span class="min-w-0 truncate">{{ $assignee->name }}</span>
+                                                    </label>
+                                                </li>
+                                            @empty
+                                                <li class="px-3 py-4 text-xs text-white/40">No assignable users available.</li>
+                                            @endforelse
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-wrap gap-1.5 empty:hidden" data-assignee-chips></div>
+                                <p class="text-xs text-white/40">Open the dropdown and select one or more users.</p>
+                                @error('assignee_ids')
+                                    <p class="text-xs text-red-300">{{ $message }}</p>
+                                @enderror
+                                @error('assignee_ids.*')
                                     <p class="text-xs text-red-300">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -245,7 +307,7 @@
     >
         <div id="view-task-modal-backdrop" class="absolute inset-0 bg-xc-darker/80 backdrop-blur-sm"></div>
 
-        <div class="relative z-10 flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-xc-card shadow-2xl shadow-black/50 ring-1 ring-white/[0.04]">
+        <div class="relative z-10 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-xc-card shadow-2xl shadow-black/50 ring-1 ring-white/[0.04]">
             <div class="relative flex items-start justify-between gap-3 px-5 pt-5 pb-4 sm:px-6">
                 <div class="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-xc-cyan/10 via-xc-blue/5 to-transparent"></div>
                 <div class="relative min-w-0 pr-2">
@@ -259,7 +321,7 @@
                 </button>
             </div>
 
-            <div id="view-task-modal-body" class="flex-1 overflow-y-auto px-5 pb-5 sm:px-6">
+            <div id="view-task-modal-body" class="view-task-modal-scroll flex-1 overflow-y-auto px-5 pb-5 sm:px-6">
                 <div class="flex items-center justify-center py-16 text-sm text-white/40">Loading task…</div>
             </div>
         </div>
@@ -268,6 +330,15 @@
     @push('scripts')
         <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
         <style>
+            .view-task-modal-scroll {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            .view-task-modal-scroll::-webkit-scrollbar {
+                display: none;
+                width: 0;
+                height: 0;
+            }
             .quill-editor,
             .quill-editor .ql-toolbar.ql-snow,
             .quill-editor .ql-container.ql-snow {
@@ -383,6 +454,15 @@
             .task-description h1:first-child,
             .task-description h2:first-child,
             .task-description h3:first-child { margin-top: 0; }
+            .task-column-scroll {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            .task-column-scroll::-webkit-scrollbar {
+                display: none;
+                width: 0;
+                height: 0;
+            }
         </style>
         <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
@@ -413,15 +493,84 @@
                         },
                     });
 
+                    // Block pasted/dropped images (base64) which can exceed PHP post_max_size.
+                    quill.clipboard.addMatcher('IMG', () => {
+                        return { ops: [{ insert: '' }] };
+                    });
+                    quill.root.addEventListener('drop', (event) => {
+                        if (event.dataTransfer?.files?.length) {
+                            event.preventDefault();
+                        }
+                    });
+
                     if (descriptionInput?.value) {
                         quill.root.innerHTML = descriptionInput.value;
                     }
                 }
 
-                form?.addEventListener('submit', () => {
+                const attachmentsInput = document.getElementById('attachments');
+                const maxAttachmentBytes = Number(attachmentsInput?.dataset.maxBytes || (10 * 1024 * 1024));
+                const maxAttachments = 5;
+                const attachmentsLabel = document.getElementById('attachments-label');
+                let attachmentErrorEl = document.getElementById('attachments-client-error');
+                if (!attachmentErrorEl && attachmentsInput?.parentElement) {
+                    attachmentErrorEl = document.createElement('p');
+                    attachmentErrorEl.id = 'attachments-client-error';
+                    attachmentErrorEl.className = 'hidden text-xs text-red-300';
+                    attachmentsInput.parentElement.appendChild(attachmentErrorEl);
+                }
+
+                const showAttachmentError = (message) => {
+                    if (!attachmentErrorEl) return;
+                    attachmentErrorEl.textContent = message || '';
+                    attachmentErrorEl.classList.toggle('hidden', !message);
+                };
+
+                const maxMbLabel = Math.max(1, Math.floor(maxAttachmentBytes / 1024 / 1024));
+
+                const validateAttachments = () => {
+                    const files = Array.from(attachmentsInput?.files || []);
+                    if (files.length > maxAttachments) {
+                        showAttachmentError(`You can upload at most ${maxAttachments} files.`);
+                        return false;
+                    }
+
+                    const tooLarge = files.find((file) => file.size > maxAttachmentBytes);
+                    if (tooLarge) {
+                        showAttachmentError(`"${tooLarge.name}" is larger than ${maxMbLabel}MB.`);
+                        return false;
+                    }
+
+                    showAttachmentError('');
+                    return true;
+                };
+
+                form?.addEventListener('submit', (event) => {
                     if (quill && descriptionInput) {
+                        // Strip any residual data-URI images before submit.
+                        quill.root.querySelectorAll('img[src^="data:image"]').forEach((img) => img.remove());
                         const html = quill.root.innerHTML;
                         descriptionInput.value = html === '<p><br></p>' ? '' : html;
+                    }
+
+                    const assigneeRoot = document.querySelector('[data-assignee-multiselect]');
+                    if (assigneeRoot) {
+                        const selectedCount = assigneeRoot.querySelectorAll('[data-assignee-checkbox]:checked').length;
+                        if (selectedCount === 0) {
+                            event.preventDefault();
+                            const placeholder = assigneeRoot.querySelector('[data-assignee-placeholder]');
+                            if (placeholder) {
+                                placeholder.textContent = 'Select at least one user';
+                                placeholder.classList.add('text-red-300');
+                                placeholder.classList.remove('text-white/45', 'text-white');
+                            }
+                            assigneeRoot.querySelector('[data-assignee-toggle]')?.focus();
+                            return;
+                        }
+                    }
+
+                    if (!validateAttachments()) {
+                        event.preventDefault();
                     }
                 });
 
@@ -442,6 +591,139 @@
                 cancelBtn?.addEventListener('click', closeModal);
                 backdrop?.addEventListener('click', closeModal);
 
+                const initAssigneeMultiselect = (scope = document) => {
+                    scope.querySelectorAll('[data-assignee-multiselect]').forEach((rootEl) => {
+                        if (rootEl.dataset.assigneeBound === '1') return;
+                        rootEl.dataset.assigneeBound = '1';
+
+                        const toggle = rootEl.querySelector('[data-assignee-toggle]');
+                        const menu = rootEl.querySelector('[data-assignee-menu]');
+                        const search = rootEl.querySelector('[data-assignee-search]');
+                        const placeholder = rootEl.querySelector('[data-assignee-placeholder]');
+                        const chips = rootEl.querySelector('[data-assignee-chips]');
+                        const checkboxes = () => Array.from(rootEl.querySelectorAll('[data-assignee-checkbox]'));
+
+                        const syncUi = () => {
+                            const selected = checkboxes().filter((input) => input.checked);
+                            if (placeholder) {
+                                placeholder.textContent = selected.length === 0
+                                    ? 'Select users'
+                                    : selected.length === 1
+                                        ? selected[0].dataset.label
+                                        : `${selected.length} users selected`;
+                                placeholder.classList.toggle('text-white/45', selected.length === 0);
+                                placeholder.classList.toggle('text-white', selected.length > 0);
+                                placeholder.classList.remove('text-red-300');
+                            }
+
+                            if (chips) {
+                                chips.innerHTML = selected.map((input) => `
+                                    <span class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 text-xs text-white/80">
+                                        ${input.dataset.label}
+                                        <button type="button" class="text-white/40 hover:text-white" data-remove-assignee="${input.value}" aria-label="Remove ${input.dataset.label}">×</button>
+                                    </span>
+                                `).join('');
+                            }
+                        };
+
+                        const setOpen = (open) => {
+                            menu?.classList.toggle('hidden', !open);
+                            if (open) search?.focus();
+                        };
+
+                        toggle?.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            setOpen(menu?.classList.contains('hidden'));
+                        });
+
+                        search?.addEventListener('input', () => {
+                            const q = search.value.trim().toLowerCase();
+                            rootEl.querySelectorAll('[data-assignee-option]').forEach((option) => {
+                                const match = !q || (option.dataset.name || '').includes(q);
+                                option.closest('li')?.classList.toggle('hidden', !match);
+                            });
+                        });
+
+                        const queueAutosave = () => {
+                            const form = rootEl.closest('[data-task-assignees-form][data-autosave="1"]');
+                            if (!form) return;
+
+                            const errorEl = form.querySelector('[data-assignees-error]');
+                            const selected = checkboxes().filter((input) => input.checked);
+
+                            if (selected.length === 0) {
+                                if (errorEl) {
+                                    errorEl.textContent = 'Select at least one assignee.';
+                                    errorEl.classList.remove('hidden');
+                                }
+                                return;
+                            }
+
+                            if (errorEl) {
+                                errorEl.classList.add('hidden');
+                                errorEl.textContent = '';
+                            }
+
+                            clearTimeout(form._assigneeSaveTimer);
+                            form._assigneeSaveTimer = setTimeout(() => {
+                                form.requestSubmit();
+                            }, 250);
+                        };
+
+                        rootEl.addEventListener('change', (event) => {
+                            if (!event.target.matches('[data-assignee-checkbox]')) return;
+
+                            const selected = checkboxes().filter((input) => input.checked);
+                            if (selected.length === 0) {
+                                event.target.checked = true;
+                                syncUi();
+                                const form = rootEl.closest('[data-task-assignees-form]');
+                                const errorEl = form?.querySelector('[data-assignees-error]');
+                                if (errorEl) {
+                                    errorEl.textContent = 'Select at least one assignee.';
+                                    errorEl.classList.remove('hidden');
+                                }
+                                return;
+                            }
+
+                            syncUi();
+                            queueAutosave();
+                        });
+
+                        chips?.addEventListener('click', (event) => {
+                            const btn = event.target.closest('[data-remove-assignee]');
+                            if (!btn) return;
+                            const input = checkboxes().find((el) => el.value === btn.getAttribute('data-remove-assignee'));
+                            if (!input) return;
+
+                            const selected = checkboxes().filter((el) => el.checked);
+                            if (selected.length <= 1) {
+                                const form = rootEl.closest('[data-task-assignees-form]');
+                                const errorEl = form?.querySelector('[data-assignees-error]');
+                                if (errorEl) {
+                                    errorEl.textContent = 'Select at least one assignee.';
+                                    errorEl.classList.remove('hidden');
+                                }
+                                return;
+                            }
+
+                            input.checked = false;
+                            syncUi();
+                            queueAutosave();
+                        });
+
+                        document.addEventListener('click', (event) => {
+                            if (!rootEl.contains(event.target)) {
+                                setOpen(false);
+                            }
+                        });
+
+                        syncUi();
+                    });
+                };
+
+                initAssigneeMultiselect();
+
                 const dueDateInput = document.getElementById('due_date');
                 dueDateInput?.addEventListener('click', () => {
                     if (typeof dueDateInput.showPicker === 'function') {
@@ -449,10 +731,13 @@
                     }
                 });
 
-                const attachmentsInput = document.getElementById('attachments');
-                const attachmentsLabel = document.getElementById('attachments-label');
                 attachmentsInput?.addEventListener('change', () => {
                     if (!attachmentsLabel) return;
+                    if (!validateAttachments()) {
+                        attachmentsInput.value = '';
+                        attachmentsLabel.textContent = 'No file chosen · up to 5 files, 10MB each';
+                        return;
+                    }
                     const count = attachmentsInput.files?.length ?? 0;
                     attachmentsLabel.textContent = count === 0
                         ? 'No file chosen · up to 5 files, 10MB each'
@@ -486,6 +771,53 @@
                     viewModal?.setAttribute('aria-hidden', 'true');
                 };
 
+                const updateBoardCardProgress = (taskId, progress) => {
+                    if (!taskId || !progress) return;
+
+                    const card = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+                    if (!card) return;
+
+                    let meter = card.querySelector('[data-task-progress]');
+                    if (!meter) {
+                        meter = document.createElement('div');
+                        meter.className = 'task-card-open mt-3 cursor-pointer';
+                        meter.setAttribute('data-task-progress', '');
+                        const footer = card.querySelector('[data-task-assignees]');
+                        if (footer) {
+                            card.insertBefore(meter, footer);
+                        } else {
+                            card.appendChild(meter);
+                        }
+                    }
+
+                    if (!progress.total) {
+                        meter.innerHTML = `
+                            <p class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Subtasks</p>
+                            <p class="mt-1 text-xs text-white/40">No subtasks</p>
+                        `;
+                        return;
+                    }
+
+                    const percent = Number(progress.percent || 0);
+                    meter.innerHTML = `
+                        <p class="text-[11px] font-semibold uppercase tracking-wider text-white/40">Subtasks</p>
+                        <div class="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-white/45">
+                            <span>${progress.completed} / ${progress.total} completed</span>
+                            <span>${percent}%</span>
+                        </div>
+                        <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+                            <div class="h-full rounded-full bg-gradient-to-r from-xc-cyan to-xc-blue transition-all" style="width: ${percent}%"></div>
+                        </div>
+                    `;
+                };
+
+                const updateBoardCardAssignees = (taskId, html) => {
+                    if (!taskId || !html) return;
+                    const card = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+                    const target = card?.querySelector('[data-task-assignees]');
+                    if (target) target.innerHTML = html;
+                };
+
                 const renderTaskDetails = (data) => {
                     if (viewModalTitle) {
                         viewModalTitle.textContent = data.panel === 'comments'
@@ -493,7 +825,44 @@
                             : (data.summary || 'Task');
                     }
                     if (viewModalBody) viewModalBody.innerHTML = data.html || '';
+                    if (data.progress) {
+                        updateBoardCardProgress(data.task_id, data.progress);
+                    }
+                    if (data.assignees_html) {
+                        updateBoardCardAssignees(data.task_id, data.assignees_html);
+                    }
                     bindTaskModalInteractions();
+                    requestAnimationFrame(() => fitCommentsPreview());
+                };
+
+                const fitCommentsPreview = () => {
+                    const list = viewModalBody?.querySelector('[data-comments-preview]');
+                    if (!list) return;
+
+                    const items = Array.from(list.querySelectorAll('[data-comment-preview-item]'));
+                    const overflow = viewModalBody.querySelector('[data-comments-overflow]');
+                    items.forEach((item) => item.classList.remove('hidden'));
+
+                    const maxHeight = list.clientHeight || 0;
+                    if (!maxHeight) return;
+
+                    let used = 0;
+                    let hiddenCount = 0;
+                    const gap = 2;
+
+                    items.forEach((item, index) => {
+                        const height = item.offsetHeight;
+                        if (index === 0 || used + height <= maxHeight) {
+                            used += height + gap;
+                            return;
+                        }
+                        item.classList.add('hidden');
+                        hiddenCount += 1;
+                    });
+
+                    if (overflow) {
+                        overflow.classList.toggle('hidden', hiddenCount === 0);
+                    }
                 };
 
                 const loadTaskPanel = async (url) => {
@@ -569,11 +938,189 @@
                     });
                 };
 
+                const submitSubtaskForm = async (form) => {
+                    const errorEl = form.querySelector('[data-subtask-error]');
+                    if (errorEl) {
+                        errorEl.classList.add('hidden');
+                        errorEl.textContent = '';
+                    }
+
+                    try {
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': boardCsrf,
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                            body: new FormData(form),
+                        });
+
+                        const data = await response.json().catch(() => ({}));
+
+                        if (!response.ok) {
+                            const message = data?.errors?.title?.[0]
+                                || data?.message
+                                || 'Could not update subtask.';
+                            if (errorEl) {
+                                errorEl.textContent = message;
+                                errorEl.classList.remove('hidden');
+                            }
+                            return;
+                        }
+
+                        renderTaskDetails(data);
+                    } catch (error) {
+                        if (errorEl) {
+                            errorEl.textContent = 'Could not update subtask.';
+                            errorEl.classList.remove('hidden');
+                        }
+                    }
+                };
+
+                const bindSubtaskInteractions = () => {
+                    const rootEl = viewModalBody?.querySelector('[data-subtasks-root]');
+                    if (!rootEl) return;
+
+                    rootEl.querySelector('[data-open-add-subtask]')?.addEventListener('click', () => {
+                        rootEl.querySelector('[data-add-subtask-form]')?.classList.remove('hidden');
+                        rootEl.querySelector('[data-add-subtask-form] input[name="title"]')?.focus();
+                    });
+
+                    rootEl.querySelector('[data-cancel-add-subtask]')?.addEventListener('click', () => {
+                        const form = rootEl.querySelector('[data-add-subtask-form]');
+                        form?.classList.add('hidden');
+                        form?.reset();
+                    });
+
+                    rootEl.querySelectorAll('[data-add-subtask-form], [data-edit-subtask-form], [data-subtask-toggle-form], [data-subtask-delete-form]').forEach((form) => {
+                        form.addEventListener('submit', (event) => {
+                            event.preventDefault();
+                            if (form.hasAttribute('data-subtask-delete-form') && !confirm('Delete this subtask?')) {
+                                return;
+                            }
+                            submitSubtaskForm(form);
+                        });
+                    });
+
+                    rootEl.querySelectorAll('[data-edit-subtask]').forEach((btn) => {
+                        btn.addEventListener('click', () => {
+                            const row = btn.closest('[data-subtask-id]');
+                            row?.querySelector('[data-subtask-view]')?.classList.add('hidden');
+                            row?.querySelector('[data-edit-subtask-form]')?.classList.remove('hidden');
+                        });
+                    });
+
+                    rootEl.querySelectorAll('[data-cancel-edit-subtask]').forEach((btn) => {
+                        btn.addEventListener('click', () => {
+                            const row = btn.closest('[data-subtask-id]');
+                            row?.querySelector('[data-edit-subtask-form]')?.classList.add('hidden');
+                            row?.querySelector('[data-subtask-view]')?.classList.remove('hidden');
+                        });
+                    });
+
+                    const list = rootEl.querySelector('[data-subtask-list]');
+                    if (list && typeof Sortable !== 'undefined' && rootEl.querySelector('.subtask-handle')) {
+                        Sortable.create(list, {
+                            handle: '.subtask-handle',
+                            animation: 150,
+                            draggable: '.subtask-row',
+                            onEnd: async () => {
+                                const orderedIds = Array.from(list.querySelectorAll('.subtask-row')).map((el) => Number(el.dataset.subtaskId));
+                                try {
+                                    const response = await fetch(rootEl.dataset.reorderUrl, {
+                                        method: 'PATCH',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': boardCsrf,
+                                            'X-Requested-With': 'XMLHttpRequest',
+                                        },
+                                        body: JSON.stringify({ ordered_ids: orderedIds }),
+                                    });
+                                    if (!response.ok) throw new Error('Reorder failed');
+                                    const data = await response.json();
+                                    renderTaskDetails(data);
+                                } catch (e) {
+                                    // Keep local order; next open will refresh from server.
+                                }
+                            },
+                        });
+                    }
+                };
+
+                const bindAssigneeForms = () => {
+                    viewModalBody?.querySelectorAll('[data-task-assignees-form]').forEach((form) => {
+                        form.addEventListener('submit', async (event) => {
+                            event.preventDefault();
+                            const errorEl = form.querySelector('[data-assignees-error]');
+                            if (errorEl) {
+                                errorEl.classList.add('hidden');
+                                errorEl.textContent = '';
+                            }
+
+                            const selectedCount = form.querySelectorAll('[data-assignee-checkbox]:checked').length;
+                            if (selectedCount === 0) {
+                                if (errorEl) {
+                                    errorEl.textContent = 'Select at least one assignee.';
+                                    errorEl.classList.remove('hidden');
+                                }
+                                return;
+                            }
+
+                            const submitBtn = form.querySelector('button[type="submit"]');
+                            if (submitBtn) submitBtn.disabled = true;
+
+                            try {
+                                const response = await fetch(form.action, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Accept': 'application/json',
+                                        'X-CSRF-TOKEN': boardCsrf,
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                    },
+                                    body: new FormData(form),
+                                });
+
+                                const data = await response.json().catch(() => ({}));
+
+                                if (!response.ok) {
+                                    const message = data?.errors?.assignee_ids?.[0]
+                                        || data?.errors?.['assignee_ids.0']?.[0]
+                                        || data?.message
+                                        || 'Could not update assignees.';
+                                    if (errorEl) {
+                                        errorEl.textContent = message;
+                                        errorEl.classList.remove('hidden');
+                                    }
+                                    return;
+                                }
+
+                                renderTaskDetails(data);
+                            } catch (error) {
+                                if (errorEl) {
+                                    errorEl.textContent = 'Could not update assignees.';
+                                    errorEl.classList.remove('hidden');
+                                }
+                            } finally {
+                                if (submitBtn) submitBtn.disabled = false;
+                            }
+                        });
+                    });
+                };
+
                 const bindTaskModalInteractions = () => {
                     bindCommentForms();
+                    bindSubtaskInteractions();
+                    bindAssigneeForms();
+                    initAssigneeMultiselect(viewModalBody || document);
 
-                    viewModalBody?.querySelectorAll('[data-open-comments]').forEach((btn) => {
-                        btn.addEventListener('click', () => loadTaskPanel(btn.dataset.taskUrl));
+                    viewModalBody?.querySelectorAll('[data-open-comments], [data-open-comment-thread], [data-close-comment-thread]').forEach((btn) => {
+                        btn.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            loadTaskPanel(btn.dataset.taskUrl);
+                        });
                     });
 
                     viewModalBody?.querySelectorAll('[data-back-to-task]').forEach((btn) => {
@@ -627,25 +1174,73 @@
                     else if (modal && !modal.classList.contains('hidden')) closeModal();
                 });
 
-                document.querySelectorAll('.task-card').forEach((card) => {
-                    card.addEventListener('click', (event) => {
-                        if (dragging) return;
-                        if (event.target.closest('.task-card-actions')) return;
-                        openTaskDetails(card.dataset.taskUrl);
-                    });
+                document.addEventListener('click', (event) => {
+                    const card = event.target.closest('.task-card');
+                    if (!card || !root?.contains(card)) return;
+                    if (dragging) return;
+                    if (event.target.closest('.task-card-actions')) return;
+                    openTaskDetails(card.dataset.taskUrl);
                 });
 
                 if (!root || typeof Sortable === 'undefined') return;
 
                 const csrf = root.dataset.csrf;
                 const urlTemplate = root.dataset.moveUrlTemplate;
+                const columnUrlTemplate = root.dataset.columnUrlTemplate;
 
-                const updateCounts = () => {
-                    document.querySelectorAll('.task-column').forEach((column) => {
-                        const statusId = column.dataset.statusId;
-                        const badge = document.querySelector(`[data-column-count="${statusId}"]`);
-                        if (badge) badge.textContent = column.querySelectorAll('.task-card').length;
-                    });
+                const syncColumnBadge = (column) => {
+                    const statusId = column.dataset.statusId;
+                    const total = Number(column.dataset.total || 0);
+                    const loaded = column.querySelectorAll('.task-card').length;
+                    const badge = document.querySelector(`[data-column-count="${statusId}"]`);
+                    if (badge) badge.textContent = String(total);
+                    column.dataset.hasMore = loaded < total ? '1' : '0';
+                };
+
+                const bumpColumnTotal = (column, delta) => {
+                    if (!column) return;
+                    const next = Math.max(0, Number(column.dataset.total || 0) + delta);
+                    column.dataset.total = String(next);
+                    syncColumnBadge(column);
+                };
+
+                const loadNextColumnPage = async (column) => {
+                    if (!column || column.dataset.loading === '1' || column.dataset.hasMore !== '1') {
+                        return false;
+                    }
+
+                    const statusId = column.dataset.statusId;
+                    const cards = column.querySelectorAll('.task-card');
+                    const afterId = cards.length ? cards[cards.length - 1].dataset.taskId : '';
+                    column.dataset.loading = '1';
+
+                    try {
+                        const params = new URLSearchParams();
+                        if (afterId) params.set('after_id', afterId);
+                        const url = `${columnUrlTemplate.replace('__STATUS__', statusId)}?${params.toString()}`;
+                        const response = await fetch(url, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                        });
+
+                        if (!response.ok) throw new Error('Failed to load column page');
+
+                        const data = await response.json();
+                        if (data.html) {
+                            column.insertAdjacentHTML('beforeend', data.html);
+                        }
+
+                        column.dataset.total = String(data.total ?? column.dataset.total);
+                        column.dataset.hasMore = data.has_more ? '1' : '0';
+                        syncColumnBadge(column);
+                        return Boolean(data.html);
+                    } catch (error) {
+                        return false;
+                    } finally {
+                        column.dataset.loading = '0';
+                    }
                 };
 
                 const persistMove = async (evt) => {
@@ -669,13 +1264,23 @@
                         });
 
                         if (!response.ok) throw new Error('Move failed');
-                        updateCounts();
+                        syncColumnBadge(column);
+                        if (evt.from && evt.from !== column) {
+                            syncColumnBadge(evt.from);
+                        }
                     } catch (error) {
                         window.location.reload();
                     }
                 };
 
                 document.querySelectorAll('.task-column').forEach((column) => {
+                    column.addEventListener('scroll', () => {
+                        const remaining = column.scrollHeight - column.scrollTop - column.clientHeight;
+                        if (remaining < 80) {
+                            loadNextColumnPage(column);
+                        }
+                    });
+
                     Sortable.create(column, {
                         group: 'tasks',
                         animation: 150,
@@ -684,7 +1289,11 @@
                         dragClass: 'shadow-lg',
                         onStart: () => { dragging = true; },
                         onEnd: () => { setTimeout(() => { dragging = false; }, 50); },
-                        onAdd: persistMove,
+                        onAdd: (evt) => {
+                            bumpColumnTotal(evt.from, -1);
+                            bumpColumnTotal(evt.to, 1);
+                            persistMove(evt);
+                        },
                         onUpdate: persistMove,
                     });
                 });

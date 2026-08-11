@@ -57,6 +57,10 @@
                     @endif
                 </x-user.card>
 
+                <x-user.card title="Subtasks">
+                    @include('user.tasks.partials.subtasks', ['task' => $task])
+                </x-user.card>
+
                 <x-user.card title="Comments">
                     <form method="POST" action="{{ route('user.tasks.comments.store', $task) }}" class="space-y-3">
                         @csrf
@@ -101,9 +105,22 @@
                 </x-user.card>
             </div>
 
+            @php $taskProgress = $task->subtaskProgress(); @endphp
             <aside class="space-y-5">
                 <x-user.card title="Details">
                     <dl class="space-y-4 text-sm">
+                        <div>
+                            <dt class="text-white/40">Project</dt>
+                            <dd class="mt-1 font-medium">
+                                @if ($task->project)
+                                    <a href="{{ route('user.projects.show', $task->project) }}" class="text-xc-cyan hover:underline">
+                                        {{ $task->project->name }}
+                                    </a>
+                                @else
+                                    —
+                                @endif
+                            </dd>
+                        </div>
                         <div>
                             <dt class="text-white/40">Status</dt>
                             <dd class="mt-1 flex items-center gap-2 font-medium">
@@ -112,16 +129,35 @@
                             </dd>
                         </div>
                         <div>
+                            <dt class="text-white/40">Task progress</dt>
+                            <dd class="mt-2">
+                                <x-user.progress-meter
+                                    :progress="$taskProgress"
+                                    empty-label="No subtasks · 0%"
+                                    count-noun="completed"
+                                    size="sm"
+                                />
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-white/40">Subtasks</dt>
+                            <dd class="mt-1 space-y-1 font-medium">
+                                <p>{{ $taskProgress['total'] }} total</p>
+                                <p class="text-white/70">{{ $taskProgress['completed'] }} completed</p>
+                                <p class="text-white/70">{{ $taskProgress['remaining'] }} remaining</p>
+                            </dd>
+                        </div>
+                        <div>
                             <dt class="text-white/40">Priority</dt>
                             <dd class="mt-1 font-medium">{{ $task->priority->getLabel() }}</dd>
                         </div>
                         <div>
-                            <dt class="text-white/40">Assignee</dt>
-                            <dd class="mt-1 flex items-center gap-2 font-medium">
-                                <span class="flex h-6 w-6 items-center justify-center rounded-full bg-xc-blue/30 text-[10px] font-semibold text-xc-cyan">
-                                    {{ strtoupper(substr($task->assignee?->name ?? '?', 0, 1)) }}
-                                </span>
-                                {{ $task->assignee?->name ?? '—' }}
+                            <dt class="text-white/40">Assignees</dt>
+                            <dd class="mt-2">
+                                @include('user.tasks.partials.assignees-editor', [
+                                    'task' => $task,
+                                    'assignableUsers' => $assignableUsers ?? null,
+                                ])
                             </dd>
                         </div>
                         <div>
@@ -173,5 +209,116 @@
             .task-description h2:first-child,
             .task-description h3:first-child { margin-top: 0; }
         </style>
+        <script>
+            (() => {
+                document.querySelectorAll('[data-assignee-multiselect]').forEach((rootEl) => {
+                    const toggle = rootEl.querySelector('[data-assignee-toggle]');
+                    const menu = rootEl.querySelector('[data-assignee-menu]');
+                    const search = rootEl.querySelector('[data-assignee-search]');
+                    const placeholder = rootEl.querySelector('[data-assignee-placeholder]');
+                    const chips = rootEl.querySelector('[data-assignee-chips]');
+                    const checkboxes = () => Array.from(rootEl.querySelectorAll('[data-assignee-checkbox]'));
+
+                    const syncUi = () => {
+                        const selected = checkboxes().filter((input) => input.checked);
+                        if (placeholder) {
+                            placeholder.textContent = selected.length === 0
+                                ? 'Select users'
+                                : selected.length === 1
+                                    ? selected[0].dataset.label
+                                    : `${selected.length} users selected`;
+                            placeholder.classList.toggle('text-white/45', selected.length === 0);
+                            placeholder.classList.toggle('text-white', selected.length > 0);
+                        }
+                        if (chips) {
+                            chips.innerHTML = selected.map((input) => `
+                                <span class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 text-xs text-white/80">
+                                    ${input.dataset.label}
+                                    <button type="button" class="text-white/40 hover:text-white" data-remove-assignee="${input.value}" aria-label="Remove ${input.dataset.label}">×</button>
+                                </span>
+                            `).join('');
+                        }
+                    };
+
+                    const setOpen = (open) => menu?.classList.toggle('hidden', !open);
+
+                    toggle?.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        setOpen(menu?.classList.contains('hidden'));
+                    });
+
+                    search?.addEventListener('input', () => {
+                        const q = search.value.trim().toLowerCase();
+                        rootEl.querySelectorAll('[data-assignee-option]').forEach((option) => {
+                            const match = !q || (option.dataset.name || '').includes(q);
+                            option.closest('li')?.classList.toggle('hidden', !match);
+                        });
+                    });
+
+                    const queueAutosave = () => {
+                        const form = rootEl.closest('[data-task-assignees-form][data-autosave="1"]');
+                        if (!form) return;
+                        const errorEl = form.querySelector('[data-assignees-error]');
+                        const selected = checkboxes().filter((input) => input.checked);
+                        if (selected.length === 0) {
+                            if (errorEl) {
+                                errorEl.textContent = 'Select at least one assignee.';
+                                errorEl.classList.remove('hidden');
+                            }
+                            return;
+                        }
+                        if (errorEl) {
+                            errorEl.classList.add('hidden');
+                            errorEl.textContent = '';
+                        }
+                        clearTimeout(form._assigneeSaveTimer);
+                        form._assigneeSaveTimer = setTimeout(() => form.requestSubmit(), 250);
+                    };
+
+                    rootEl.addEventListener('change', (event) => {
+                        if (!event.target.matches('[data-assignee-checkbox]')) return;
+                        const selected = checkboxes().filter((input) => input.checked);
+                        if (selected.length === 0) {
+                            event.target.checked = true;
+                            syncUi();
+                            const form = rootEl.closest('[data-task-assignees-form]');
+                            const errorEl = form?.querySelector('[data-assignees-error]');
+                            if (errorEl) {
+                                errorEl.textContent = 'Select at least one assignee.';
+                                errorEl.classList.remove('hidden');
+                            }
+                            return;
+                        }
+                        syncUi();
+                        queueAutosave();
+                    });
+
+                    chips?.addEventListener('click', (event) => {
+                        const btn = event.target.closest('[data-remove-assignee]');
+                        if (!btn) return;
+                        const input = checkboxes().find((el) => el.value === btn.getAttribute('data-remove-assignee'));
+                        if (!input) return;
+                        if (checkboxes().filter((el) => el.checked).length <= 1) {
+                            const form = rootEl.closest('[data-task-assignees-form]');
+                            const errorEl = form?.querySelector('[data-assignees-error]');
+                            if (errorEl) {
+                                errorEl.textContent = 'Select at least one assignee.';
+                                errorEl.classList.remove('hidden');
+                            }
+                            return;
+                        }
+                        input.checked = false;
+                        syncUi();
+                        queueAutosave();
+                    });
+
+                    document.addEventListener('click', (event) => {
+                        if (!rootEl.contains(event.target)) setOpen(false);
+                    });
+
+                    syncUi();
+                });
+            })();
+        </script>
     @endpush
 </x-user.layout>

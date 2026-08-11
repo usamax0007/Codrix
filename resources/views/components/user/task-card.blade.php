@@ -7,6 +7,7 @@
         'low' => 'bg-white/5 text-white/50 border-white/10',
         default => 'bg-amber-500/15 text-amber-300 border-amber-500/30',
     };
+    $subProgress = $task->subtaskProgress();
 @endphp
 <article
     data-task-id="{{ $task->id }}"
@@ -59,10 +60,17 @@
         @endif
     </div>
 
-    <div class="task-card-open mt-3 flex items-center gap-2 border-t border-white/5 pt-2.5 cursor-pointer">
-        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-xc-blue/30 text-[10px] font-semibold text-xc-cyan">
-            {{ strtoupper(substr($task->assignee?->name ?? '?', 0, 1)) }}
-        </span>
-        <span class="truncate text-xs text-white/55">{{ $task->assignee?->name }}</span>
+    <div class="task-card-open mt-3 cursor-pointer" data-task-progress>
+        <x-user.progress-meter
+            :progress="$subProgress"
+            label="Subtasks"
+            empty-label="No subtasks"
+            count-noun="completed"
+            size="sm"
+        />
+    </div>
+
+    <div class="task-card-open mt-3 flex items-center gap-2 border-t border-white/5 pt-2.5 cursor-pointer" data-task-assignees>
+        <x-user.assignee-stack :assignees="$task->assignees" />
     </div>
 </article>

@@ -1,7 +1,8 @@
 @php
     /** @var \App\Models\Task $task */
-    $latestComment = $task->comments->first();
     $commentsCount = (int) ($task->comments_count ?? 0);
+    $taskProgress = $task->subtaskProgress();
+    $rootComments = $task->comments;
 @endphp
 <div class="space-y-5" data-task-id="{{ $task->id }}" data-task-panel="details" data-task-url="{{ route('user.tasks.show', $task) }}">
     <div class="grid gap-5 lg:grid-cols-3">
@@ -43,7 +44,9 @@
                 @endif
             </section>
 
-            <section>
+            @include('user.tasks.partials.subtasks', ['task' => $task])
+
+            <section data-comments-section>
                 <div class="mb-2 flex items-center justify-between gap-3">
                     <h3 class="text-xs font-semibold uppercase tracking-wider text-white/40">Comments</h3>
                     @if ($commentsCount > 0)
@@ -52,13 +55,49 @@
                             class="text-xs font-medium text-xc-cyan hover:underline"
                             data-open-comments
                             data-task-url="{{ route('user.tasks.show', ['task' => $task, 'panel' => 'comments']) }}"
+                            data-comments-all-link
                         >
-                            See all comments ({{ $commentsCount }})
+                            See all comments (<span data-comments-total>{{ $commentsCount }}</span>)
                         </button>
                     @endif
                 </div>
 
-                <form method="POST" action="{{ route('user.tasks.comments.store', $task) }}" class="space-y-3" data-task-comment-form>
+                <div>
+                    @if ($rootComments->isNotEmpty())
+                        <div
+                            class="space-y-0.5 overflow-hidden"
+                            data-comments-preview
+                            style="max-height: min(36vh, 22rem);"
+                        >
+                            @foreach ($rootComments as $comment)
+                                <div data-comment-preview-item>
+                                    <x-user.task-comment
+                                        :comment="$comment"
+                                        :task="$task"
+                                        :interactive="true"
+                                        :show-replies="false"
+                                        reply-mode="thread"
+                                    />
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="mt-2 hidden" data-comments-overflow>
+                            <button
+                                type="button"
+                                class="text-xs font-medium text-xc-cyan hover:underline"
+                                data-open-comments
+                                data-task-url="{{ route('user.tasks.show', ['task' => $task, 'panel' => 'comments']) }}"
+                            >
+                                See all comments
+                                <span class="text-white/40">(<span data-comments-total>{{ $commentsCount }}</span>)</span>
+                            </button>
+                        </div>
+                    @else
+                        <p class="text-sm text-white/40">No comments yet.</p>
+                    @endif
+                </div>
+
+                <form method="POST" action="{{ route('user.tasks.comments.store', $task) }}" class="mt-4 space-y-3" data-task-comment-form>
                     @csrf
                     <input type="hidden" name="return_panel" value="details">
                     <div class="space-y-1.5">
@@ -69,7 +108,7 @@
                             rows="2"
                             required
                             maxlength="5000"
-                            class="w-full rounded-xl border border-white/10 bg-xc-darker/90 px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-xc-cyan/40 focus:border-xc-cyan/40"
+                            class="w-full rounded-lg border border-white/10 bg-transparent px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 focus:outline-none focus:ring-1 focus:ring-xc-cyan/40"
                             placeholder="Write a comment…"
                         ></textarea>
                         <p class="hidden text-xs text-red-300" data-comment-error></p>
@@ -78,27 +117,6 @@
                         <x-user.button type="submit" size="sm">Comment</x-user.button>
                     </div>
                 </form>
-
-                <div class="mt-4">
-                    @if ($latestComment)
-                        <x-user.task-comment :comment="$latestComment" :task="$task" :interactive="false" :show-replies="false" />
-                        @if ($commentsCount > 1)
-                            <div class="mt-3 text-center">
-                                <button
-                                    type="button"
-                                    class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs font-medium text-white/70 transition hover:border-xc-cyan/30 hover:text-xc-cyan"
-                                    data-open-comments
-                                    data-task-url="{{ route('user.tasks.show', ['task' => $task, 'panel' => 'comments']) }}"
-                                >
-                                    See all comments
-                                    <span class="text-white/40">({{ $commentsCount }})</span>
-                                </button>
-                            </div>
-                        @endif
-                    @else
-                        <p class="mt-3 text-sm text-white/40">No comments yet.</p>
-                    @endif
-                </div>
             </section>
         </div>
 
@@ -125,16 +143,35 @@
                     </dd>
                 </div>
                 <div>
+                    <dt class="text-white/40">Task progress</dt>
+                    <dd class="mt-2">
+                        <x-user.progress-meter
+                            :progress="$taskProgress"
+                            empty-label="No subtasks · 0%"
+                            count-noun="completed"
+                            size="sm"
+                        />
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-white/40">Subtasks</dt>
+                    <dd class="mt-1 space-y-1 font-medium">
+                        <p>{{ $taskProgress['total'] }} total</p>
+                        <p class="text-white/70">{{ $taskProgress['completed'] }} completed</p>
+                        <p class="text-white/70">{{ $taskProgress['remaining'] }} remaining</p>
+                    </dd>
+                </div>
+                <div>
                     <dt class="text-white/40">Priority</dt>
                     <dd class="mt-1 font-medium">{{ $task->priority->getLabel() }}</dd>
                 </div>
                 <div>
-                    <dt class="text-white/40">Assignee</dt>
-                    <dd class="mt-1 flex items-center gap-2 font-medium">
-                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-xc-blue/30 text-[10px] font-semibold text-xc-cyan">
-                            {{ strtoupper(substr($task->assignee?->name ?? '?', 0, 1)) }}
-                        </span>
-                        {{ $task->assignee?->name ?? '—' }}
+                    <dt class="text-white/40">Assignees</dt>
+                    <dd class="mt-2">
+                        @include('user.tasks.partials.assignees-editor', [
+                            'task' => $task,
+                            'assignableUsers' => $assignableUsers ?? null,
+                        ])
                     </dd>
                 </div>
                 <div>

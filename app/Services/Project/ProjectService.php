@@ -28,7 +28,7 @@ class ProjectService
     }
 
     /**
-     * Projects available in the Add Task dropdown.
+     * Projects available in the Add Task dropdown (same visibility as the projects list).
      *
      * @return Collection<int, Project>
      */
@@ -38,8 +38,18 @@ class ProjectService
             return collect();
         }
 
-        // Anyone creating a task can pick any project; visibility rules apply on the Projects list/detail.
-        return Project::query()->orderBy('name')->get(['id', 'name']);
+        return $this->visibleQuery($user)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+    }
+
+    public function userCanCreateTaskIn(User $user, int $projectId): bool
+    {
+        if (! $user->can(AppPermission::TASKS_ACCESS)) {
+            return false;
+        }
+
+        return $this->visibleQuery($user)->whereKey($projectId)->exists();
     }
 
     public function loadDetails(Project $project, User $user): Project
@@ -52,12 +62,17 @@ class ProjectService
         ]);
 
         $tasksQuery = $project->tasks()
-            ->with(['status', 'assignee:id,name', 'project:id,name'])
-            ->withCount(['allComments as comments_count', 'attachments'])
+            ->with(['status', 'assignees:id,name', 'project:id,name'])
+            ->withCount([
+                'allComments as comments_count',
+                'attachments',
+                'subtasks',
+                'subtasks as completed_subtasks_count' => fn (Builder $query) => $query->where('is_completed', true),
+            ])
             ->orderByDesc('updated_at');
 
         if (! $user->can(AppPermission::TASKS_ASSIGN)) {
-            $tasksQuery->where('assignee_id', $user->id);
+            $tasksQuery->whereHas('assignees', fn (Builder $assignees) => $assignees->where('users.id', $user->id));
         }
 
         $project->setRelation('visibleTasks', $tasksQuery->get());
@@ -121,6 +136,12 @@ class ProjectService
             return $query;
         }
 
-        return $query->whereHas('tasks', fn (Builder $tasks) => $tasks->where('assignee_id', $user->id));
+        return $query->whereHas(
+            'tasks',
+            fn (Builder $tasks) => $tasks->whereHas(
+                'assignees',
+                fn (Builder $assignees) => $assignees->where('users.id', $user->id)
+            )
+        );
     }
 }

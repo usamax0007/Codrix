@@ -10,8 +10,18 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
+        // Migrate legacy seeded emails when present (avoid unique conflicts).
+        User::query()
+            ->where('email', 'admin@xcoderix.com')
+            ->where('role', UserRole::SuperAdmin)
+            ->update(['email' => 'superadmin@xcoderix.com']);
+
+        User::query()
+            ->where('email', 'manager@xcoderix.com')
+            ->update(['email' => 'admin@xcoderix.com']);
+
         $superAdmin = User::query()->updateOrCreate(
-            ['email' => 'admin@xcoderix.com'],
+            ['email' => 'superadmin@xcoderix.com'],
             [
                 'name' => 'Super Admin',
                 'password' => 'password',
@@ -22,7 +32,7 @@ class AdminUserSeeder extends Seeder
         $superAdmin->syncSpatieRole();
 
         $admin = User::query()->updateOrCreate(
-            ['email' => 'manager@xcoderix.com'],
+            ['email' => 'admin@xcoderix.com'],
             [
                 'name' => 'Admin',
                 'password' => 'password',

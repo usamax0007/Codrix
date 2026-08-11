@@ -23,7 +23,9 @@ class ProjectPolicy
             return true;
         }
 
-        return $project->tasks()->where('assignee_id', $user->id)->exists();
+        return $project->tasks()
+            ->whereHas('assignees', fn ($query) => $query->where('users.id', $user->id))
+            ->exists();
     }
 
     public function create(User $user): bool

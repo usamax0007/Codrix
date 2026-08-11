@@ -23,7 +23,7 @@ class TaskPolicy
             return true;
         }
 
-        return $task->assignee_id === $user->id;
+        return $task->isAssignedTo($user);
     }
 
     public function create(User $user): bool
@@ -42,7 +42,7 @@ class TaskPolicy
             return true;
         }
 
-        return $task->created_by === $user->id && $task->assignee_id === $user->id;
+        return $task->created_by === $user->id && $task->isAssignedTo($user);
     }
 
     public function assign(User $user): bool

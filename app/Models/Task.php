@@ -3,8 +3,11 @@
 namespace App\Models;
 
 use App\Enums\TaskPriority;
+use App\Services\Progress\ProgressService;
+use App\Support\SafeHtml;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -16,7 +19,6 @@ class Task extends Model
         'project_id',
         'task_status_id',
         'priority',
-        'assignee_id',
         'created_by',
         'sort_order',
         'due_date',
@@ -43,9 +45,9 @@ class Task extends Model
         return $this->belongsTo(TaskStatus::class, 'task_status_id');
     }
 
-    public function assignee(): BelongsTo
+    public function assignees(): BelongsToMany
     {
-        return $this->belongsTo(User::class, 'assignee_id');
+        return $this->belongsToMany(User::class)->withTimestamps()->orderBy('users.name');
     }
 
     public function creator(): BelongsTo
@@ -68,6 +70,28 @@ class Task extends Model
         return $this->hasMany(TaskComment::class);
     }
 
+    public function subtasks(): HasMany
+    {
+        return $this->hasMany(Subtask::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    public function isAssignedTo(User $user): bool
+    {
+        if ($this->relationLoaded('assignees')) {
+            return $this->assignees->contains('id', $user->id);
+        }
+
+        return $this->assignees()->where('users.id', $user->id)->exists();
+    }
+
+    /**
+     * @return array{total: int, completed: int, remaining: int, percent: int}
+     */
+    public function subtaskProgress(): array
+    {
+        return app(ProgressService::class)->forTask($this);
+    }
+
     public function plainDescriptionPreview(int $limit = 120): ?string
     {
         if (blank($this->description)) {
@@ -83,9 +107,6 @@ class Task extends Model
             return '';
         }
 
-        return strip_tags(
-            $this->description,
-            '<p><br><strong><b><em><i><u><ul><ol><li><a><h1><h2><h3><blockquote><code><pre><span>'
-        );
+        return SafeHtml::clean($this->description);
     }
 }

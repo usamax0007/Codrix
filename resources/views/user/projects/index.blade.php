@@ -29,9 +29,12 @@
                     @endif
 
                     <div class="mt-4">
-                        <div class="h-2 overflow-hidden rounded-full bg-white/10">
-                            <div class="h-full rounded-full bg-gradient-to-r from-xc-cyan to-xc-blue" style="width: {{ $progress['percent'] }}%"></div>
-                        </div>
+                        <x-user.progress-meter
+                            :progress="$progress"
+                            empty-label="No tasks · 0%"
+                            :show-counts="false"
+                            size="sm"
+                        />
                         <p class="mt-2 text-xs text-white/40">
                             {{ $progress['completed'] }} completed · {{ $progress['remaining'] }} remaining · {{ $progress['total'] }} total
                         </p>

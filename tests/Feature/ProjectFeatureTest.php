@@ -57,25 +57,23 @@ class ProjectFeatureTest extends TestCase
         $this->assertFalse($todo->is_completed);
         $this->assertTrue($done->is_completed);
 
-        Task::query()->create([
+        $this->createTask([
             'summary' => 'Open task',
             'project_id' => $project->id,
             'task_status_id' => $todo->id,
             'priority' => 'medium',
-            'assignee_id' => $staff->id,
             'created_by' => $admin->id,
             'sort_order' => 0,
-        ]);
+        ], $staff);
 
-        Task::query()->create([
+        $this->createTask([
             'summary' => 'Finished task',
             'project_id' => $project->id,
             'task_status_id' => $done->id,
             'priority' => 'medium',
-            'assignee_id' => $staff->id,
             'created_by' => $admin->id,
             'sort_order' => 1,
-        ]);
+        ], $staff);
 
         $project->loadCount([
             'tasks',
@@ -107,15 +105,14 @@ class ProjectFeatureTest extends TestCase
         ]);
         $todo = TaskStatus::query()->where('slug', 'todo')->firstOrFail();
 
-        Task::query()->create([
+        $this->createTask([
             'summary' => 'Blocking task',
             'project_id' => $project->id,
             'task_status_id' => $todo->id,
             'priority' => 'medium',
-            'assignee_id' => $staff->id,
             'created_by' => $admin->id,
             'sort_order' => 0,
-        ]);
+        ], $staff);
 
         $this->actingAs($admin)
             ->delete(route('user.projects.destroy', $project))
@@ -140,7 +137,7 @@ class ProjectFeatureTest extends TestCase
                 'summary' => 'Missing project',
                 'priority' => 'medium',
                 'task_status_id' => $todo->id,
-                'assignee_id' => $staff->id,
+                'assignee_ids' => [$staff->id],
             ])
             ->assertSessionHasErrors('project_id');
     }
