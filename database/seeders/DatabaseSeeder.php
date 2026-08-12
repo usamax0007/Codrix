@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             TechnologySettingSeeder::class,
             TestimonialSeeder::class,
             TestimonialSettingSeeder::class,
+            InvoiceDefaultsSeeder::class,
         ]);
     }
 }

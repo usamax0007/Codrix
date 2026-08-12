@@ -1,11 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\InvoicePdfController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\SitemapController;
+use Filament\Http\Middleware\Authenticate as FilamentAuthenticate;
 
 Route::get('/', [HomeController::class, 'index']);
 
@@ -27,3 +29,7 @@ Route::post('/contact', [ContactController::class, 'store']);
 Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 
 Route::redirect('/team', '/about', 301);
+
+Route::middleware([FilamentAuthenticate::class])
+    ->get('/admin/invoices/{invoice}/pdf', InvoicePdfController::class)
+    ->name('admin.invoices.pdf');
