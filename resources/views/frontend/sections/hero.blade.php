@@ -15,13 +15,17 @@
                     <a href="{{ url('/contact') }}" class="xc-btn-primary">Book a Call</a>
                     <a href="{{ url('/contact') }}" class="xc-btn-outline">Get a Quote</a>
                 </div>
-                <p class="text-sm text-slate-500">Free consultation · Proposal within 48 hours · No commitment</p>
+                <p class="text-sm text-slate-400">Free consultation · Proposal within 48 hours · No commitment</p>
             </div>
             <div class="relative scroll-reveal">
                 <img src="{{ asset('images/hero-img.webp') }}"
                      alt="XCodrix software development team building custom applications"
                      class="w-full rounded-2xl shadow-2xl shadow-xc-blue/10"
-                     width="600" height="500" loading="eager">
+                     width="665"
+                     height="589"
+                     loading="eager"
+                     fetchpriority="high"
+                     decoding="async">
             </div>
         </div>
     </div>

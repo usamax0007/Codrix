@@ -141,11 +141,14 @@ body {
 .client-logo {
     font-weight: 700;
     font-size: 1.125rem;
-    color: rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.65);
     white-space: nowrap;
     transition: color 0.3s;
 }
-.client-logo:hover { color: rgba(255, 255, 255, 0.5); }
+
+.client-logo:hover {
+    color: rgba(255, 255, 255, 0.9);
+}
 
 /* Stat counter */
 .stat-value {

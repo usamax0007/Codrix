@@ -3,24 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     @include('frontend.partials.seo')
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'xc-cyan': '#00E5C0',
-                        'xc-blue': '#0066FF',
-                        'xc-dark': '#050D17',
-                        'xc-darker': '#020C19',
-                        'xc-card': '#0C1623',
-                    },
-                }
-            }
-        }
-    </script>
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <link rel="stylesheet" href="{{ asset('css/xcodrix.css') }}">
+
     @stack('head')
 </head>
 <body class="bg-xc-darker text-white antialiased">

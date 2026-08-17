@@ -25,7 +25,7 @@
                             @endif
                             <h3 class="text-lg font-bold text-white mt-2 mb-2 group-hover:text-xc-cyan transition-colors">{{ $post->title }}</h3>
                             <p class="text-slate-400 text-sm mb-4">{{ $post->excerpt }}</p>
-                            <div class="flex justify-between items-center text-xs text-slate-500">
+                            <div class="flex justify-between items-center text-xs text-slate-400">
                                 <time datetime="{{ $post->published_at?->toDateString() }}">{{ $post->published_at?->format('M d, Y') }}</time>
                                 @if($post->read_time)
                                     <span>{{ $post->read_time }} read</span>
