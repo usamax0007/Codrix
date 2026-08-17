@@ -23,6 +23,16 @@ class Task extends Model
         return $this->belongsToMany(User::class);
     }
 
+    public function subtasks()
+    {
+        return $this->hasMany(Subtask::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
     public function attachments()
     {
         return $this->hasMany(TaskAttachment::class);

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('task_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('color')->default('#10b981');
+            $table->string('color')->default('#00B8D9');
             $table->integer('order')->default(0);
             $table->timestamps();
         });

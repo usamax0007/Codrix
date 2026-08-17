@@ -58,8 +58,8 @@
                                     <div class="flex items-center gap-2">
                                         <!-- Edit Button (SVG) -->
                                         <button type="button"
-                                                onclick="event.stopPropagation(); openEditModal(@json($task))"
-                                                class="text-gray-500 hover:text-[#00B8D9] transition"
+                                                onclick="event.stopPropagation(); openEditModalFromCard(this)"
+                                                class="text-gray-500 hover:text-[#00B8D9] transition p-1"
                                                 title="Edit Task">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -102,7 +102,15 @@
                                 <!-- Subtasks Section -->
                                 <div class="mb-3">
                                     <span class="text-[12px] font-bold text-gray-400 tracking-wider uppercase block mb-0.5">SUBTASKS</span>
-                                    <span class="text-[11px] text-gray-400">No subtasks</span>
+                                    <div id="card-subtasks-{{ $task->id }}">
+                                        @if($task->subtasks && $task->subtasks->count() > 0)
+                                            <span class="text-[11px] text-[#00B8D9] font-medium">
+                                                {{ $task->subtasks->count() }} Subtask(s)
+                                            </span>
+                                        @else
+                                            <span class="text-[11px] text-gray-400">No subtasks</span>
+                                        @endif
+                                    </div>
                                 </div>
 
                                 <!-- Divider & Assignee -->
@@ -295,12 +303,11 @@
                             </button>
                         </div>
 
-                        <!-- Inline Add Subtask Input (Initially Hidden) -->
                         <div id="subtaskForm" class="hidden mb-3">
                             <div class="flex gap-2">
                                 <input type="text" id="newSubtaskTitle" placeholder="Subtask title..."
                                        class="w-full bg-[#03060B] border border-gray-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
-                                <button type="button" onclick="saveSubtask()"
+                                <button type="button" onclick="extracted();"
                                         class="px-3 py-1.5 bg-[#00B8D9] text-gray-950 font-bold rounded-lg text-xs hover:bg-[#00A3C4] transition shrink-0">
                                     Add
                                 </button>
@@ -384,18 +391,10 @@
                         <!-- Assignees -->
                         <div>
                             <span class="text-[10px] text-gray-400 block mb-1">Assignees</span>
-                            <div class="relative mb-2">
-                                <select class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-1.5 text-xs text-white focus:border-[#00B8D9] focus:outline-none cursor-pointer">
-                                    <option value="Staff User">Staff User</option>
-                                </select>
-                            </div>
 
-                            <!-- Selected Tag / Pill -->
-                            <div class="inline-flex items-center gap-1.5 bg-[#080D16] border border-gray-800 px-2 py-0.5 rounded text-[11px] text-gray-300">
-                                <span>Staff User</span>
-                                <button type="button" class="text-gray-500 hover:text-white transition">✕</button>
+                            <!-- Dynamic Assignees Container -->
+                            <div id="detailAssignees" class="flex flex-wrap gap-1.5">
                             </div>
-                            <p class="text-[9px] text-gray-500 mt-1">Changes save when you select or remove someone.</p>
                         </div>
 
                         <!-- Reporter -->
@@ -430,51 +429,101 @@
 
     <!-- Edit Task Modal -->
     <div id="editTaskModal"
-         class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-[#0B1019] border border-gray-800 w-full max-w-lg rounded-xl p-6 text-white shadow-2xl relative">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-800 pb-3">
-                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Edit Task</h3>
-                <button onclick="closeEditModal()" class="text-gray-400 hover:text-white text-lg font-bold">✕</button>
+         class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-[#080D16] border border-gray-800 rounded-xl w-full max-w-lg p-6 shadow-2xl relative text-white max-h-[90vh] overflow-y-auto">
+
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-gray-800 mb-4">
+                <h3 class="text-lg font-semibold text-gray-100">Edit Task</h3>
+                <button type="button" onclick="closeEditTaskModal()" class="text-gray-400 hover:text-white text-xl">✕
+                </button>
             </div>
 
-            <form id="editTaskForm" onsubmit="submitEditTask(event)" class="space-y-4">
+            <form id="editTaskForm" onsubmit="submitEditTask(event)">
                 <input type="hidden" id="editTaskId">
 
-                <!-- Summary -->
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 mb-1">Task Summary</label>
+                <!-- 1. Summary -->
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">Summary *</label>
                     <input type="text" id="editSummary" required
-                           class="w-full bg-gray-900 border border-gray-800 rounded-lg p-2.5 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
+                           class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
                 </div>
 
-                <!-- Description -->
-                <div>
+                <!-- 2. Description -->
+                <div class="mb-4">
                     <label class="block text-xs font-semibold text-gray-400 mb-1">Description</label>
                     <textarea id="editDescription" rows="3"
-                              class="w-full bg-gray-900 border border-gray-800 rounded-lg p-2.5 text-xs text-white focus:border-[#00B8D9] focus:outline-none resize-none"></textarea>
+                              class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-xs text-white focus:border-[#00B8D9] focus:outline-none"></textarea>
                 </div>
 
-                <!-- Priority -->
-                <div>
-                    <label class="block text-xs font-semibold text-gray-400 mb-1">Priority</label>
-                    <select id="editPriority"
-                            class="w-full bg-gray-900 border border-gray-800 rounded-lg p-2.5 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
-                        <option value="Urgent">Urgent</option>
+                <!-- 3. Project & Status -->
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Project *</label>
+                        <select id="editProject" required
+                                class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
+                            @foreach($projects as $project)
+                                <option value="{{ $project->id }}">{{ $project->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Status *</label>
+                        <select id="editStatus" required
+                                class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
+                            @foreach($statuses as $status)
+                                <option value="{{ $status->id }}">{{ $status->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 4. Priority & Due Date -->
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Priority *</label>
+                        <select id="editPriority" required
+                                class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Due Date</label>
+                        <input type="date" id="editDueDate"
+                               class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- 5. Assignees -->
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">Assignees</label>
+                    <select id="editAssignees" multiple
+                            class="w-full bg-gray-900 border border-gray-800 rounded-lg p-2 text-xs text-white focus:border-[#00B8D9] focus:outline-none h-24">
+                        @foreach($users as $user)
+                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                        @endforeach
                     </select>
+                    <span class="text-[10px] text-gray-500 block mt-1">Press ctrl and select multiple assignee.</span>
                 </div>
 
-                <!-- Submit Button -->
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeEditModal()"
-                            class="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs transition">
+                <!-- 6. New Attachments -->
+                <div class="mb-5">
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">Attach Files</label>
+                    <input type="file" id="editAttachments" multiple
+                           class="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-800 file:text-gray-200 hover:file:bg-gray-700 cursor-pointer">
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex justify-end gap-2 pt-3 border-t border-gray-800">
+                    <button type="button" onclick="closeEditTaskModal()"
+                            class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-medium transition">
                         Cancel
                     </button>
                     <button type="submit"
-                            class="px-4 py-2 rounded-lg bg-[#00B8D9] hover:bg-[#00A3C4] text-white font-semibold text-xs transition shadow-lg shadow-[#00B8D9]/20">
-                        Update Task
+                            class="px-4 py-2 bg-[#00B8D9] hover:bg-[#00a3bf] text-black font-semibold rounded-lg text-xs transition">
+                        Save Changes
                     </button>
                 </div>
             </form>
@@ -523,18 +572,30 @@
                     });
                 }
 
+                // Assignees Display
+                let assigneesContainer = document.getElementById('detailAssignees');
+                if (assigneesContainer) {
+                    if (task.assignees && task.assignees.length > 0) {
+                        assigneesContainer.innerHTML = task.assignees.map(user => `<div class="inline-flex items-center gap-1.5 bg-[#080D16] border border-gray-800 px-2.5 py-1 rounded text-[11px] text-gray-300"><span>${user.name}</span></div>`).join('');
+                    } else {
+                        assigneesContainer.innerHTML = '<span class="text-[11px] text-gray-500">Unassigned</span>';
+                    }
+                }
+
                 // Attachments Fill
                 let attachContainer = document.getElementById('detailAttachments');
-                if (task.attachments && task.attachments.length > 0) {
-                    let files = typeof task.attachments === 'string' ? JSON.parse(task.attachments) : task.attachments;
-                    let fileHtml = files.map(f => {
-                        let path = typeof f === 'object' ? f.file_path : f;
-                        let name = path.split('/').pop();
-                        return `<div class="mt-1"><a href="/storage/${path}" target="_blank" download class="text-[#00B8D9] hover:underline flex items-center gap-1">📎 ${name}</a></div>`;
-                    }).join('');
-                    attachContainer.innerHTML = fileHtml;
-                } else {
-                    attachContainer.innerText = 'No attachments.';
+                if (attachContainer) {
+                    if (task.attachments && task.attachments.length > 0) {
+                        let files = typeof task.attachments === 'string' ? JSON.parse(task.attachments) : task.attachments;
+                        let fileHtml = files.map(f => {
+                            let path = typeof f === 'object' ? f.file_path : f;
+                            let name = (typeof f === 'object' && f.original_name) ? f.original_name : path.split('/').pop();
+                            return `<div class="mt-1"><a href="/storage/${path}" target="_blank" download class="text-[#00B8D9] hover:underline flex items-center gap-1">📎 ${name}</a></div>`;
+                        }).join('');
+                        attachContainer.innerHTML = fileHtml;
+                    } else {
+                        attachContainer.innerText = 'No attachments.';
+                    }
                 }
 
                 // Render Subtasks
@@ -579,18 +640,18 @@
         `).join('');
         }
 
-        // Save Subtask Function //
+        // Save Subtask Function
         function saveSubtask() {
             const titleInput = document.getElementById('newSubtaskTitle');
-            const title = titleInput.value.trim();
+            const title = titleInput ? titleInput.value.trim() : '';
 
             if (!title) {
-                alert('Subtask title required');
+                alert('Subtask title is required');
                 return;
             }
 
             if (!currentTaskId) {
-                alert('Task ID is missing.');
+                alert('Missing Task ID');
                 return;
             }
 
@@ -610,18 +671,22 @@
                 .then(data => {
                     if (data.success) {
                         titleInput.value = '';
-                        toggleSubtaskForm();
+                        if (typeof toggleSubtaskForm === 'function') {
+                            toggleSubtaskForm();
+                        }
 
                         const container = document.getElementById('detailSubtasks');
-                        if (container.innerText.includes('No subtasks')) {
-                            container.innerHTML = '';
+                        if (container) {
+                            if (container.innerText.includes('No subtasks')) {
+                                container.innerHTML = '';
+                            }
+                            container.innerHTML += `
+                        <div class="flex items-center gap-2 bg-[#03060B] border border-gray-800 px-3 py-1.5 rounded-lg text-xs text-gray-300 my-1">
+                            <input type="checkbox" class="rounded bg-gray-900 border-gray-700 text-[#00B8D9] focus:ring-0">
+                            <span>${data.subtask.title}</span>
+                        </div>
+                    `;
                         }
-                        container.innerHTML += `
-                <div class="flex items-center gap-2 bg-[#03060B] border border-gray-800 px-3 py-1.5 rounded-lg text-xs text-gray-300 my-1">
-                    <input type="checkbox" class="rounded bg-gray-900 border-gray-700 text-[#00B8D9] focus:ring-0">
-                    <span>${data.subtask.title}</span>
-                </div>
-            `;
 
                         const taskCard = document.querySelector(`[data-task-id="${currentTaskId}"]`);
                         if (taskCard) {
@@ -629,18 +694,22 @@
                             if (!taskData.subtasks) taskData.subtasks = [];
                             taskData.subtasks.push(data.subtask);
                             taskCard.setAttribute('data-task', JSON.stringify(taskData));
+
+                            const cardSubtaskContainer = document.getElementById(`card-subtasks-${currentTaskId}`);
+                            if (cardSubtaskContainer) {
+                                cardSubtaskContainer.innerHTML = `<span class="text-[11px] text-[#00B8D9] font-medium">${taskData.subtasks.length} Subtask(s)</span>`;
+                            }
                         }
 
                     } else {
-                        alert('Error: ' + (data.error || 'Subtask are not save'));
+                        alert('Error: ' + (data.error || 'Subtask can not be saved'));
                     }
                 })
                 .catch(err => {
                     console.error("Error:", err);
-                    alert('Server Error! Check Browser Console.');
+                    alert('Server Error!');
                 });
         }
-
 
         function renderComments(comments) {
             let container = document.getElementById('detailComments');
@@ -650,22 +719,19 @@
             }
 
             container.innerHTML = comments.map(c => `
-        <div class="bg-[#03060B] border border-gray-800 p-2.5 rounded-lg text-xs text-gray-300">
-            <div class="flex justify-between items-center mb-1 text-[10px] text-gray-500">
-                <span class="font-semibold text-gray-400">${c.user ? c.user.name : 'User'}</span>
-                <span>${c.created_at ? new Date(c.created_at).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : ''}</span>
+            <div class="bg-[#03060B] border border-gray-800 p-2.5 rounded-lg text-xs text-gray-300">
+                <div class="flex justify-between items-center mb-1 text-[10px] text-gray-500">
+                    <span class="font-semibold text-gray-400">${c.user ? c.user.name : 'User'}</span>
+                    <span>${c.created_at ? new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                </div>
+                <p class="text-gray-300">${c.comment}</p>
             </div>
-            <p class="text-gray-300">${c.comment}</p>
-        </div>
-    `).join('');
+        `).join('');
         }
 
         function saveComment() {
             const commentInput = document.getElementById('newCommentText');
-            const comment = commentInput.value.trim();
+            const comment = commentInput ? commentInput.value.trim() : '';
 
             if (!comment) {
                 alert('Comment required');
@@ -700,14 +766,14 @@
                         }
 
                         container.innerHTML += `
-                <div class="bg-[#03060B] border border-gray-800 p-2.5 rounded-lg text-xs text-gray-300">
-                    <div class="flex justify-between items-center mb-1 text-[10px] text-gray-500">
-                        <span class="font-semibold text-gray-400">${data.comment.user ? data.comment.user.name : 'You'}</span>
-                        <span>Just now</span>
+                    <div class="bg-[#03060B] border border-gray-800 p-2.5 rounded-lg text-xs text-gray-300">
+                        <div class="flex justify-between items-center mb-1 text-[10px] text-gray-500">
+                            <span class="font-semibold text-gray-400">${data.comment.user ? data.comment.user.name : 'You'}</span>
+                            <span>Just now</span>
+                        </div>
+                        <p class="text-gray-300">${data.comment.comment || comment}</p>
                     </div>
-                    <p class="text-gray-300">${data.comment.comment || comment}</p>
-                </div>
-            `;
+                `;
                         const taskCard = document.querySelector(`[data-task-id="${currentTaskId}"]`);
                         if (taskCard) {
                             let taskData = JSON.parse(taskCard.getAttribute('data-task'));
@@ -724,7 +790,6 @@
                     alert('Server Error!');
                 });
         }
-
 
         function deleteTask() {
             if (!currentTaskId) {
@@ -761,42 +826,114 @@
 
 
 
-        function openEditModal(task) {
+
+        function openEditTaskModal(task) {
+            if (!task) return;
+
             document.getElementById('editTaskId').value = task.id;
             document.getElementById('editSummary').value = task.summary || '';
             document.getElementById('editDescription').value = task.description || '';
-            document.getElementById('editPriority').value = task.priority || 'Medium';
+
+            if (document.getElementById('editProject')) {
+                document.getElementById('editProject').value = task.project_id || '';
+            }
+            if (document.getElementById('editStatus')) {
+                document.getElementById('editStatus').value = task.task_status_id || '';
+            }
+            if (document.getElementById('editPriority')) {
+                document.getElementById('editPriority').value = task.priority || 'Medium';
+            }
+            if (document.getElementById('editDueDate')) {
+                document.getElementById('editDueDate').value = task.due_date || '';
+            }
+
+            // Assignees Auto-select
+            let assigneesSelect = document.getElementById('editAssignees');
+            if (assigneesSelect) {
+                let assignedIds = task.assignees ? task.assignees.map(u => u.id) : [];
+                Array.from(assigneesSelect.options).forEach(option => {
+                    option.selected = assignedIds.includes(parseInt(option.value));
+                });
+            }
+
+            // Attachments Reset
+            let fileInput = document.getElementById('editAttachments');
+            if (fileInput) fileInput.value = '';
 
             document.getElementById('editTaskModal').classList.remove('hidden');
         }
 
-        function closeEditModal() {
+        function openEditModalFromCard(btn) {
+            const card = btn.closest('[data-task]');
+            if (!card) return;
+
+            try {
+                let task = JSON.parse(card.getAttribute('data-task'));
+                openEditTaskModal(task);
+            } catch (e) {
+                console.error("Task data parse error:", e);
+            }
+        }
+
+        function closeEditTaskModal() {
             document.getElementById('editTaskModal').classList.add('hidden');
+        }
+
+        function closeEditModal() {
+            closeEditTaskModal();
         }
 
         function submitEditTask(e) {
             e.preventDefault();
             const taskId = document.getElementById('editTaskId').value;
+            let formData = new FormData();
 
-            const data = {
-                summary: document.getElementById('editSummary').value,
-                description: document.getElementById('editDescription').value,
-                priority: document.getElementById('editPriority').value
-            };
+            // Laravel Multipart PUT Spoofing
+            formData.append('_method', 'PUT');
+
+            formData.append('summary', document.getElementById('editSummary').value);
+            formData.append('description', document.getElementById('editDescription').value);
+
+            if (document.getElementById('editProject')) {
+                formData.append('project_id', document.getElementById('editProject').value);
+            }
+            if (document.getElementById('editStatus')) {
+                formData.append('task_status_id', document.getElementById('editStatus').value);
+            }
+            if (document.getElementById('editPriority')) {
+                formData.append('priority', document.getElementById('editPriority').value);
+            }
+            if (document.getElementById('editDueDate')) {
+                formData.append('due_date', document.getElementById('editDueDate').value);
+            }
+
+            // Assignees
+            let assigneesSelect = document.getElementById('editAssignees');
+            if (assigneesSelect) {
+                let selectedAssignees = Array.from(assigneesSelect.selectedOptions).map(o => o.value);
+                selectedAssignees.forEach(id => formData.append('assignees[]', id));
+            }
+
+            // Attachments
+            let fileInput = document.getElementById('editAttachments');
+            if (fileInput && fileInput.files.length > 0) {
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    formData.append('attachments[]', fileInput.files[i]);
+                }
+            }
 
             fetch(`/user/tasks/${taskId}`, {
-                method: 'PUT',
+                method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
                 },
-                body: JSON.stringify(data)
+                body: formData
             })
                 .then(res => res.json())
                 .then(resData => {
                     if (resData.success) {
-                        closeEditModal();
+                        closeEditTaskModal();
                         location.reload();
                     } else {
                         alert('Error updating task: ' + (resData.error || 'Unknown error'));
@@ -806,6 +943,10 @@
                     console.error("Error:", err);
                     alert('Server Error!');
                 });
+        }
+
+        function extracted() {
+            saveSubtask();
         }
     </script>
 @endsection
