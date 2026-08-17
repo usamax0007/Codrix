@@ -3,7 +3,7 @@
          aria-label="Main navigation">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <a href="{{ url('/') }}" class="flex items-center gap-3" aria-label="{{ $siteSettings->site_name }} Home">
-                <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->site_name }} — Software Development Agency" class="h-10 w-auto" width="140" height="40">
+                <img src="{{ $siteSettings->logoUrl() }}" alt="{{ $siteSettings->site_name }} — Software Development Agency" class="h-10 w-auto" width="140" height="40" fetchpriority="high" decoding="async">
             </a>
 
             <ul class="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-300">

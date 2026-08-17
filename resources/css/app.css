@@ -5,5 +5,11 @@
 
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-xc-cyan: #00E5C0;
+    --color-xc-blue: #0066FF;
+    --color-xc-dark: #050D17;
+    --color-xc-darker: #020C19;
+    --color-xc-card: #0C1623;
 }

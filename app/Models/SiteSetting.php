@@ -40,7 +40,7 @@ class SiteSetting extends Model
             return Storage::disk('public')->url($this->logo);
         }
 
-        return asset('images/xcodrix-logo.png');
+        return asset('images/xcodrix-logo.webp');
     }
 
     public function socialLinks(): array

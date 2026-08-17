@@ -65,12 +65,12 @@
             </div>
         </div>
 
-        <div class="border-t border-white/5 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+        <div class="border-t border-white/5 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-400">
             <p>&copy; {{ date('Y') }} <span class="text-white font-medium">{{ $siteSettings->site_name }}</span>. All rights reserved.</p>
-            <div class="flex gap-6">
-                <a href="{{ url('/faq') }}" class="hover:text-xc-cyan transition-colors">FAQ</a>
-                <a href="{{ url('/technologies') }}" class="hover:text-xc-cyan transition-colors">Technologies</a>
-                <a href="{{ url('/sitemap.xml') }}" class="hover:text-xc-cyan transition-colors">Sitemap</a>
+            <<div class="flex gap-6">
+                <a href="{{ url('/faq') }}" class="text-slate-400 hover:text-xc-cyan transition-colors">FAQ</a>
+                <a href="{{ url('/technologies') }}" class="text-slate-400 hover:text-xc-cyan transition-colors">Technologies</a>
+                <a href="{{ url('/sitemap.xml') }}" class="text-slate-400 hover:text-xc-cyan transition-colors">Sitemap</a>
             </div>
         </div>
     </div>

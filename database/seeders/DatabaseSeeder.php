@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             AdminUserSeeder::class,
+            UserSeeder::class,
             BlogPostSeeder::class,
             SiteSettingSeeder::class,
             AboutSettingSeeder::class,
@@ -34,6 +35,8 @@ class DatabaseSeeder extends Seeder
             TechnologySettingSeeder::class,
             TestimonialSeeder::class,
             TestimonialSettingSeeder::class,
+            ProjectSeeder::class,
+            TaskSeeder::class,
         ]);
     }
 }

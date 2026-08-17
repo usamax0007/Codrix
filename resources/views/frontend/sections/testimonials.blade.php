@@ -18,7 +18,7 @@
                         <div>
                             <cite class="font-semibold text-white not-italic">{{ $t->name }}</cite>
                             @if($t->role)
-                                <p class="text-sm text-slate-500">{{ $t->role }}</p>
+                                <p class="text-sm text-slate-400">{{ $t->role }}</p>
                             @endif
                         </div>
                     </div>

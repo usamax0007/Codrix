@@ -35,8 +35,8 @@
                 @endif
             </div>
             <div class="grid grid-cols-2 gap-4">
-                <img src="{{ $aboutSettings->image1Url() }}" alt="{{ $siteSettings->site_name }} development team collaborating" class="rounded-xl w-full" width="300" height="200" loading="lazy">
-                <img src="{{ $aboutSettings->image2Url() }}" alt="Modern software development workspace" class="rounded-xl w-full mt-8" width="300" height="200" loading="lazy">
+                <img src="{{ $aboutSettings->image1Url() }}" alt="{{ $siteSettings->site_name }} development team collaborating" class="rounded-xl w-full" width="319" height="212" loading="lazy" decoding="async">
+                <img src="{{ $aboutSettings->image2Url() }}" alt="{{ $siteSettings->site_name }} modern software development workspace" class="rounded-xl w-full mt-8" width="319" height="319" loading="lazy" decoding="async">
             </div>
         </div>
     </div>

@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class TaskRequest extends FormRequest
+{
+    public function authorize()
+    {
+        return true;
+    }
+
+    public function rules()
+    {
+        return [
+            'project_id' => 'nullable|exists:projects,id',
+            'summary' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'assignee_id' => 'nullable|exists:users,id',
+            'priority' => 'required|in:low,medium,high',
+            'status' => 'required|in:to_do,in_progress,testing,done',
+            'due_date' => 'nullable|date',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'summary.required' => 'Task summary is required',
+            'summary.max' => 'Task summary cannot exceed 255 characters',
+            'priority.required' => 'Priority is required',
+            'status.required' => 'Status is required',
+        ];
+    }
+}
