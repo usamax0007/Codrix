@@ -96,4 +96,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/user/task-statuses', [TaskStatusController::class, 'store'])->name('task-statuses.store');
     Route::put('/user/task-statuses/{taskStatus}', [TaskStatusController::class, 'update'])->name('task-statuses.update');
     Route::delete('/user/task-statuses/{taskStatus}', [TaskStatusController::class, 'destroy'])->name('task-statuses.destroy');
+    Route::post('/user/tasks/update-status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
 });

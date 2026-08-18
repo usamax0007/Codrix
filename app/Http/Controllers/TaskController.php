@@ -16,6 +16,7 @@ class TaskController extends Controller
         $projects = Project::all();
 
         $statuses = TaskStatus::with([
+            'tasks.status',      // <-- YE MISSING THA (Status details pass karne ke liye)
             'tasks.project',
             'tasks.assignees',
             'tasks.subtasks',
@@ -31,6 +32,7 @@ class TaskController extends Controller
                 TaskStatus::create(['name' => $name, 'order' => $index]);
             }
             $statuses = TaskStatus::with([
+                'tasks.status',
                 'tasks.project',
                 'tasks.assignees',
                 'tasks.subtasks',
@@ -157,5 +159,27 @@ class TaskController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+
+    public function updateStatus(Request $request)
+    {
+        $request->validate([
+            'task_id' => 'required|exists:tasks,id',
+            'status_id' => 'required|exists:task_statuses,id',
+        ]);
+
+        $task = Task::findOrFail($request->task_id);
+        $task->task_status_id = $request->status_id;
+        $task->save();
+
+        $task->load('status');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Task status updated successfully!',
+            'status_name' => $task->status->name ?? '',
+            'status_color' => $task->status->color ?? '#3B82F6',
+        ]);
     }
 }

@@ -1,6 +1,7 @@
 @extends('user.layout.app')
 
 @section('content')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         .transition {
         }
@@ -33,22 +34,23 @@
                     <!-- Status Column Header -->
                     <div class="px-4 py-3 border-b border-gray-800/80 flex justify-between items-center shrink-0">
                         <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full"
-                                  style="background-color: {{ $status->color ?? '#3B82F6' }}"></span>
+                    <span class="w-2.5 h-2.5 rounded-full"
+                          style="background-color: {{ $status->color ?? '#3B82F6' }}"></span>
                             <h3 class="font-bold text-white text-xs tracking-wide">{{ $status->name }}</h3>
                         </div>
-                        <span class="text-[11px] bg-[#16202E] text-gray-400 px-2 py-0.5 rounded text-center min-w-[20px]">
+                        <!-- Badge for count -->
+                        <span class="task-count text-[11px] bg-[#16202E] text-gray-400 px-2 py-0.5 rounded text-center min-w-[20px]">
                     {{ $status->tasks->count() }}
                 </span>
                     </div>
 
-                    <!-- Column Cards Container -->
-                    <div class="p-3 space-y-3 overflow-y-auto flex-1 custom-scrollbar">
+                    <div class="kanban-column p-3 space-y-3 overflow-y-auto flex-1 custom-scrollbar"
+                         data-status-id="{{ $status->id }}">
                         @forelse($status->tasks as $task)
                             <div data-task-id="{{ $task->id }}"
                                  data-task='@json($task)'
                                  onclick="openTaskDetail(this)"
-                                 class="bg-[#090D14] border border-gray-800 hover:border-[#00B8D9]/40 rounded-lg p-3.5 transition relative group cursor-pointer">
+                                 class="task-card bg-[#090D14] border border-gray-800 rounded-lg p-3.5 cursor-grab active:cursor-grabbing">
 
                                 <!-- Project Tag & Delete Button -->
                                 <div class="flex justify-between items-start mb-1.5">
@@ -59,7 +61,7 @@
                                         <!-- Edit Button (SVG) -->
                                         <button type="button"
                                                 onclick="event.stopPropagation(); openEditModalFromCard(this)"
-                                                class="text-gray-500 hover:text-[#00B8D9] transition p-1"
+                                                class="text-gray-500 hover:text-[#00B8D9] transition p-1 cursor-pointer"
                                                 title="Edit Task">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -74,7 +76,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
-                                                    class="text-gray-500 hover:text-red-400 text-xs leading-none transition"
+                                                    class="text-gray-500 hover:text-red-400 text-xs leading-none transition cursor-pointer"
                                                     title="Delete Task">✕
                                             </button>
                                         </form>
@@ -105,8 +107,8 @@
                                     <div id="card-subtasks-{{ $task->id }}">
                                         @if($task->subtasks && $task->subtasks->count() > 0)
                                             <span class="text-[11px] text-[#00B8D9] font-medium">
-                                                {{ $task->subtasks->count() }} Subtask(s)
-                                            </span>
+                                        {{ $task->subtasks->count() }} Subtask(s)
+                                    </span>
                                         @else
                                             <span class="text-[11px] text-gray-400">No subtasks</span>
                                         @endif
@@ -131,7 +133,7 @@
                                 </div>
                             </div>
                         @empty
-                            <div class="text-center py-8 text-xs text-gray-600 border border-dashed border-gray-800/60 rounded-lg">
+                            <div class="empty-placeholder text-center py-8 text-xs text-gray-600 border border-dashed border-gray-800/60 rounded-lg">
                                 No tasks here
                             </div>
                         @endforelse
@@ -359,10 +361,10 @@
 
                         <!-- Status -->
                         <div>
-                            <span class="text-[10px] text-gray-400 block mb-0.5">Status</span>
-                            <div class="flex items-center gap-2 text-white font-medium text-xs">
-                                <span class="w-2 h-2 rounded-full bg-gray-400"></span>
-                                <span id="detailStatus">To Do</span>
+                            <span class="text-xs text-gray-400 block mb-1">Status</span>
+                            <div class="flex items-center gap-2">
+                                <span id="detailStatusDot" class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                                <span id="detailStatus" class="text-sm font-semibold text-white">To Do</span>
                             </div>
                         </div>
 
@@ -532,10 +534,10 @@
 
 
     <script>
-        // Global Active Task ID Variable
+        // Global Active Task ID Variable //
         let currentTaskId = null;
 
-        // Add Task Modal Handlers
+        // Add Task Modal Handlers //
         let taskModal = document.getElementById('taskModal');
         let openTaskBtn = document.getElementById('openTaskModal');
         let closeTaskBtn = document.getElementById('closeTaskModal');
@@ -553,13 +555,25 @@
                 let task = JSON.parse(rawData);
                 currentTaskId = task.id;
 
-                // Content Data Fill
                 document.getElementById('detailSummary').innerText = task.summary || 'No Summary';
                 document.getElementById('detailDescription').innerText = task.description || 'No description provided.';
 
-                // Right Sidebar Data Fill
                 document.getElementById('detailProject').innerText = task.project ? task.project.name : 'NO PROJECT';
-                document.getElementById('detailStatus').innerText = task.status ? task.status.name : (task.task_status ? task.task_status.name : 'To Do');
+
+                let statusObj = task.status || task.task_status;
+                let statusName = statusObj ? statusObj.name : 'To Do';
+                let statusColor = statusObj ? statusObj.color : '#3B82F6';
+
+                let statusTextEl = document.getElementById('detailStatus');
+                if (statusTextEl) {
+                    statusTextEl.innerText = statusName;
+                }
+
+                let statusDotEl = document.getElementById('detailStatusDot');
+                if (statusDotEl) {
+                    statusDotEl.style.backgroundColor = statusColor;
+                }
+
                 document.getElementById('detailPriority').innerText = task.priority || 'Medium';
                 document.getElementById('detailDueDate').innerText = task.due_date || '—';
 
@@ -572,7 +586,6 @@
                     });
                 }
 
-                // Assignees Display
                 let assigneesContainer = document.getElementById('detailAssignees');
                 if (assigneesContainer) {
                     if (task.assignees && task.assignees.length > 0) {
@@ -582,7 +595,6 @@
                     }
                 }
 
-                // Attachments Fill
                 let attachContainer = document.getElementById('detailAttachments');
                 if (attachContainer) {
                     if (task.attachments && task.attachments.length > 0) {
@@ -598,12 +610,9 @@
                     }
                 }
 
-                // Render Subtasks
                 renderSubtasks(task.subtasks || []);
-
                 renderComments(task.comments || []);
 
-                // Open Modal
                 document.getElementById('taskDetailModal').classList.remove('hidden');
 
             } catch (error) {
@@ -722,7 +731,10 @@
             <div class="bg-[#03060B] border border-gray-800 p-2.5 rounded-lg text-xs text-gray-300">
                 <div class="flex justify-between items-center mb-1 text-[10px] text-gray-500">
                     <span class="font-semibold text-gray-400">${c.user ? c.user.name : 'User'}</span>
-                    <span>${c.created_at ? new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                    <span>${c.created_at ? new Date(c.created_at).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : ''}</span>
                 </div>
                 <p class="text-gray-300">${c.comment}</p>
             </div>
@@ -823,8 +835,6 @@
                     alert('Server Error!');
                 });
         }
-
-
 
 
         function openEditTaskModal(task) {
@@ -948,5 +958,106 @@
         function extracted() {
             saveSubtask();
         }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // 1. Kanban Drag and Drop Initializer
+            document.querySelectorAll('.kanban-column').forEach(column => {
+                new Sortable(column, {
+                    group: 'kanban',
+                    animation: 150,
+                    ghostClass: 'opacity-50',
+                    dragClass: 'shadow-2xl',
+                    onEnd: function (evt) {
+                        const itemEl = evt.item;
+                        const taskId = itemEl.getAttribute('data-task-id');
+                        const newColumn = evt.to;
+                        const oldColumn = evt.from;
+                        const newStatusId = newColumn.getAttribute('data-status-id');
+                        const oldStatusId = oldColumn.getAttribute('data-status-id');
+
+                        if (newStatusId === oldStatusId) return;
+
+                        updateColumnPlaceholders(oldColumn);
+                        updateColumnPlaceholders(newColumn);
+
+                        fetch("{{ route('tasks.updateStatus') }}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                task_id: taskId,
+                                status_id: newStatusId
+                            })
+                        })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    let rawTask = itemEl.getAttribute('data-task');
+                                    if (rawTask) {
+                                        let taskData = JSON.parse(rawTask);
+
+                                        taskData.task_status_id = newStatusId;
+                                        taskData.status = {
+                                            id: newStatusId,
+                                            name: data.status_name,
+                                            color: data.status_color || '#3B82F6'
+                                        };
+
+                                        itemEl.setAttribute('data-task', JSON.stringify(taskData));
+                                    }
+
+                                    updateBadgeCounts(oldColumn, newColumn);
+                                } else {
+                                    oldColumn.appendChild(itemEl);
+                                    updateColumnPlaceholders(oldColumn);
+                                    updateColumnPlaceholders(newColumn);
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Error:', err);
+                                oldColumn.appendChild(itemEl);
+                                updateColumnPlaceholders(oldColumn);
+                                updateColumnPlaceholders(newColumn);
+                            });
+                    }
+                });
+            });
+
+            function updateBadgeCounts(fromCol, toCol) {
+                const fromBadge = fromCol.closest('div').querySelector('.task-count');
+                const toBadge = toCol.closest('div').querySelector('.task-count');
+
+                const fromCount = fromCol.querySelectorAll('.task-card').length;
+                const toCount = toCol.querySelectorAll('.task-card').length;
+
+                if (fromBadge) fromBadge.innerText = fromCount;
+                if (toBadge) toBadge.innerText = toCount;
+            }
+
+            function updateColumnPlaceholders(column) {
+                const cards = column.querySelectorAll('.task-card');
+                let placeholder = column.querySelector('.no-tasks-placeholder');
+
+                if (cards.length === 0) {
+                    if (!placeholder) {
+                        placeholder = document.createElement('div');
+                        placeholder.className = 'no-tasks-placeholder text-center text-gray-500 text-xs py-8 border border-dashed border-gray-800 rounded-lg';
+                        placeholder.innerText = 'No tasks here';
+                        column.appendChild(placeholder);
+                    } else {
+                        placeholder.classList.remove('hidden');
+                    }
+                } else {
+                    if (placeholder) {
+                        placeholder.classList.add('hidden');
+                    }
+                }
+            }
+
+        });
     </script>
 @endsection

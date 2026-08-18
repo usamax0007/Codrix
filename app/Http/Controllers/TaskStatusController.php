@@ -32,13 +32,16 @@ class TaskStatusController extends Controller
     public function update(Request $request, TaskStatus $taskStatus)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'color' => 'nullable|string',
+            'name' => 'required|string|max:50',
+            'color' => 'required|string|max:7',
         ]);
 
-        $taskStatus->update($request->only('name', 'color'));
+        $taskStatus->update([
+            'name' => $request->name,
+            'color' => $request->color,
+        ]);
 
-        return redirect()->back()->with('success', 'Status updated successfully.');
+        return redirect()->back()->with('success', 'Status updated successfully!');
     }
 
     public function destroy(TaskStatus $taskStatus)
