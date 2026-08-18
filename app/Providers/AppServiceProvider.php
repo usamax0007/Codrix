@@ -13,6 +13,16 @@ use App\Models\SiteSetting;
 use App\Models\TechnologySetting;
 use App\Models\TestimonialSetting;
 use App\Models\WhyChooseUsSetting;
+use App\Models\Project;
+use App\Models\Task;
+use App\Models\TaskStatus;
+use App\Models\User;
+use App\Policies\ProjectPolicy;
+use App\Policies\TaskPolicy;
+use App\Policies\TaskStatusPolicy;
+use App\Policies\UserPolicy;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -33,6 +43,20 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+        Paginator::useTailwind();
+
+        Gate::before(function ($user, string $ability): ?bool {
+            if ($user instanceof User && $user->isSuperAdmin()) {
+                return true;
+            }
+
+            return null;
+        });
+
+        Gate::policy(Task::class, TaskPolicy::class);
+        Gate::policy(TaskStatus::class, TaskStatusPolicy::class);
+        Gate::policy(Project::class, ProjectPolicy::class);
+        Gate::policy(User::class, UserPolicy::class);
 
         if (Schema::hasTable('site_settings')) {
             View::share('siteSettings', SiteSetting::current());

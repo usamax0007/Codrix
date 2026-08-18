@@ -41,13 +41,20 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 'Pages',
                 'Settings',
+                'User',
+                'Access',
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
-            ->pages([])
-            ->homeUrl('/admin/manage-site-settings')
+            ->pages([
+                \App\Filament\Pages\Dashboard::class,
+            ])
+            ->homeUrl('/admin')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets([])
+            ->widgets([
+                \App\Filament\Widgets\AdminOpsStatsOverview::class,
+                \App\Filament\Widgets\AdminCmsStatsOverview::class,
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
