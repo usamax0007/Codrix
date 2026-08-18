@@ -66,10 +66,10 @@
     <div class="mb-4">
         <label class="block text-gray-300 mb-2">Status</label>
         <select name="status" class="w-full px-4 py-2 bg-gray-900 border-gray-600 rounded-lg text-gray-100 focus:outline-none focus:border-teal-400" required>
-            <option value="to_do" {{ old('status', isset($task) ? $task->status : '') == 'to_do' ? 'selected' : '' }}>To Do</option>
-            <option value="in_progress" {{ old('status', isset($task) ? $task->status : '') == 'in_progress' ? 'selected' : '' }}>In Progress</option>
-            <option value="testing" {{ old('status', isset($task) ? $task->status : '') == 'testing' ? 'selected' : '' }}>Testing</option>
-            <option value="done" {{ old('status', isset($task) ? $task->status : '') == 'done' ? 'selected' : '' }}>Done</option>
+            <option value="">Select Status</option>
+            @foreach($statuses as $status)
+                <option value="{{ $status->name }}" {{ old('status', isset($task) ? $task->status : '') == $status->name ? 'selected' : '' }}>{{ $status->name }}</option>
+            @endforeach
         </select>
         @error('status')
             <p class="text-red-400 text-sm mt-1">{{ $message }}</p>

@@ -32,14 +32,17 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 
 Route::redirect('/team', '/about', 301);
 
-// User Authentication Routes
 Route::get('/user/login', [UserAuthController::class, 'showLoginForm'])->name('user.login');
 Route::post('/user/login', [UserAuthController::class, 'login'])->name('user.login.post');
 Route::post('/user/logout', [UserAuthController::class, 'logout'])->name('user.logout');
 Route::get('/user/dashboard', [UserAuthController::class, 'dashboard'])->name('user.dashboard')->middleware('auth');
 
 
-Route::get('/user/task-status', [TaskStatusController::class, 'index'])->name('user.task-status')->middleware('auth');
+Route::prefix('user/task-status')->name('user.task-status.')->middleware('auth')->group(function () {
+    Route::get('/', [TaskStatusController::class, 'index'])->name('index');
+    Route::post('/', [TaskStatusController::class, 'store'])->name('store');
+    Route::delete('/{taskStatus}', [TaskStatusController::class, 'destroy'])->name('destroy');
+});
 
 Route::prefix('user/task')->name('user.task.')->middleware('auth')->group(function () {
     Route::get('/', [TaskController::class, 'index'])->name('index');
@@ -49,6 +52,13 @@ Route::prefix('user/task')->name('user.task.')->middleware('auth')->group(functi
     Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('edit');
     Route::put('/{task}', [TaskController::class, 'update'])->name('update');
     Route::delete('/{task}', [TaskController::class, 'destroy'])->name('destroy');
+    Route::post('/{task}/comment', [TaskController::class, 'addComment'])->name('comment');
+    Route::put('/{task}/comment/{comment}', [TaskController::class, 'updateComment'])->name('comment.update');
+    Route::delete('/{task}/comment/{comment}', [TaskController::class, 'deleteComment'])->name('comment.delete');
+    Route::post('/{task}/subtask', [TaskController::class, 'addSubtask'])->name('subtask');
+    Route::put('/{task}/subtask/{subtask}', [TaskController::class, 'toggleSubtask'])->name('subtask.toggle');
+    Route::delete('/{task}/subtask/{subtask}', [TaskController::class, 'deleteSubtask'])->name('subtask.delete');
+    Route::put('/{task}/status', [TaskController::class, 'updateStatus'])->name('status.update');
 });
 
 Route::prefix('user/add-project')->name('user.add-project.')->middleware('auth')->group(function () {

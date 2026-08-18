@@ -1,4 +1,4 @@
-<aside class="w-64 bg-gray-800 border-r border-gray-700 fixed h-full hidden lg:block">
+<aside id="sidebar" class="w-64 bg-gray-800 border-r border-gray-700 fixed h-full lg:block hidden z-50 transition-transform duration-300">
     <div class="p-6">
 
 
@@ -31,7 +31,7 @@
                 <span>Task</span>
             </a>
 
-            <a href="{{ route('user.task-status') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg {{ request()->routeIs('user.task-status') ? 'filament-primary-bg filament-primary-text font-medium' : 'text-gray-300 hover:bg-gray-700 transition' }}">
+            <a href="{{ route('user.task-status.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg {{ request()->routeIs('user.task-status.*') ? 'filament-primary-bg filament-primary-text font-medium' : 'text-gray-300 hover:bg-gray-700 transition' }}">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
                     <path d="M12 7V12L15 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>

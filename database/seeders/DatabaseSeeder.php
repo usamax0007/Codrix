@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
             TestimonialSettingSeeder::class,
             ProjectSeeder::class,
             TaskSeeder::class,
+            TaskStatusSeeder::class,
         ]);
     }
 }

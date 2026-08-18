@@ -17,6 +17,8 @@ class Task extends Model
         'priority',
         'status',
         'due_date',
+        'user_id',
+        'content',
     ];
 
     protected $casts = [
@@ -31,5 +33,15 @@ class Task extends Model
     public function assignee()
     {
         return $this->belongsTo(User::class, 'assignee_id');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class)->latest();
+    }
+
+    public function subtasks()
+    {
+        return $this->hasMany(Subtask::class);
     }
 }

@@ -2,15 +2,12 @@
 
 @section('content')
     <div class="flex-1 lg:ml-64">
-        <!-- Content -->
         <main class="p-6">
-            <!-- Welcome Banner -->
             <div class="bg-gradient-to-r from-[#00E5C0] to-[#0066FF] rounded-2xl p-6 mb-6 text-white">
                 <h2 class="text-2xl font-bold mb-2">Welcome back, {{ Auth::user()->name }}!</h2>
                 <p class="opacity-90">Here's your dashboard overview.</p>
             </div>
 
-            <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div class="bg-gray-800 rounded-xl border border-gray-700 p-5 shadow-sm">
                     <div class="flex items-center justify-between">
@@ -55,7 +52,6 @@
                 </div>
             </div>
 
-            <!-- Info Cards -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div class="bg-gray-800 rounded-xl border border-gray-700 p-6 shadow-sm">
                     <div class="flex items-center space-x-3 mb-4">

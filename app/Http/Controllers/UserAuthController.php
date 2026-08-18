@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\UserLoginRequest;
 use Illuminate\Support\Facades\Auth;
 
 class UserAuthController extends Controller
@@ -12,16 +12,9 @@ class UserAuthController extends Controller
         return view('frontend.user.login');
     }
 
-    public function login(Request $request)
+    public function login(UserLoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ], [
-            'email.required' => 'Email is required',
-            'email.email' => 'Please enter a valid email address',
-            'password.required' => 'Password is required',
-        ]);
+        $credentials = $request->validated();
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
@@ -33,7 +26,7 @@ class UserAuthController extends Controller
         ])->withInput($request->except('password'));
     }
 
-    public function logout(Request $request)
+    public function logout(\Illuminate\Http\Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();
