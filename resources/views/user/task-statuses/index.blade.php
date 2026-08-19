@@ -1,6 +1,8 @@
 @extends('user.layout.app')
 
 @section('content')
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
     <div class="p-6">
         <div class="flex justify-between items-center mb-6">
             <div>
@@ -39,33 +41,34 @@
             <table class="w-full text-left text-sm text-gray-300">
                 <thead class="bg-[#03060B] text-gray-400 text-xs uppercase border-b border-gray-800">
                 <tr>
+                    <th class="p-3 w-10"></th>
                     <th class="p-3">#</th>
                     <th class="p-3">Status Name</th>
                     <th class="p-3">Color Badge</th>
                     <th class="p-3 text-right">Actions</th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody id="statusTableBody">
                 @forelse($statuses as $status)
-                    <tr class="border-b border-gray-800 hover:bg-[#0b1320]">
-                        <td class="p-3">{{ $loop->iteration }}</td>
+                    <tr data-id="{{ $status->id }}"
+                        class="border-b border-gray-800 hover:bg-[#0b1320] cursor-move transition">
+                        <td class="p-3 text-gray-500 hover:text-white cursor-grab">⋮⋮</td>
+                        <td class="p-3 row-number">{{ $loop->iteration }}</td>
                         <td class="p-3 font-semibold text-white">{{ $status->name }}</td>
                         <td class="p-3">
                             <div class="flex items-center gap-2">
-                <span class="inline-block w-3 h-3 rounded-full"
-                      style="background-color: {{ $status->color }}"></span>
+                                <span class="inline-block w-3 h-3 rounded-full"
+                                      style="background-color: {{ $status->color }}"></span>
                                 <code class="text-xs text-gray-400">{{ $status->color }}</code>
                             </div>
                         </td>
                         <td class="p-3 text-right flex justify-end gap-3 items-center">
-                            <!-- Edit Button -->
                             <button type="button"
                                     onclick="openEditStatusModal('{{ $status->id }}', '{{ $status->name }}', '{{ $status->color }}')"
                                     class="text-[#00B8D9] hover:text-cyan-300 text-xs font-medium">
                                 Edit
                             </button>
 
-                            <!-- Delete Form -->
                             <form action="{{ route('task-statuses.destroy', $status->id) }}" method="POST"
                                   onsubmit="return confirm('Delete this status?');" class="inline">
                                 @csrf
@@ -78,7 +81,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="p-4 text-center text-gray-500">No task statuses found. Add one above!
+                        <td colspan="5" class="p-4 text-center text-gray-500">No task statuses found. Add one above!
                         </td>
                     </tr>
                 @endforelse
@@ -152,6 +155,42 @@
 
         document.getElementById('edit_status_color').addEventListener('input', function (e) {
             document.getElementById('edit_status_color_picker').value = e.target.value;
+        });
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const el = document.getElementById('statusTableBody');
+            if (!el) return;
+
+            Sortable.create(el, {
+                animation: 150,
+                ghostClass: 'bg-gray-800',
+                onEnd: function () {
+                    document.querySelectorAll('#statusTableBody tr').forEach((row, index) => {
+                        const numCell = row.querySelector('.row-number');
+                        if (numCell) numCell.textContent = index + 1;
+                    });
+
+                    const statusOrder = Array.from(el.children).map(row => row.getAttribute('data-id'));
+
+                    fetch('/user/task-statuses/reorder', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({order: statusOrder})
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (!data.success) {
+                                alert('Failed to reorder statuses.');
+                            }
+                        })
+                        .catch(err => console.error('Error reordering statuses:', err));
+                }
+            });
         });
     </script>
 @endsection

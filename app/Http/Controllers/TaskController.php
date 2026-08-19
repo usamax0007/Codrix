@@ -54,7 +54,7 @@ class TaskController extends Controller
             'task_status_id' => 'required|exists:task_statuses,id',
             'due_date' => 'nullable|date',
             'assignees' => 'nullable|array',
-            'attachments.*' => 'nullable|file|max:10240',
+            'attachments.*' => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:10240',
         ]);
 
         $task = Task::create([
@@ -96,7 +96,7 @@ class TaskController extends Controller
                 'priority' => 'required|in:Low,Medium,High,Urgent',
                 'due_date' => 'nullable|date',
                 'assignees' => 'nullable|array',
-                'attachments.*' => 'nullable|file|max:10240',
+                'attachments.*' => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:10240',
             ]);
 
             $task = Task::findOrFail($id);

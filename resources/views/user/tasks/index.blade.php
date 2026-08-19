@@ -5,6 +5,15 @@
     <style>
         .transition {
         }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
     <div class="space-y-6">
 
@@ -26,10 +35,11 @@
             </div>
         </div>
 
-        <!-- Kanban Board -->
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 w-full pb-6 items-start min-h-[calc(100vh-180px)]">
+        <!-- Kanban Board Container -->
+        <div id="kanbanBoard" class="flex flex-row gap-4 w-full overflow-x-auto pb-6 items-stretch no-scrollbar">
             @foreach($statuses as $status)
-                <div class="bg-[#0B1019] border border-gray-800/80 rounded-lg w-full flex flex-col h-[calc(100vh-220px)] min-h-[550px]">
+                <!-- Dynamic uniform height with self-stretch and min-h -->
+                <div class="bg-[#0B1019] border border-gray-800/80 rounded-lg w-[320px] min-w-[320px] shrink-0 flex flex-col min-h-[500px] self-stretch">
 
                     <!-- Status Column Header -->
                     <div class="px-4 py-3 border-b border-gray-800/80 flex justify-between items-center shrink-0">
@@ -44,7 +54,8 @@
                 </span>
                     </div>
 
-                    <div class="kanban-column p-3 space-y-3 overflow-y-auto flex-1 custom-scrollbar"
+                    <!-- Kanban Body -->
+                    <div class="kanban-column p-3 space-y-3 flex-1"
                          data-status-id="{{ $status->id }}">
                         @forelse($status->tasks as $task)
                             <div data-task-id="{{ $task->id }}"
@@ -58,18 +69,19 @@
                                         {{ $task->project->name ?? 'NO PROJECT' }}
                                     </span>
                                     <div class="flex items-center gap-2">
-                                        <!-- Edit Button (SVG) -->
                                         <button type="button"
                                                 onclick="event.stopPropagation(); openEditModalFromCard(this)"
                                                 class="text-gray-500 hover:text-[#00B8D9] transition p-1 cursor-pointer"
                                                 title="Edit Task">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            <svg class="w-4 h-4 text-gray-500" aria-hidden="true"
+                                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                                 viewBox="0 0 24 24">
+                                                <path stroke="currentColor" stroke-linecap="round"
+                                                      stroke-linejoin="round" stroke-width="2"
+                                                      d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
                                             </svg>
                                         </button>
 
-                                        <!-- Delete Form -->
                                         <form action="{{ route('tasks.destroy', $task->id) }}" method="POST"
                                               onsubmit="return confirm('Delete this task?')" class="inline"
                                               onclick="event.stopPropagation()">
@@ -107,8 +119,8 @@
                                     <div id="card-subtasks-{{ $task->id }}">
                                         @if($task->subtasks && $task->subtasks->count() > 0)
                                             <span class="text-[11px] text-[#00B8D9] font-medium">
-                                        {{ $task->subtasks->count() }} Subtask(s)
-                                    </span>
+                                                {{ $task->subtasks->count() }} Subtask(s)
+                                            </span>
                                         @else
                                             <span class="text-[11px] text-gray-400">No subtasks</span>
                                         @endif
@@ -133,16 +145,16 @@
                                 </div>
                             </div>
                         @empty
-                            <div class="empty-placeholder text-center py-8 text-xs text-gray-600 border border-dashed border-gray-800/60 rounded-lg">
-                                No tasks here
-                            </div>
-                        @endforelse
-                    </div>
 
+                        @endforelse
+
+                        <div class="no-tasks-placeholder text-center py-8 text-xs text-gray-600 border border-dashed border-gray-800/60 rounded-lg {{ $status->tasks->count() > 0 ? 'hidden' : '' }}">
+                            No tasks here
+                        </div>
+                    </div>
                 </div>
             @endforeach
         </div>
-
     </div>
 
     <!-- Modal: Add Task -->
@@ -152,13 +164,13 @@
 
             <!-- Header & Close Button -->
             <div class="flex justify-between items-center mb-0.5">
-                <h2 class="text-md font-bold text-white">Add Task</h2>
+                <h2 class="text-2xl font-bold text-white">Add Task</h2>
                 <button type="button" id="closeTaskModal"
                         class="text-gray-400 hover:text-white hover:bg-gray-800/60 rounded-lg w-6 h-6 flex items-center justify-center transition text-xs">
                     ✕
                 </button>
             </div>
-            <p class="text-[12px] text-gray-300 mb-4">Fill in the details to create a new board item.</p>
+            <p class="text-[15px] text-gray-300 mb-4">Fill in the details to create a new board item.</p>
 
             <form action="{{ route('tasks.store') }}" method="POST" enctype="multipart/form-data" class="space-y-2.5">
                 @csrf
@@ -166,10 +178,10 @@
                 <!-- Project & Status -->
                 <div class="grid grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block text-[12px] font-medium text-gray-300 mb-0.5">Project <span
+                        <label class="block text-[15px] font-medium text-gray-300 mb-0.5">Project <span
                                     class="text-[#00B8D9]">*</span></label>
                         <select name="project_id" required
-                                class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
+                                class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-sm text-white focus:border-[#00B8D9] focus:outline-none">
                             <option value="">Select Project</option>
                             @foreach($projects as $project)
                                 <option value="{{ $project->id }}">{{ $project->name }}</option>
@@ -177,10 +189,10 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[12px] font-medium text-gray-300 mb-0.5">Status <span
+                        <label class="block text-[15px] font-medium text-gray-300 mb-0.5">Status <span
                                     class="text-[#00B8D9]">*</span></label>
                         <select name="task_status_id" required
-                                class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
+                                class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-sm text-white focus:border-[#00B8D9] focus:outline-none">
                             @foreach($statuses as $status)
                                 <option value="{{ $status->id }}">{{ $status->name }}</option>
                             @endforeach
@@ -190,65 +202,92 @@
 
                 <!-- Summary -->
                 <div>
-                    <label class="block text-[12px] font-medium text-gray-300 mb-0.5">Summary <span
+                    <label class="block text-[15px] font-medium text-gray-300 mb-0.5">Summary <span
                                 class="text-[#00B8D9]">*</span></label>
                     <input type="text" name="summary" required placeholder="Task summary"
-                           class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
+                           class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-sm text-white focus:border-[#00B8D9] focus:outline-none">
                 </div>
 
                 <!-- Priority & Due Date -->
                 <div class="grid grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block text-[12px] font-medium text-gray-300 mb-0.5">Priority <span
+                        <label class="block text-[15px] font-medium text-gray-300 mb-0.5">Priority <span
                                     class="text-[#00B8D9]">*</span></label>
                         <select name="priority" required
-                                class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
+                                class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-sm text-white focus:border-[#00B8D9] focus:outline-none">
                             <option value="Low">Low</option>
                             <option value="Medium" selected>Medium</option>
                             <option value="High">High</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[12px] font-medium text-gray-300 mb-0.5">Due date</label>
+                        <label class="block text-[15px] font-medium text-gray-300 mb-0.5">Due date</label>
                         <input type="date" name="due_date"
-                               class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-xs text-white [color-scheme:dark] focus:border-[#00B8D9] focus:outline-none">
+                               class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-sm text-white [color-scheme:dark] focus:border-[#00B8D9] focus:outline-none">
                     </div>
                 </div>
 
                 <!-- Description -->
                 <div>
-                    <label class="block text-[12px] font-medium text-gray-300 mb-0.5">Description</label>
+                    <label class="block text-[15px] font-medium text-gray-300 mb-0.5">Description</label>
                     <textarea name="description" rows="3" placeholder="Task details..."
-                              class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-xs text-white focus:border-[#00B8D9] focus:outline-none resize-none"></textarea>
+                              class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-sm text-white focus:border-[#00B8D9] focus:outline-none resize-none"></textarea>
                 </div>
 
                 <!-- Attachment & Assignees -->
                 <div class="grid grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block text-[12px] font-medium text-gray-300 mb-0.5">Attachment</label>
-                        <input type="file" name="attachments[]" multiple
-                               class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-[10px] text-white file:mr-1 file:py-0.5 file:px-1.5 file:rounded file:border-0 file:bg-gray-800 file:text-[#00B8D9] file:text-[10px]">
+                        <label class="block text-[15px] font-medium text-gray-300 mb-0.5">Attachment</label>
+                        <input type="file" name="attachments[]" multiple accept="image/*,.pdf"
+                               class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-sm text-white file:mr-1 file:py-0.5 file:px-1.5 file:rounded file:border-0 file:bg-gray-800 file:text-[#00B8D9] file:text-[10px]">
                     </div>
-                    <div>
-                        <label class="block text-[12px] font-medium text-gray-300 mb-0.5">Assignee</label>
-                        <select name="assignees[]"
-                                class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
-                            <option value="" disabled selected>Select User</option>
+
+                    <!-- Multi-select Assignee Dropdown -->
+                    <div class="relative">
+                        <label class="block text-[15px] font-medium text-gray-300 mb-0.5">Assignees</label>
+
+                        <!-- Dropdown Button -->
+                        <button type="button" id="createAssigneesDropdownBtn" onclick="toggleCreateAssigneeDropdown()"
+                                class="w-full bg-gray-900 border border-gray-800 rounded-lg px-2.5 py-1.5 text-sm text-white flex justify-between items-center focus:border-[#00B8D9] focus:outline-none">
+                            <span id="createSelectedAssigneesText"
+                                  class="truncate text-gray-400">Select Assignees...</span>
+                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+
+                        <!-- Real Hidden Select for Form Submission -->
+                        <select id="createAssignees" name="assignees[]" multiple class="hidden">
                             @foreach($users as $user)
                                 <option value="{{ $user->id }}">{{ $user->name }}</option>
                             @endforeach
                         </select>
+
+                        <!-- Floating Checkbox Menu -->
+                        <div id="createAssigneesDropdownMenu"
+                             class="hidden absolute z-50 mt-1 w-full bg-gray-900 border border-gray-800 rounded-lg shadow-xl max-h-48 overflow-y-auto p-1.5">
+                            @foreach($users as $user)
+                                <label class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-800 rounded cursor-pointer text-xs text-white">
+                                    <input type="checkbox" value="{{ $user->id }}" data-name="{{ $user->name }}"
+                                           onchange="updateCreateAssigneeSelection()"
+                                           class="create-assignee-checkbox rounded border-gray-700 bg-gray-800 text-[#00B8D9] focus:ring-0">
+                                    <span>{{ $user->name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="flex justify-end gap-2 pt-2 border-t border-gray-800">
                     <button type="button" id="cancelTaskModal"
-                            class="px-3 py-1 rounded-md bg-gray-800 text-gray-300 hover:bg-gray-700 transition text-sm font-medium">
+                            class="px-3 py-1 rounded-md bg-gray-800 text-gray-300 hover:bg-gray-700 transition text-md font-medium">
                         Cancel
                     </button>
                     <button type="submit"
-                            class="px-3 py-1 rounded-md bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition text-sm">
+                            class="px-3 py-1 rounded-md bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition text-md">
                         Create Task
                     </button>
                 </div>
@@ -297,32 +336,37 @@
 
                     <!-- Subtasks Section -->
                     <div>
-                        <div class="flex items-center justify-between mb-1.5">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">SUBTASKS</span>
+                        <!-- Subtasks Header & Add Button -->
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">SUBTASKS</span>
                             <button type="button" onclick="toggleSubtaskForm()"
-                                    class="text-[11px] text-[#00B8D9] font-semibold hover:underline flex items-center gap-1">
+                                    class="text-xs text-[#00B8D9] font-semibold hover:underline flex items-center gap-1 cursor-pointer">
                                 + Add Subtask
                             </button>
                         </div>
 
+                        <!-- Add Subtask Form -->
                         <div id="subtaskForm" class="hidden mb-3">
                             <div class="flex gap-2">
                                 <input type="text" id="newSubtaskTitle" placeholder="Subtask title..."
-                                       class="w-full bg-[#03060B] border border-gray-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
-                                <button type="button" onclick="extracted();"
-                                        class="px-3 py-1.5 bg-[#00B8D9] text-gray-950 font-bold rounded-lg text-xs hover:bg-[#00A3C4] transition shrink-0">
+                                       onkeydown="if(event.key === 'Enter'){ event.preventDefault(); addSubtask(); }"
+                                       class="w-full bg-[#03060B] border border-gray-800 rounded-lg px-3 py-1.5 text-xs text-white focus:border-[#00B8D9] focus:outline-none">
+
+                                <button type="button" onclick="addSubtask()"
+                                        class="px-3 py-1.5 bg-[#00B8D9] text-gray-950 font-bold rounded-lg text-xs hover:bg-[#00A3C4] transition shrink-0 cursor-pointer">
                                     Add
                                 </button>
+
                                 <button type="button" onclick="toggleSubtaskForm()"
-                                        class="px-2.5 py-1.5 bg-gray-800 text-gray-400 rounded-lg text-xs hover:text-white transition">
+                                        class="px-2.5 py-1.5 bg-gray-800 text-gray-400 rounded-lg text-xs hover:text-white transition cursor-pointer">
                                     ✕
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Subtasks List -->
-                        <div id="detailSubtasks" class="text-xs text-gray-400 space-y-1.5">
-                            No subtasks
+                        <!-- Subtasks List Container -->
+                        <div id="detailSubtasks" class="space-y-2">
+                            <div class="text-xs text-gray-500 py-2">No subtasks</div>
                         </div>
                     </div>
 
@@ -370,18 +414,17 @@
 
                         <!-- Task Progress -->
                         <div>
-                            <span class="text-[10px] text-gray-400 block mb-0.5">Task progress</span>
-                            <span class="text-gray-400 text-[11px]">No subtasks · 0%</span>
+                            <span class="text-xs text-gray-400 block mb-1">Task progress</span>
+                            <span id="stat-progress-text"
+                                  class="text-sm font-semibold text-white">No subtasks · 0%</span>
                         </div>
 
-                        <!-- Subtasks Summary -->
-                        <div>
-                            <span class="text-[10px] text-gray-400 block mb-0.5">Subtasks</span>
-                            <div class="text-white space-y-0.5 font-medium text-xs">
-                                <div>0 total</div>
-                                <div>0 completed</div>
-                                <div>0 remaining</div>
-                            </div>
+                        <!-- Subtasks Counters -->
+                        <div class="mt-3">
+                            <span class="text-xs text-gray-400 block mb-1">Subtasks</span>
+                            <p class="text-sm font-bold text-white"><span id="stat-total">0</span> total</p>
+                            <p class="text-sm font-bold text-white"><span id="stat-completed">0</span> completed</p>
+                            <p class="text-sm font-bold text-white"><span id="stat-remaining">0</span> remaining</p>
                         </div>
 
                         <!-- Priority -->
@@ -498,22 +541,44 @@
                     </div>
                 </div>
 
-                <!-- 5. Assignees -->
-                <div class="mb-4">
+                <!-- 5. Assignees Dropdown -->
+                <div class="mb-4 relative">
                     <label class="block text-xs font-semibold text-gray-400 mb-1">Assignees</label>
-                    <select id="editAssignees" multiple
-                            class="w-full bg-gray-900 border border-gray-800 rounded-lg p-2 text-xs text-white focus:border-[#00B8D9] focus:outline-none h-24">
+
+                    <!-- Dropdown Button -->
+                    <button type="button" id="assigneesDropdownBtn" onclick="toggleAssigneeDropdown()"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-xs text-white flex justify-between items-center focus:border-[#00B8D9] focus:outline-none">
+                        <span id="selectedAssigneesText" class="truncate text-gray-400">Select Assignees...</span>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+                    <!-- Hidden Real Select (Form Submit ke liye) -->
+                    <select id="editAssignees" name="assignees[]" multiple class="hidden">
                         @foreach($users as $user)
                             <option value="{{ $user->id }}">{{ $user->name }}</option>
                         @endforeach
                     </select>
-                    <span class="text-[10px] text-gray-500 block mt-1">Press ctrl and select multiple assignee.</span>
+
+                    <!-- Floating Dropdown Menu -->
+                    <div id="assigneesDropdownMenu"
+                         class="hidden absolute z-50 mt-1 w-full bg-gray-900 border border-gray-800 rounded-lg shadow-xl max-h-48 overflow-y-auto p-1.5">
+                        @foreach($users as $user)
+                            <label class="flex items-center gap-2.5 px-2 py-1.5 hover:bg-gray-800 rounded cursor-pointer text-xs text-white">
+                                <input type="checkbox" value="{{ $user->id }}" data-name="{{ $user->name }}"
+                                       onchange="updateAssigneeSelection()"
+                                       class="assignee-checkbox rounded border-gray-700 bg-gray-800 text-[#00B8D9] focus:ring-0">
+                                <span>{{ $user->name }}</span>
+                            </label>
+                        @endforeach
+                    </div>
                 </div>
 
                 <!-- 6. New Attachments -->
                 <div class="mb-5">
                     <label class="block text-xs font-semibold text-gray-400 mb-1">Attach Files</label>
-                    <input type="file" id="editAttachments" multiple
+                    <input type="file" id="editAttachments" multiple accept="image/*,.pdf"
                            class="w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-800 file:text-gray-200 hover:file:bg-gray-700 cursor-pointer">
                 </div>
 
@@ -534,530 +599,13 @@
 
 
     <script>
-        // Global Active Task ID Variable //
-        let currentTaskId = null;
-
-        // Add Task Modal Handlers //
-        let taskModal = document.getElementById('taskModal');
-        let openTaskBtn = document.getElementById('openTaskModal');
-        let closeTaskBtn = document.getElementById('closeTaskModal');
-        let cancelTaskBtn = document.getElementById('cancelTaskModal');
-
-        if (openTaskBtn) openTaskBtn.onclick = () => taskModal.classList.remove('hidden');
-        if (closeTaskBtn) closeTaskBtn.onclick = () => taskModal.classList.add('hidden');
-        if (cancelTaskBtn) cancelTaskBtn.onclick = () => taskModal.classList.add('hidden');
-
-        function openTaskDetail(element) {
-            try {
-                let rawData = element.getAttribute('data-task');
-                if (!rawData) return;
-
-                let task = JSON.parse(rawData);
-                currentTaskId = task.id;
-
-                document.getElementById('detailSummary').innerText = task.summary || 'No Summary';
-                document.getElementById('detailDescription').innerText = task.description || 'No description provided.';
-
-                document.getElementById('detailProject').innerText = task.project ? task.project.name : 'NO PROJECT';
-
-                let statusObj = task.status || task.task_status;
-                let statusName = statusObj ? statusObj.name : 'To Do';
-                let statusColor = statusObj ? statusObj.color : '#3B82F6';
-
-                let statusTextEl = document.getElementById('detailStatus');
-                if (statusTextEl) {
-                    statusTextEl.innerText = statusName;
-                }
-
-                let statusDotEl = document.getElementById('detailStatusDot');
-                if (statusDotEl) {
-                    statusDotEl.style.backgroundColor = statusColor;
-                }
-
-                document.getElementById('detailPriority').innerText = task.priority || 'Medium';
-                document.getElementById('detailDueDate').innerText = task.due_date || '—';
-
-                if (task.created_at) {
-                    let date = new Date(task.created_at);
-                    document.getElementById('detailCreated').innerText = date.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                    });
-                }
-
-                let assigneesContainer = document.getElementById('detailAssignees');
-                if (assigneesContainer) {
-                    if (task.assignees && task.assignees.length > 0) {
-                        assigneesContainer.innerHTML = task.assignees.map(user => `<div class="inline-flex items-center gap-1.5 bg-[#080D16] border border-gray-800 px-2.5 py-1 rounded text-[11px] text-gray-300"><span>${user.name}</span></div>`).join('');
-                    } else {
-                        assigneesContainer.innerHTML = '<span class="text-[11px] text-gray-500">Unassigned</span>';
-                    }
-                }
-
-                let attachContainer = document.getElementById('detailAttachments');
-                if (attachContainer) {
-                    if (task.attachments && task.attachments.length > 0) {
-                        let files = typeof task.attachments === 'string' ? JSON.parse(task.attachments) : task.attachments;
-                        let fileHtml = files.map(f => {
-                            let path = typeof f === 'object' ? f.file_path : f;
-                            let name = (typeof f === 'object' && f.original_name) ? f.original_name : path.split('/').pop();
-                            return `<div class="mt-1"><a href="/storage/${path}" target="_blank" download class="text-[#00B8D9] hover:underline flex items-center gap-1">📎 ${name}</a></div>`;
-                        }).join('');
-                        attachContainer.innerHTML = fileHtml;
-                    } else {
-                        attachContainer.innerText = 'No attachments.';
-                    }
-                }
-
-                renderSubtasks(task.subtasks || []);
-                renderComments(task.comments || []);
-
-                document.getElementById('taskDetailModal').classList.remove('hidden');
-
-            } catch (error) {
-                console.error("Error loading task details:", error);
-            }
-        }
-
-        function closeTaskDetailModal() {
-            document.getElementById('taskDetailModal').classList.add('hidden');
-        }
-
-        // Toggle Subtask Form Input
-        function toggleSubtaskForm() {
-            let form = document.getElementById('subtaskForm');
-            form.classList.toggle('hidden');
-            if (!form.classList.contains('hidden')) {
-                document.getElementById('newSubtaskTitle').focus();
-            }
-        }
-
-        // Render Subtasks List
-        function renderSubtasks(subtasks) {
-            let container = document.getElementById('detailSubtasks');
-            if (!subtasks || subtasks.length === 0) {
-                container.innerHTML = '<span class="text-gray-500">No subtasks</span>';
-                return;
-            }
-
-            container.innerHTML = subtasks.map(st => `
-            <div class="flex items-center gap-2 bg-[#03060B] border border-gray-800 px-3 py-1.5 rounded-lg text-xs text-gray-300 my-1">
-                <input type="checkbox" ${st.is_completed ? 'checked' : ''} class="rounded bg-gray-900 border-gray-700 text-[#00B8D9] focus:ring-0">
-                <span class="${st.is_completed ? 'line-through text-gray-500' : ''}">${st.title}</span>
-            </div>
-        `).join('');
-        }
-
-        // Save Subtask Function
-        function saveSubtask() {
-            const titleInput = document.getElementById('newSubtaskTitle');
-            const title = titleInput ? titleInput.value.trim() : '';
-
-            if (!title) {
-                alert('Subtask title is required');
-                return;
-            }
-
-            if (!currentTaskId) {
-                alert('Missing Task ID');
-                return;
-            }
-
-            fetch('/user/subtasks', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    task_id: currentTaskId,
-                    title: title
-                })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        titleInput.value = '';
-                        if (typeof toggleSubtaskForm === 'function') {
-                            toggleSubtaskForm();
-                        }
-
-                        const container = document.getElementById('detailSubtasks');
-                        if (container) {
-                            if (container.innerText.includes('No subtasks')) {
-                                container.innerHTML = '';
-                            }
-                            container.innerHTML += `
-                        <div class="flex items-center gap-2 bg-[#03060B] border border-gray-800 px-3 py-1.5 rounded-lg text-xs text-gray-300 my-1">
-                            <input type="checkbox" class="rounded bg-gray-900 border-gray-700 text-[#00B8D9] focus:ring-0">
-                            <span>${data.subtask.title}</span>
-                        </div>
-                    `;
-                        }
-
-                        const taskCard = document.querySelector(`[data-task-id="${currentTaskId}"]`);
-                        if (taskCard) {
-                            let taskData = JSON.parse(taskCard.getAttribute('data-task'));
-                            if (!taskData.subtasks) taskData.subtasks = [];
-                            taskData.subtasks.push(data.subtask);
-                            taskCard.setAttribute('data-task', JSON.stringify(taskData));
-
-                            const cardSubtaskContainer = document.getElementById(`card-subtasks-${currentTaskId}`);
-                            if (cardSubtaskContainer) {
-                                cardSubtaskContainer.innerHTML = `<span class="text-[11px] text-[#00B8D9] font-medium">${taskData.subtasks.length} Subtask(s)</span>`;
-                            }
-                        }
-
-                    } else {
-                        alert('Error: ' + (data.error || 'Subtask can not be saved'));
-                    }
-                })
-                .catch(err => {
-                    console.error("Error:", err);
-                    alert('Server Error!');
-                });
-        }
-
-        function renderComments(comments) {
-            let container = document.getElementById('detailComments');
-            if (!comments || comments.length === 0) {
-                container.innerHTML = '<span class="text-gray-500 block">No comments yet.</span>';
-                return;
-            }
-
-            container.innerHTML = comments.map(c => `
-            <div class="bg-[#03060B] border border-gray-800 p-2.5 rounded-lg text-xs text-gray-300">
-                <div class="flex justify-between items-center mb-1 text-[10px] text-gray-500">
-                    <span class="font-semibold text-gray-400">${c.user ? c.user.name : 'User'}</span>
-                    <span>${c.created_at ? new Date(c.created_at).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : ''}</span>
-                </div>
-                <p class="text-gray-300">${c.comment}</p>
-            </div>
-        `).join('');
-        }
-
-        function saveComment() {
-            const commentInput = document.getElementById('newCommentText');
-            const comment = commentInput ? commentInput.value.trim() : '';
-
-            if (!comment) {
-                alert('Comment required');
-                return;
-            }
-
-            if (!currentTaskId) {
-                alert('Task ID missing hai');
-                return;
-            }
-
-            fetch('/user/comments', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    task_id: currentTaskId,
-                    comment: comment
-                })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        commentInput.value = '';
-
-                        const container = document.getElementById('detailComments');
-                        if (container.innerText.includes('No comments yet.')) {
-                            container.innerHTML = '';
-                        }
-
-                        container.innerHTML += `
-                    <div class="bg-[#03060B] border border-gray-800 p-2.5 rounded-lg text-xs text-gray-300">
-                        <div class="flex justify-between items-center mb-1 text-[10px] text-gray-500">
-                            <span class="font-semibold text-gray-400">${data.comment.user ? data.comment.user.name : 'You'}</span>
-                            <span>Just now</span>
-                        </div>
-                        <p class="text-gray-300">${data.comment.comment || comment}</p>
-                    </div>
-                `;
-                        const taskCard = document.querySelector(`[data-task-id="${currentTaskId}"]`);
-                        if (taskCard) {
-                            let taskData = JSON.parse(taskCard.getAttribute('data-task'));
-                            if (!taskData.comments) taskData.comments = [];
-                            taskData.comments.push(data.comment);
-                            taskCard.setAttribute('data-task', JSON.stringify(taskData));
-                        }
-                    } else {
-                        alert('Error: ' + (data.error || 'Comment not saved'));
-                    }
-                })
-                .catch(err => {
-                    console.error("Error:", err);
-                    alert('Server Error!');
-                });
-        }
-
-        function deleteTask() {
-            if (!currentTaskId) {
-                alert('Task ID is missing!');
-                return;
-            }
-
-            if (!confirm('Do you want to delete this task?')) {
-                return;
-            }
-
-            fetch(`/user/tasks/${currentTaskId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
-                }
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        closeTaskDetailModal();
-                        location.reload();
-                    } else {
-                        alert('Error: ' + (data.error || 'Task not delete'));
-                    }
-                })
-                .catch(err => {
-                    console.error("Error:", err);
-                    alert('Server Error!');
-                });
-        }
-
-
-        function openEditTaskModal(task) {
-            if (!task) return;
-
-            document.getElementById('editTaskId').value = task.id;
-            document.getElementById('editSummary').value = task.summary || '';
-            document.getElementById('editDescription').value = task.description || '';
-
-            if (document.getElementById('editProject')) {
-                document.getElementById('editProject').value = task.project_id || '';
-            }
-            if (document.getElementById('editStatus')) {
-                document.getElementById('editStatus').value = task.task_status_id || '';
-            }
-            if (document.getElementById('editPriority')) {
-                document.getElementById('editPriority').value = task.priority || 'Medium';
-            }
-            if (document.getElementById('editDueDate')) {
-                document.getElementById('editDueDate').value = task.due_date || '';
-            }
-
-            // Assignees Auto-select
-            let assigneesSelect = document.getElementById('editAssignees');
-            if (assigneesSelect) {
-                let assignedIds = task.assignees ? task.assignees.map(u => u.id) : [];
-                Array.from(assigneesSelect.options).forEach(option => {
-                    option.selected = assignedIds.includes(parseInt(option.value));
-                });
-            }
-
-            // Attachments Reset
-            let fileInput = document.getElementById('editAttachments');
-            if (fileInput) fileInput.value = '';
-
-            document.getElementById('editTaskModal').classList.remove('hidden');
-        }
-
-        function openEditModalFromCard(btn) {
-            const card = btn.closest('[data-task]');
-            if (!card) return;
-
-            try {
-                let task = JSON.parse(card.getAttribute('data-task'));
-                openEditTaskModal(task);
-            } catch (e) {
-                console.error("Task data parse error:", e);
-            }
-        }
-
-        function closeEditTaskModal() {
-            document.getElementById('editTaskModal').classList.add('hidden');
-        }
-
-        function closeEditModal() {
-            closeEditTaskModal();
-        }
-
-        function submitEditTask(e) {
-            e.preventDefault();
-            const taskId = document.getElementById('editTaskId').value;
-            let formData = new FormData();
-
-            // Laravel Multipart PUT Spoofing
-            formData.append('_method', 'PUT');
-
-            formData.append('summary', document.getElementById('editSummary').value);
-            formData.append('description', document.getElementById('editDescription').value);
-
-            if (document.getElementById('editProject')) {
-                formData.append('project_id', document.getElementById('editProject').value);
-            }
-            if (document.getElementById('editStatus')) {
-                formData.append('task_status_id', document.getElementById('editStatus').value);
-            }
-            if (document.getElementById('editPriority')) {
-                formData.append('priority', document.getElementById('editPriority').value);
-            }
-            if (document.getElementById('editDueDate')) {
-                formData.append('due_date', document.getElementById('editDueDate').value);
-            }
-
-            // Assignees
-            let assigneesSelect = document.getElementById('editAssignees');
-            if (assigneesSelect) {
-                let selectedAssignees = Array.from(assigneesSelect.selectedOptions).map(o => o.value);
-                selectedAssignees.forEach(id => formData.append('assignees[]', id));
-            }
-
-            // Attachments
-            let fileInput = document.getElementById('editAttachments');
-            if (fileInput && fileInput.files.length > 0) {
-                for (let i = 0; i < fileInput.files.length; i++) {
-                    formData.append('attachments[]', fileInput.files[i]);
-                }
-            }
-
-            fetch(`/user/tasks/${taskId}`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
-                },
-                body: formData
-            })
-                .then(res => res.json())
-                .then(resData => {
-                    if (resData.success) {
-                        closeEditTaskModal();
-                        location.reload();
-                    } else {
-                        alert('Error updating task: ' + (resData.error || 'Unknown error'));
-                    }
-                })
-                .catch(err => {
-                    console.error("Error:", err);
-                    alert('Server Error!');
-                });
-        }
-
-        function extracted() {
-            saveSubtask();
-        }
-
-
-        document.addEventListener('DOMContentLoaded', function () {
-
-            // 1. Kanban Drag and Drop Initializer
-            document.querySelectorAll('.kanban-column').forEach(column => {
-                new Sortable(column, {
-                    group: 'kanban',
-                    animation: 150,
-                    ghostClass: 'opacity-50',
-                    dragClass: 'shadow-2xl',
-                    onEnd: function (evt) {
-                        const itemEl = evt.item;
-                        const taskId = itemEl.getAttribute('data-task-id');
-                        const newColumn = evt.to;
-                        const oldColumn = evt.from;
-                        const newStatusId = newColumn.getAttribute('data-status-id');
-                        const oldStatusId = oldColumn.getAttribute('data-status-id');
-
-                        if (newStatusId === oldStatusId) return;
-
-                        updateColumnPlaceholders(oldColumn);
-                        updateColumnPlaceholders(newColumn);
-
-                        fetch("{{ route('tasks.updateStatus') }}", {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                task_id: taskId,
-                                status_id: newStatusId
-                            })
-                        })
-                            .then(res => res.json())
-                            .then(data => {
-                                if (data.success) {
-                                    let rawTask = itemEl.getAttribute('data-task');
-                                    if (rawTask) {
-                                        let taskData = JSON.parse(rawTask);
-
-                                        taskData.task_status_id = newStatusId;
-                                        taskData.status = {
-                                            id: newStatusId,
-                                            name: data.status_name,
-                                            color: data.status_color || '#3B82F6'
-                                        };
-
-                                        itemEl.setAttribute('data-task', JSON.stringify(taskData));
-                                    }
-
-                                    updateBadgeCounts(oldColumn, newColumn);
-                                } else {
-                                    oldColumn.appendChild(itemEl);
-                                    updateColumnPlaceholders(oldColumn);
-                                    updateColumnPlaceholders(newColumn);
-                                }
-                            })
-                            .catch(err => {
-                                console.error('Error:', err);
-                                oldColumn.appendChild(itemEl);
-                                updateColumnPlaceholders(oldColumn);
-                                updateColumnPlaceholders(newColumn);
-                            });
-                    }
-                });
-            });
-
-            function updateBadgeCounts(fromCol, toCol) {
-                const fromBadge = fromCol.closest('div').querySelector('.task-count');
-                const toBadge = toCol.closest('div').querySelector('.task-count');
-
-                const fromCount = fromCol.querySelectorAll('.task-card').length;
-                const toCount = toCol.querySelectorAll('.task-card').length;
-
-                if (fromBadge) fromBadge.innerText = fromCount;
-                if (toBadge) toBadge.innerText = toCount;
-            }
-
-            function updateColumnPlaceholders(column) {
-                const cards = column.querySelectorAll('.task-card');
-                let placeholder = column.querySelector('.no-tasks-placeholder');
-
-                if (cards.length === 0) {
-                    if (!placeholder) {
-                        placeholder = document.createElement('div');
-                        placeholder.className = 'no-tasks-placeholder text-center text-gray-500 text-xs py-8 border border-dashed border-gray-800 rounded-lg';
-                        placeholder.innerText = 'No tasks here';
-                        column.appendChild(placeholder);
-                    } else {
-                        placeholder.classList.remove('hidden');
-                    }
-                } else {
-                    if (placeholder) {
-                        placeholder.classList.add('hidden');
-                    }
-                }
-            }
-
-        });
+        window.routes = {
+            updateStatus: "{{ route('tasks.updateStatus') }}",
+            reorderStatus: "{{ route('task-statuses.reorder') }}"
+        };
+        window.csrfToken = "{{ csrf_token() }}";
     </script>
+
+
+    <script src="{{ asset('js/tasks.js') }}"></script>
 @endsection

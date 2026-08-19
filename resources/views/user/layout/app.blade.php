@@ -6,8 +6,17 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>User Dashboard</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white font-sans antialiased">
+<body class="bg-gray-900 text-white font-sans antialiased no-scrollbar">
 
 <div class="flex h-screen bg-gray-900 overflow-hidden">
 
@@ -92,7 +101,7 @@
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-4 sm:p-6">
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 no-scrollbar">
             @yield('content')
         </main>
     </div>

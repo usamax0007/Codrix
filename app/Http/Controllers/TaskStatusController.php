@@ -49,4 +49,22 @@ class TaskStatusController extends Controller
         $taskStatus->delete();
         return redirect()->back()->with('success', 'Status deleted successfully.');
     }
+
+
+    public function reorder(Request $request)
+    {
+        $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'exists:task_statuses,id',
+        ]);
+
+        foreach ($request->order as $index => $id) {
+            \App\Models\TaskStatus::where('id', $id)->update(['order' => $index]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Statuses reordered successfully'
+        ]);
+    }
 }
