@@ -9,14 +9,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('task_user', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('task_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->timestamps();
+        if (! Schema::hasTable('task_user')) {
+            Schema::create('task_user', function (Blueprint $table): void {
+                $table->id();
+                $table->foreignId('task_id')->constrained()->cascadeOnDelete();
+                $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+                $table->timestamps();
 
-            $table->unique(['task_id', 'user_id']);
-        });
+                $table->unique(['task_id', 'user_id']);
+            });
+        }
 
         if (Schema::hasColumn('tasks', 'assignee_id')) {
             $now = now();
@@ -45,8 +47,22 @@ return new class extends Migration
                     }
                 });
 
-            Schema::table('tasks', function (Blueprint $table): void {
-                $table->dropConstrainedForeignId('assignee_id');
+            $fkExists = DB::selectOne("
+            SELECT CONSTRAINT_NAME
+            FROM information_schema.TABLE_CONSTRAINTS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'tasks'
+              AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+              AND CONSTRAINT_NAME = 'tasks_assignee_id_foreign'
+            LIMIT 1
+        ");
+
+            Schema::table('tasks', function (Blueprint $table) use ($fkExists): void {
+                if ($fkExists) {
+                    $table->dropForeign('tasks_assignee_id_foreign');
+                }
+
+                $table->dropColumn('assignee_id');
             });
         }
     }
