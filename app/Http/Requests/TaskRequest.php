@@ -19,7 +19,7 @@ class TaskRequest extends FormRequest
             'description' => 'nullable|string',
             'assignee_id' => 'nullable|exists:users,id',
             'priority' => 'required|in:low,medium,high',
-            'status' => 'required|in:to_do,in_progress,testing,done',
+            'status' => 'required',
             'due_date' => 'nullable|date',
         ];
     }

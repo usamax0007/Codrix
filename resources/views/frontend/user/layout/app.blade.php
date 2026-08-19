@@ -33,18 +33,7 @@
 
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
 
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            
-            if (sidebar.classList.contains('hidden')) {
-                sidebar.classList.remove('hidden');
-                overlay.classList.remove('hidden');
-            } else {
-                sidebar.classList.add('hidden');
-                overlay.classList.add('hidden');
-            }
-        }
+    <script src="{{ asset('js/user.js') }}">
+
     </script>
 </body>
