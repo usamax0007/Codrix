@@ -24,14 +24,19 @@
                 <p class="text-gray-400 text-sm">Drag cards between columns, or click a task for details.</p>
             </div>
             <div class="flex gap-3">
-                <a href="{{ route('task-statuses.index') }}"
-                   class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 font-medium px-4 py-2 rounded-lg transition text-sm flex items-center">
-                    Manage Statuses
-                </a>
-                <button id="openTaskModal"
-                        class="bg-emerald-500 hover:bg-emerald-600 text-gray-900 font-semibold px-4 py-2 rounded-lg transition text-sm">
-                    + Add Task
-                </button>
+                @can('reorder-status')
+                    <a href="{{ route('task-statuses.index') }}"
+                       class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 font-medium px-4 py-2 rounded-lg transition text-sm flex items-center">
+                        Manage Statuses
+                    </a>
+                @endcan
+
+                @can('create-task')
+                    <button id="openTaskModal"
+                            class="bg-emerald-500 hover:bg-emerald-600 text-gray-900 font-semibold px-4 py-2 rounded-lg transition text-sm">
+                        + Add Task
+                    </button>
+                @endcan
             </div>
         </div>
 

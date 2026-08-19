@@ -19,73 +19,74 @@ function openTaskDetail(element) {
         let task = JSON.parse(rawData);
         currentTaskId = task.id;
 
-        document.getElementById('detailSummary').innerText = task.summary || 'No Summary';
-        document.getElementById('detailDescription').innerText = task.description || 'No description provided.';
-
-        document.getElementById('detailProject').innerText = task.project ? task.project.name : 'NO PROJECT';
-
-        let statusObj = task.status || task.task_status;
-        let statusName = statusObj ? statusObj.name : 'To Do';
-        let statusColor = statusObj ? statusObj.color : '#3B82F6';
-
-        let statusTextEl = document.getElementById('detailStatus');
-        if (statusTextEl) {
-            statusTextEl.innerText = statusName;
-        }
-
-        let statusDotEl = document.getElementById('detailStatusDot');
-        if (statusDotEl) {
-            statusDotEl.style.backgroundColor = statusColor;
-        }
-
-        document.getElementById('detailPriority').innerText = task.priority || 'Medium';
-        document.getElementById('detailDueDate').innerText = task.due_date || '—';
-
-        if (task.created_at) {
-            let date = new Date(task.created_at);
-            document.getElementById('detailCreated').innerText = date.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-            });
-        }
-
-        let assigneesContainer = document.getElementById('detailAssignees');
-        if (assigneesContainer) {
-            if (task.assignees && task.assignees.length > 0) {
-                assigneesContainer.innerHTML = task.assignees.map(user => `<div class="inline-flex items-center gap-1.5 bg-[#080D16] border border-gray-800 px-2.5 py-1 rounded text-[11px] text-gray-300"><span>${user.name}</span></div>`).join('');
-            } else {
-                assigneesContainer.innerHTML = '<span class="text-[11px] text-gray-500">Unassigned</span>';
+        fetch(`/user/tasks/${task.id}/details`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': window.csrfToken || document.querySelector('meta[name="csrf-token"]')?.content
             }
-        }
-
-        let attachContainer = document.getElementById('detailAttachments');
-        if (attachContainer) {
-            if (task.attachments && task.attachments.length > 0) {
-                let files = typeof task.attachments === 'string' ? JSON.parse(task.attachments) : task.attachments;
-                let fileHtml = files.map(f => {
-                    let path = typeof f === 'object' ? f.file_path : f;
-                    let name = (typeof f === 'object' && f.original_name) ? f.original_name : path.split('/').pop();
-
-                    let isPdf = name.toLowerCase().endsWith('.pdf');
-                    let icon = isPdf ? '📄' : '📎';
-
-                    return `<div class="mt-1"><a href="/storage/${path}" target="_blank" rel="noopener noreferrer" class="text-[#00B8D9] hover:underline inline-flex items-center gap-1">${icon} ${name}</a></div>`;
-                }).join('');
-                attachContainer.innerHTML = fileHtml;
-            } else {
-                attachContainer.innerText = 'No attachments.';
-            }
-        }
-
-        renderSubtasks(task.subtasks || []);
-        renderComments(task.comments || []);
-
-        document.getElementById('taskDetailModal').classList.remove('hidden');
+        })
+            .then(res => res.json())
+            .then(freshTask => {
+                window.currentTask = freshTask;
+                renderTaskDetailData(freshTask);
+            })
+            .catch(() => renderTaskDetailData(task));
 
     } catch (error) {
         console.error("Error loading task details:", error);
     }
+}
+
+function renderTaskDetailData(task) {
+    document.getElementById('detailSummary').innerText = task.summary || 'No Summary';
+    document.getElementById('detailDescription').innerText = task.description || 'No description provided.';
+    document.getElementById('detailProject').innerText = task.project ? task.project.name : 'NO PROJECT';
+
+    let statusObj = task.status || task.task_status;
+    let statusTextEl = document.getElementById('detailStatus');
+    if (statusTextEl) statusTextEl.innerText = statusObj ? statusObj.name : 'To Do';
+
+    let statusDotEl = document.getElementById('detailStatusDot');
+    if (statusDotEl) statusDotEl.style.backgroundColor = statusObj ? statusObj.color : '#3B82F6';
+
+    document.getElementById('detailPriority').innerText = task.priority || 'Medium';
+    document.getElementById('detailDueDate').innerText = task.due_date || '—';
+
+    if (task.created_at) {
+        let date = new Date(task.created_at);
+        document.getElementById('detailCreated').innerText = date.toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric'
+        });
+    }
+
+    let assigneesContainer = document.getElementById('detailAssignees');
+    if (assigneesContainer) {
+        if (task.assignees && task.assignees.length > 0) {
+            assigneesContainer.innerHTML = task.assignees.map(user => `<div class="inline-flex items-center gap-1.5 bg-[#080D16] border border-gray-800 px-2.5 py-1 rounded text-[11px] text-gray-300"><span>${user.name}</span></div>`).join('');
+        } else {
+            assigneesContainer.innerHTML = '<span class="text-[11px] text-gray-500">Unassigned</span>';
+        }
+    }
+
+    let attachContainer = document.getElementById('detailAttachments');
+    if (attachContainer) {
+        if (task.attachments && task.attachments.length > 0) {
+            let files = typeof task.attachments === 'string' ? JSON.parse(task.attachments) : task.attachments;
+            let fileHtml = files.map(f => {
+                let path = typeof f === 'object' ? f.file_path : f;
+                let name = (typeof f === 'object' && f.original_name) ? f.original_name : path.split('/').pop();
+                let isPdf = name.toLowerCase().endsWith('.pdf');
+                return `<div class="mt-1"><a href="/storage/${path}" target="_blank" rel="noopener noreferrer" class="text-[#00B8D9] hover:underline inline-flex items-center gap-1">${isPdf ? '📄' : '📎'} ${name}</a></div>`;
+            }).join('');
+            attachContainer.innerHTML = fileHtml;
+        } else {
+            attachContainer.innerText = 'No attachments.';
+        }
+    }
+
+    renderSubtasks(task.subtasks || []);
+    renderComments(task.comments || []);
+    document.getElementById('taskDetailModal').classList.remove('hidden');
 }
 
 function closeTaskDetailModal() {
@@ -233,13 +234,14 @@ function toggleSubtask(subtaskId, checkbox) {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': window.csrfToken || document.querySelector('meta[name="csrf-token"]')?.content
         },
         body: JSON.stringify({is_completed: isCompleted})
     })
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                // 1. Text styling update
                 if (titleSpan) {
                     if (isCompleted) {
                         titleSpan.classList.add('line-through', 'text-gray-500');
@@ -249,7 +251,20 @@ function toggleSubtask(subtaskId, checkbox) {
                         titleSpan.classList.add('text-gray-200');
                     }
                 }
-                updateSubtaskStats();
+
+                checkbox.defaultChecked = isCompleted;
+
+                if (window.currentTask && window.currentTask.subtasks) {
+                    const subtask = window.currentTask.subtasks.find(s => s.id == subtaskId);
+                    if (subtask) {
+                        subtask.is_completed = isCompleted ? 1 : 0;
+                    }
+                }
+
+                // 4. Update Stats & Progress
+                if (typeof updateSubtaskStats === 'function') {
+                    updateSubtaskStats();
+                }
             } else {
                 checkbox.checked = !isCompleted;
             }
@@ -412,26 +427,13 @@ function openEditTaskModal(task) {
     document.getElementById('editSummary').value = task.summary || '';
     document.getElementById('editDescription').value = task.description || '';
 
-    if (document.getElementById('editProject')) {
-        document.getElementById('editProject').value = task.project_id || '';
-    }
-    if (document.getElementById('editStatus')) {
-        document.getElementById('editStatus').value = task.task_status_id || '';
-    }
-    if (document.getElementById('editPriority')) {
-        document.getElementById('editPriority').value = task.priority || 'Medium';
-    }
-    if (document.getElementById('editDueDate')) {
-        document.getElementById('editDueDate').value = task.due_date || '';
-    }
+    if (document.getElementById('editProject')) document.getElementById('editProject').value = task.project_id || '';
+    if (document.getElementById('editStatus')) document.getElementById('editStatus').value = task.task_status_id || '';
+    if (document.getElementById('editPriority')) document.getElementById('editPriority').value = task.priority || 'Medium';
+    if (document.getElementById('editDueDate')) document.getElementById('editDueDate').value = task.due_date || '';
 
-    let assigneesSelect = document.getElementById('editAssignees');
-    if (assigneesSelect) {
-        let assignedIds = task.assignees ? task.assignees.map(u => u.id) : [];
-        Array.from(assigneesSelect.options).forEach(option => {
-            option.selected = assignedIds.includes(parseInt(option.value));
-        });
-    }
+    let assignedIds = task.assignees ? task.assignees.map(u => u.id) : [];
+    setEditAssignees(assignedIds);
 
     let fileInput = document.getElementById('editAttachments');
     if (fileInput) fileInput.value = '';
@@ -522,9 +524,7 @@ function addSubtask() {
     saveSubtask();
 }
 
-function extracted() {
-    saveSubtask();
-}
+
 
 document.addEventListener('DOMContentLoaded', function () {
 

@@ -16,7 +16,7 @@ class TaskController extends Controller
         $projects = Project::all();
 
         $statuses = TaskStatus::with([
-            'tasks.status',      // <-- YE MISSING THA (Status details pass karne ke liye)
+            'tasks.status',
             'tasks.project',
             'tasks.assignees',
             'tasks.subtasks',
@@ -46,6 +46,10 @@ class TaskController extends Controller
 
     public function store(Request $request)
     {
+        if (!auth()->user()->can('create-task')) {
+            abort(403, "You don't have permission to create task!.");
+        }
+
         $request->validate([
             'project_id' => 'required|exists:projects,id',
             'summary' => 'required|string|max:255',
