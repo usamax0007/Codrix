@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Users\Tables;
+namespace App\Filament\Resources\Roles\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -8,29 +8,27 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class UsersTable
+class RolesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Role Name')
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('email')
-                    ->label('Email address')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('roles.name')
-                    ->label('Role')
+                TextColumn::make('permissions.name')
+                    ->label('Permissions')
                     ->badge()
-                    ->color(fn(string $state): string => match (strtolower($state)) {
-                        'admin' => 'danger',
-                        'user' => 'info',
-                        default => 'primary',
-                    }),
+                    ->color('success')
+                    ->limitList(5),
+
+                TextColumn::make('users_count')
+                    ->counts('users')
+                    ->label('Users')
+                    ->sortable(),
             ])
             ->filters([
                 //

@@ -73,30 +73,39 @@
                                     <span class="text-[16px] font-bold text-[#00B8D9] tracking-wider uppercase">
                                         {{ $task->project->name ?? 'NO PROJECT' }}
                                     </span>
-                                    <div class="flex items-center gap-2">
-                                        <button type="button"
-                                                onclick="event.stopPropagation(); openEditModalFromCard(this)"
-                                                class="text-gray-500 hover:text-[#00B8D9] transition p-1 cursor-pointer"
-                                                title="Edit Task">
-                                            <svg class="w-4 h-4 text-gray-500" aria-hidden="true"
-                                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                                 viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round"
-                                                      stroke-linejoin="round" stroke-width="2"
-                                                      d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
-                                            </svg>
-                                        </button>
 
-                                        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST"
-                                              onsubmit="return confirm('Delete this task?')" class="inline"
-                                              onclick="event.stopPropagation()">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                    class="text-gray-500 hover:text-red-400 text-xs leading-none transition cursor-pointer"
-                                                    title="Delete Task">✕
+                                    <div class="flex items-center gap-2">
+
+                                        {{-- Edit Task Button --}}
+                                        @can('edit-task')
+                                            <button type="button"
+                                                    onclick="event.stopPropagation(); openEditModalFromCard(this)"
+                                                    class="text-gray-500 hover:text-[#00B8D9] transition p-1 cursor-pointer"
+                                                    title="Edit Task">
+                                                <svg class="w-4 h-4 text-gray-500" aria-hidden="true"
+                                                     xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                     fill="none"
+                                                     viewBox="0 0 24 24">
+                                                    <path stroke="currentColor" stroke-linecap="round"
+                                                          stroke-linejoin="round" stroke-width="2"
+                                                          d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
+                                                </svg>
                                             </button>
-                                        </form>
+                                        @endcan
+
+                                        {{-- Delete Task Button --}}
+                                        @can('delete-task')
+                                            <form action="{{ route('tasks.destroy', $task->id) }}" method="POST"
+                                                  onsubmit="return confirm('Delete this task?')" class="inline"
+                                                  onclick="event.stopPropagation()">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="text-gray-500 hover:text-red-400 text-xs leading-none transition cursor-pointer"
+                                                        title="Delete Task">✕
+                                                </button>
+                                            </form>
+                                        @endcan
                                     </div>
                                 </div>
 

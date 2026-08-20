@@ -149,19 +149,18 @@ class TaskController extends Controller
 
     public function destroy($id)
     {
+        if (! auth()->user()->can('delete-task')) {
+            return back()->with('error', 'You do not have permission to delete this task..');
+        }
+
         try {
             $task = Task::findOrFail($id);
             $task->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Task deleted successfully'
-            ]);
+            return back()->with('success', 'Task deleted successfully');
+
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => $e->getMessage()
-            ], 500);
+            return back()->with('error', $e->getMessage());
         }
     }
 
