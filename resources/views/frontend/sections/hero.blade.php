@@ -12,7 +12,7 @@
                     XCodrix is a software development agency specializing in AI, SaaS, Laravel, Vue.js, mobile apps, and Twilio communication systems for startups and enterprises worldwide.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 pt-2">
-                    <a href="{{ url('/contact') }}" class="xc-btn-primary">Book a Call</a>
+                    @include('frontend.components.book-a-call-button')
                     <a href="{{ url('/contact') }}" class="xc-btn-outline">Get a Quote</a>
                 </div>
                 <p class="text-sm text-slate-400">Free consultation · Proposal within 48 hours · No commitment</p>

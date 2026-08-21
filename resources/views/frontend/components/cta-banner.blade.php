@@ -7,7 +7,7 @@
         <h2 class="text-2xl md:text-3xl font-bold text-white mb-3">{{ $title }}</h2>
         <p class="text-slate-400 mb-8 max-w-xl mx-auto">{{ $subtitle }}</p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="{{ url('/contact') }}" class="xc-btn-primary">Book a Call</a>
+            @include('frontend.components.book-a-call-button')
             <a href="{{ url('/contact') }}" class="xc-btn-outline">Get a Quote</a>
         </div>
     </div>
