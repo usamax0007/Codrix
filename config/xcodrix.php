@@ -3,7 +3,7 @@
 return [
     'name' => 'XCodrix',
     'domain' => 'https://xcodrix.com',
-    'email' => 'hello@xcodrix.com',
+    'email' => 'info@xcoderix.com',
 
     'social' => [
         'linkedin' => 'https://linkedin.com/company/xcodrix',
@@ -229,7 +229,7 @@ return [
         ['q' => 'Can you integrate with our existing systems?', 'a' => 'Yes. We regularly integrate with CRMs, payment gateways, ERPs, Twilio, Stripe, and custom APIs. Our API-first approach ensures smooth connectivity.'],
         ['q' => 'What is your development process?', 'a' => 'We follow an agile process: Discovery → Design → Development (2-week sprints) → Testing → Launch → Support. You receive weekly demos and have direct access to the development team.'],
         ['q' => 'Do you sign NDAs?', 'a' => 'Yes. We sign NDAs before any project discussion and treat all client information as strictly confidential.'],
-        ['q' => 'How do I get started?', 'a' => 'Book a free consultation through our contact page or email hello@xcodrix.com. We respond within 24 hours and provide a tailored proposal within 48 hours.'],
+        ['q' => 'How do I get started?', 'a' => 'Book a free consultation through our contact page or email info@xcoderix.com. We respond within 24 hours and provide a tailored proposal within 48 hours.'],
         ['q' => 'Where is XCodrix located?', 'a' => 'XCodrix operates as a remote-first agency serving clients worldwide. We work across time zones with flexible meeting schedules.'],
         ['q' => 'Can you help with AI integration?', 'a' => 'Yes. We build AI features including chatbots, document processing, predictive analytics, and LLM integrations using OpenAI, Claude, and custom models.'],
     ],
