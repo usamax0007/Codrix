@@ -15,7 +15,7 @@
         @else
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-end">
                 @foreach($posts as $post)
-                    <article class="xc-card scroll-reveal flex flex-col justify-end h-full">
+                    <article class="p-5 xc-card scroll-reveal flex flex-col justify-end h-full">
                         <a href="{{ url('/blog/' . $post->slug) }}" class="block group">
                             @if($post->image)
                                 <img src="{{ asset('storage/' . $post->image) }}" alt="{{ $post->title }}" class="w-full h-40 object-cover rounded-lg mb-4">

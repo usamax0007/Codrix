@@ -12,7 +12,7 @@
 
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach(($preview ? $services->take($limit) : $services) as $service)
-                <article class="xc-card scroll-reveal" id="{{ $service->slug }}">
+                <article class="p-5 xc-card scroll-reveal" id="{{ $service->slug }}">
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-xc-cyan/20 to-xc-blue/20 flex items-center justify-center text-xc-cyan">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>

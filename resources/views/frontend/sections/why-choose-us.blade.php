@@ -12,7 +12,7 @@
 
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach(($preview ? $items->take($limit) : $items) as $item)
-                <div class="xc-card scroll-reveal">
+                <div class="xc-card scroll-reveal p-5">
                     <div class="w-10 h-10 rounded-lg bg-xc-cyan/10 flex items-center justify-center text-xc-cyan mb-4">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     </div>

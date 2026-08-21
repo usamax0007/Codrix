@@ -28,7 +28,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             @foreach($industries as $industry)
-                <article class="xc-card scroll-reveal">
+                <article class="xc-card scroll-reveal p-5">
                     <div class="w-12 h-12 rounded-xl bg-xc-cyan/10 flex items-center justify-center text-xc-cyan mb-4">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
                     </div>

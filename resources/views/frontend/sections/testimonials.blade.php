@@ -12,7 +12,7 @@
 
         <div class="grid md:grid-cols-2 gap-6">
             @foreach(($preview ? $testimonials->take($limit) : $testimonials) as $t)
-                <blockquote class="xc-card scroll-reveal">
+                <blockquote class="p-5 xc-card scroll-reveal">
                     <div class="flex items-center gap-4 mb-4">
                         <img src="{{ $t->imageUrl() }}" alt="{{ $t->name }}" class="w-12 h-12 rounded-full object-cover" width="48" height="48" loading="lazy">
                         <div>

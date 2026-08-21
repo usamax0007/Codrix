@@ -12,7 +12,7 @@
 
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($processSettings->steps() as $step)
-                <div class="xc-card scroll-reveal relative">
+                <div class="xc-card scroll-reveal relative p-5">
                     @if($step['step'])
                         <span class="text-3xl font-extrabold xc-gradient-text mb-3 block">{{ $step['step'] }}</span>
                     @endif

@@ -59,7 +59,6 @@
                     @if($siteSettings->address)
                         <p>{{ $siteSettings->address }}</p>
                     @endif
-                    <p><a href="{{ config('xcodrix.domain') }}" class="hover:text-xc-cyan transition-colors">xcodrix.com</a></p>
                 </address>
                 <a href="{{ url('/contact') }}" class="inline-flex xc-btn-primary text-sm mt-4 !py-2 !px-4">Get a Quote</a>
             </div>

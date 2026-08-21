@@ -12,7 +12,7 @@
 
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($technologyCategories as $category)
-                <div class="xc-card scroll-reveal">
+                <div class="p-5 xc-card scroll-reveal">
                     <h3 class="text-lg font-bold text-white mb-4">{{ $category->name }}</h3>
                     <div class="flex flex-wrap gap-2">
                         @foreach($category->itemsList() as $tech)
