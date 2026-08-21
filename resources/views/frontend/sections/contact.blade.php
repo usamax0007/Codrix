@@ -47,7 +47,7 @@
             @unless($preview)
                 @include('frontend.partials.contact-form')
             @else
-                <div class="xc-card">
+                <div class="xc-card p-5">
                     <h3 class="font-semibold text-white mb-4">Quick Contact</h3>
                     <p class="text-slate-400 text-sm mb-6">Fill out our full contact form for a detailed project discussion.</p>
                     <a href="{{ url('/contact') }}" class="xc-btn-primary w-full text-center">Contact Us</a>
