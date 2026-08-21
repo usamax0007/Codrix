@@ -39,6 +39,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->defaultThemeMode(ThemeMode::Dark)
             ->navigationGroups([
+                'Invoices',
                 'Pages',
                 'Settings',
                 'User',

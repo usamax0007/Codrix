@@ -19,7 +19,7 @@
                 <li><a href="{{ url('/services') }}" class="hover:text-xc-cyan transition-colors {{ request()->is('services') ? 'text-xc-cyan' : '' }}">Services</a></li>
                 <li><a href="{{ url('/process') }}" class="hover:text-xc-cyan transition-colors {{ request()->is('process') ? 'text-xc-cyan' : '' }}">Process</a></li>
                 <li><a href="{{ url('/portfolio') }}" class="hover:text-xc-cyan transition-colors {{ request()->is('portfolio') ? 'text-xc-cyan' : '' }}">Portfolio</a></li>
-                <li><a href="{{ url('/blog') }}" class="hover:text-xc-cyan transition-colors {{ request()->is('blog') ? 'text-xc-cyan' : '' }}">Insights</a></li>
+                <li><a href="{{ url('/blog') }}" class="hover:text-xc-cyan transition-colors {{ request()->is('blog') ? 'text-xc-cyan' : '' }}">Blog</a></li>
                 <li><a href="{{ url('/faq') }}" class="hover:text-xc-cyan transition-colors {{ request()->is('faq') ? 'text-xc-cyan' : '' }}">FAQ</a></li>
                 <li><a href="{{ url('/contact') }}" class="hover:text-xc-cyan transition-colors {{ request()->is('contact') ? 'text-xc-cyan' : '' }}">Contact</a></li>
             </ul>
