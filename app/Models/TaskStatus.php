@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TaskStatus extends Model
 {
-    protected $fillable = ['name', 'color'];
+    protected $fillable = ['name', 'color', 'position'];
 
     public function tasks()
     {

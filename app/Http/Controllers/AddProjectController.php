@@ -21,8 +21,12 @@ class AddProjectController extends Controller
 
     public function store(ProjectRequest $request)
     {
-        Project::create($request->validated());
-        return redirect()->route('user.add-project.index')->with('success', 'Project created successfully.');
+        $project = Project::create($request->validated());
+        return response()->json([
+            'success' => true,
+            'message' => 'Project created successfully.',
+            'project' => $project,
+        ]);
     }
 
     public function show(Project $project)

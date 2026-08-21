@@ -5,9 +5,9 @@
         <main class="p-6">
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-bold text-white">Projects</h1>
-                <a href="{{ route('user.add-project.create') }}" class="px-4 py-2 filament-primary-bg filament-primary-text rounded-lg hover:opacity-80 transition">
+                <button onclick="document.getElementById('addProjectModal').classList.remove('hidden')" class="px-4 py-2 filament-primary-bg filament-primary-text rounded-lg hover:opacity-80 transition">
                     Add Project
-                </a>
+                </button>
             </div>
 
             @if(session('success'))
@@ -89,4 +89,75 @@
             </div>
         </main>
     </div>
+
+    <!-- Add Project Modal -->
+    <div id="addProjectModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto scrollbar-hide">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-white">Add New Project</h2>
+                <button onclick="document.getElementById('addProjectModal').classList.add('hidden')" class="text-gray-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <form id="addProjectForm" onsubmit="addProject(event)">
+                @csrf
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Name</label>
+                        <input type="text" name="name" required class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition" placeholder="Project name">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Description</label>
+                        <textarea name="description" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition resize-none" placeholder="Project description"></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Start Date</label>
+                            <input type="date" name="due_date" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">End Date</label>
+                            <input type="date" name="end_date" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500 transition">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" onclick="document.getElementById('addProjectModal').classList.add('hidden')" class="px-4 py-2 rounded-md bg-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-600 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 rounded-md filament-primary-bg filament-primary-text text-sm font-semibold hover:opacity-80 transition">
+                        Add Project
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function addProject(event) {
+            event.preventDefault();
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            const formData = new FormData(event.target);
+            
+            fetch('{{ route('user.add-project.store') }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error adding project:', error);
+            });
+        }
+    </script>
 @endsection

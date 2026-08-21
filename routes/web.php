@@ -41,6 +41,7 @@ Route::get('/user/dashboard', [UserAuthController::class, 'dashboard'])->name('u
 Route::prefix('user/task-status')->name('user.task-status.')->middleware('auth')->group(function () {
     Route::get('/', [TaskStatusController::class, 'index'])->name('index');
     Route::post('/', [TaskStatusController::class, 'store'])->name('store');
+    Route::post('/update-positions', [TaskStatusController::class, 'updatePositions'])->name('update-positions');
     Route::delete('/{taskStatus}', [TaskStatusController::class, 'destroy'])->name('destroy');
 });
 

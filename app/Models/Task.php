@@ -19,6 +19,7 @@ class Task extends Model
         'due_date',
         'user_id',
         'content',
+        'attachment',
     ];
 
     protected $casts = [

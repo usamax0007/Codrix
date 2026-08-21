@@ -11,7 +11,6 @@ function toggleSidebar() {
     }
 }
 
-// drag and drop
 
 const cards = document.querySelectorAll('.task-card');
 const columns = document.querySelectorAll('.status-column');
@@ -182,9 +181,9 @@ function updateTaskStatus(taskId, newStatus) {
         document.querySelector(
             'meta[name="csrf-token"]'
         ).content;
+    const route = window.taskStatusUpdateRoute.replace(':id', taskId);
     fetch(
-        `{{ route('user.task.status.update', ':id') }}`
-            .replace(':id', taskId),
+        route,
         {
             method: 'PUT',
 
@@ -215,3 +214,44 @@ function updateTaskStatus(taskId, newStatus) {
 
         });
 }
+
+
+// mouse scroller
+
+const board = document.getElementById('task-board');
+
+let isDown = false;
+let startX;
+let scrollLeft;
+
+board.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.task-card')) return;
+
+    isDown = true;
+    board.classList.add('cursor-grabbing');
+
+    startX = e.pageX - board.offsetLeft;
+    scrollLeft = board.scrollLeft;
+});
+
+board.addEventListener('mouseleave', () => {
+    isDown = false;
+    board.classList.remove('cursor-grabbing');
+});
+
+board.addEventListener('mouseup', () => {
+    isDown = false;
+    board.classList.remove('cursor-grabbing');
+});
+
+board.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+
+    e.preventDefault();
+    const x = e.pageX - board.offsetLeft;
+    const walk = (x - startX) * 1.5;
+
+    board.scrollLeft = scrollLeft - walk;
+});
+
+

@@ -19,8 +19,9 @@ class TaskRequest extends FormRequest
             'description' => 'nullable|string',
             'assignee_id' => 'nullable|exists:users,id',
             'priority' => 'required|in:low,medium,high',
-            'status' => 'required',
+            'status' => 'required|exists:task_statuses,name',
             'due_date' => 'nullable|date',
+            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,gif,pdf,doc,docx|max:10240',
         ];
     }
 

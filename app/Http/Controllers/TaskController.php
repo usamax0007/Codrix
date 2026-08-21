@@ -13,23 +13,41 @@ class TaskController extends Controller
     public function index()
     {
         $tasks = Task::with(['project', 'assignee', 'subtasks'])->latest()->get();
-        $statuses = \App\Models\TaskStatus::all();
-        return view('frontend.user.add-task.index', compact('tasks', 'statuses'));
+        $statuses = \App\Models\TaskStatus::orderBy('position')->get();
+        $projects = \App\Models\Project::all();
+        $users = \App\Models\User::all();
+        return view('frontend.user.add-task.index', compact('tasks', 'statuses', 'projects', 'users'));
     }
 
     public function create()
     {
         $projects = \App\Models\Project::all();
         $users = \App\Models\User::all();
-        $statuses = \App\Models\TaskStatus::all();
+        $statuses = \App\Models\TaskStatus::orderBy('position')->get();
         return view('frontend.user.add-task.create', compact('projects', 'users', 'statuses'));
     }
 
     public function store(TaskRequest $request)
     {
-        Task::create($request->validated());
-        return redirect()->route('user.task.index')->with('success', 'Task created successfully.');
+        $data = $request->validated();
+
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->storeAs('attachments', $filename, 'public');
+            $data['attachment'] = $filename;
+        }
+
+        $task = Task::create($data);
+        $task->load(['project', 'assignee']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Task created successfully.',
+            'task' => $task,
+        ]);
     }
+
 
     public function show(Task $task)
     {
@@ -54,7 +72,10 @@ class TaskController extends Controller
     public function destroy(Task $task)
     {
         $task->delete();
-        return redirect()->route('user.task.index')->with('success', 'Task deleted successfully.');
+        return response()->json([
+            'success' => true,
+            'message' => 'Task deleted successfully.',
+        ]);
     }
 
     public function addComment(Request $request, Task $task)
@@ -63,12 +84,28 @@ class TaskController extends Controller
             'content' => 'required|string|max:1000',
         ]);
 
-        $task->comments()->create([
+        $content = $request->input('content');
+        
+        // Decode if content is JSON-encoded
+        if (is_string($content) && (str_starts_with($content, '{') || str_starts_with($content, '['))) {
+            $decoded = json_decode($content, true);
+            if (is_array($decoded) && isset($decoded['content'])) {
+                $content = $decoded['content'];
+            }
+        }
+
+        $comment = $task->comments()->create([
             'user_id' => auth()->id(),
-            'content' => $request->content,
+            'content' => $content,
         ]);
 
-        return redirect()->route('user.task.show', $task)->with('success', 'Comment added successfully.');
+        $comment->load('user');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Comment added successfully.',
+            'comment' => $comment,
+        ]);
     }
 
     public function updateComment(Request $request, Task $task, Comment $comment)
@@ -95,7 +132,10 @@ class TaskController extends Controller
         }
 
         $comment->delete();
-        return redirect()->route('user.task.show', $task)->with('success', 'Comment deleted successfully.');
+        return response()->json([
+            'success' => true,
+            'message' => 'Comment deleted successfully.',
+        ]);
     }
 
     public function addSubtask(Request $request, Task $task)
@@ -104,11 +144,15 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
         ]);
 
-        $task->subtasks()->create([
+        $subtask = $task->subtasks()->create([
             'title' => $request->title,
         ]);
 
-        return redirect()->route('user.task.show', $task)->with('success', 'Subtask added successfully.');
+        return response()->json([
+            'success' => true,
+            'message' => 'Subtask added successfully.',
+            'subtask' => $subtask,
+        ]);
     }
 
     public function toggleSubtask(Task $task, Subtask $subtask)
@@ -117,13 +161,40 @@ class TaskController extends Controller
             'is_completed' => !$subtask->is_completed,
         ]);
 
-        return redirect()->route('user.task.show', $task);
+        $totalSubtasks = $task->subtasks()->count();
+        $completedSubtasks = $task->subtasks()
+            ->where('is_completed', true)
+            ->count();
+
+        if ($totalSubtasks > 0 && $completedSubtasks === $totalSubtasks) {
+            $task->update([
+                'status' => 'Completed',
+            ]);
+        } elseif ($completedSubtasks > 0) {
+            $task->update([
+                'status' => 'In Progress',
+            ]);
+        } else {
+            $task->update([
+                'status' => 'Pending',
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Subtask toggled successfully.',
+            'task_status' => $task->status,
+        ]);
     }
+
 
     public function deleteSubtask(Task $task, Subtask $subtask)
     {
         $subtask->delete();
-        return redirect()->route('user.task.show', $task)->with('success', 'Subtask deleted successfully.');
+        return response()->json([
+            'success' => true,
+            'message' => 'Subtask deleted successfully.',
+        ]);
     }
 
     public function updateStatus(Request $request, Task $task)

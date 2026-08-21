@@ -11,7 +11,7 @@
             </div>
 
             <div class="bg-gray-800 rounded-lg p-6">
-                <form action="{{ route('user.task.store') }}" method="POST">
+                <form action="{{ route('user.task.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @include('frontend.user.add-task.field.add')
                     <div class="mt-6">
@@ -23,4 +23,15 @@
             </div>
         </main>
     </div>
+
+    <script>
+        function showFileName(input) {
+            const fileNameSpan = document.getElementById('fileName');
+            if (input.files && input.files.length > 0) {
+                fileNameSpan.textContent = input.files[0].name;
+            } else {
+                fileNameSpan.textContent = '';
+            }
+        }
+    </script>
 @endsection

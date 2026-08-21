@@ -54,10 +54,20 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-700">
+                    <tbody class="divide-y divide-gray-700" id="statusTableBody">
                         @forelse($statuses as $status)
-                            <tr class="hover:bg-gray-750">
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-300">{{ $status->name }}</td>
+                            <tr class="hover:bg-gray-750 cursor-move status-row" data-id="{{ $status->id }}" draggable="true">
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2 text-gray-500">
+                                        <circle cx="9" cy="12" r="1"/>
+                                        <circle cx="9" cy="5" r="1"/>
+                                        <circle cx="9" cy="19" r="1"/>
+                                        <circle cx="15" cy="12" r="1"/>
+                                        <circle cx="15" cy="5" r="1"/>
+                                        <circle cx="15" cy="19" r="1"/>
+                                    </svg>
+                                    {{ $status->name }}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-block w-6 h-6 rounded-full" style="background-color: {{ $status->color }}"></span>
                                 </td>
@@ -86,4 +96,80 @@
             </div>
         </main>
     </div>
+
+    <script>
+        const statusRows = document.querySelectorAll('.status-row');
+        let draggedRow = null;
+
+        statusRows.forEach(row => {
+            row.addEventListener('dragstart', function(e) {
+                draggedRow = this;
+                this.style.opacity = '0.4';
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            row.addEventListener('dragend', function() {
+                this.style.opacity = '';
+                draggedRow = null;
+                statusRows.forEach(r => r.classList.remove('border-t-2', 'border-emerald-500'));
+            });
+
+            row.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                if (this !== draggedRow) {
+                    this.classList.add('border-t-2', 'border-emerald-500');
+                }
+            });
+
+            row.addEventListener('dragleave', function() {
+                this.classList.remove('border-t-2', 'border-emerald-500');
+            });
+
+            row.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('border-t-2', 'border-emerald-500');
+                
+                if (this !== draggedRow) {
+                    const tbody = document.getElementById('statusTableBody');
+                    const allRows = Array.from(tbody.querySelectorAll('.status-row'));
+                    const draggedIndex = allRows.indexOf(draggedRow);
+                    const targetIndex = allRows.indexOf(this);
+                    
+                    if (draggedIndex < targetIndex) {
+                        tbody.insertBefore(draggedRow, this.nextSibling);
+                    } else {
+                        tbody.insertBefore(draggedRow, this);
+                    }
+                    
+                    updateStatusPositions();
+                }
+            });
+        });
+
+        function updateStatusPositions() {
+            const tbody = document.getElementById('statusTableBody');
+            const rows = Array.from(tbody.querySelectorAll('.status-row'));
+            const positions = rows.map(row => row.getAttribute('data-id'));
+            
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            
+            fetch('{{ route('user.task-status.update-positions') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ positions: positions })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    console.log('Positions updated successfully');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating positions:', error);
+            });
+        }
+    </script>
 @endsection
