@@ -30,6 +30,7 @@
                     </div>
                 </div>
 
+                @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
                 <div class="mt-6 flex space-x-4">
                     <a href="{{ route('user.add-project.edit', $project) }}" class="px-4 py-2 filament-primary-bg filament-primary-text rounded-lg hover:opacity-80 transition">
                         Edit
@@ -42,6 +43,7 @@
                         </button>
                     </form>
                 </div>
+                @endif
             </div>
         </main>
     </div>

@@ -67,12 +67,14 @@
                                             {{ $subtask->title }}
                                         </label>
 
+                                        @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
                                         <button type="button" onclick="deleteSubtask({{ $subtask->id }})" class="text-gray-500 hover:text-red-400 transition">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <line x1="18" y1="6" x2="6" y2="18"/>
                                                 <line x1="6" y1="6" x2="18" y2="18"/>
                                             </svg>
                                         </button>
+                                        @endif
                                     </div>
                                 @endforeach
                             @endif
@@ -86,14 +88,7 @@
                         <div id="addSubtaskForm" class="hidden">
                             <form id="subtaskForm" onsubmit="addSubtask(event)">
                                 @csrf
-                                <input
-                                    type="text"
-                                    name="title"
-                                    id="subtaskTitle"
-                                    placeholder="Enter subtask title..."
-                                    class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition"
-                                    required
-                                >
+                                <input type="text" name="title" id="subtaskTitle" placeholder="Enter subtask title..." class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition" required>
                                 <div class="flex justify-end gap-2 mt-3">
                                     <button type="button" onclick="document.getElementById('addSubtaskForm').classList.add('hidden')" class="px-4 py-2 rounded-md bg-gray-700 text-gray-300 text-sm font-semibold hover:bg-gray-600 transition">
                                         Cancel
@@ -111,21 +106,16 @@
                             COMMENTS
                         </h2>
 
-                        {{-- Comments List --}}
                         <div id="commentList" class="space-y-4 mb-4">
                             @foreach($task->comments as $comment)
-                                <div
-                                        id="comment-{{ $comment->id }}"
-                                        class="bg-gray-800 rounded-lg p-4 relative"
-                                >
+                                <div id="comment-{{ $comment->id }}" class="bg-gray-800 rounded-lg p-4 relative">
                                     <div class="flex items-center gap-3 mb-2">
 
-                                        {{-- Avatar --}}
                                         <div class="w-8 h-8 rounded-full bg-indigo-600 text-white text-sm flex items-center justify-center font-semibold">
                                             {{ substr($comment->user->name, 0, 1) }}
                                         </div>
 
-                                        {{-- User Info --}}
+
                                         <div>
                                             <p class="text-sm font-semibold text-white">
                                                 {{ $comment->user->name }}
@@ -136,67 +126,21 @@
                                             </p>
                                         </div>
 
-                                        {{-- Dropdown --}}
                                         @if(auth()->id() === $comment->user_id)
                                             <div class="ml-auto relative">
 
                                                 <button type="button" onclick="toggleCommentDropdown({{ $comment->id }})" class="text-gray-400 hover:text-white p-1 rounded hover:bg-gray-700 transition">
-                                                    <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="20"
-                                                            height="20"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            stroke-width="2"
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                    >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                         <circle cx="12" cy="12" r="1"/>
                                                         <circle cx="12" cy="5" r="1"/>
                                                         <circle cx="12" cy="19" r="1"/>
                                                     </svg>
                                                 </button>
 
-                                                <div
-                                                        id="commentDropdown-{{ $comment->id }}"
-                                                        class="hidden absolute right-0 top-8 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-10 min-w-32"
-                                                >
-                                                    {{--<button type="button" onclick='editComment({{ $comment->id }}, @json($comment->content))' class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-600 transition flex items-center gap-2">
-                                                        <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                width="14"
-                                                                height="14"
-                                                                viewBox="0 0 24 24"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                stroke-width="2"
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                        >
-                                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                                        </svg>
+                                                <div id="commentDropdown-{{ $comment->id }}" class="hidden absolute right-0 top-8 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-10 min-w-32">
 
-                                                        Edit
-                                                    </button>--}}
-
-                                                    <button
-                                                            type="button"
-                                                            onclick="deleteComment({{ $comment->id }})"
-                                                            class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-600 transition flex items-center gap-2"
-                                                    >
-                                                        <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                width="14"
-                                                                height="14"
-                                                                viewBox="0 0 24 24"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                stroke-width="2"
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                        >
+                                                    <button type="button" onclick="deleteComment({{ $comment->id }})" class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-600 transition flex items-center gap-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                             <line x1="18" y1="6" x2="6" y2="18"/>
                                                             <line x1="6" y1="6" x2="18" y2="18"/>
                                                         </svg>
@@ -208,47 +152,21 @@
                                         @endif
                                     </div>
 
-                                    {{-- Comment Content --}}
-                                    <p
-                                            id="commentContent-{{ $comment->id }}"
-                                            class="text-gray-300 text-sm"
-                                    >
-                                        {{ $comment->content }}
-                                    </p>
+                                    <p id="commentContent-{{ $comment->id }}" class="text-gray-300 text-sm">{{ $comment->content }}</p>
 
-                                    {{-- Edit Form --}}
-                                    <div
-                                            id="editForm-{{ $comment->id }}"
-                                            class="hidden mt-3"
-                                    >
-                                        <form
-                                                action="{{ route('user.task.comment.update', [$task, $comment]) }}"
-                                                method="POST"
-                                        >
+                                    <div id="editForm-{{ $comment->id }}" class="hidden mt-3">
+                                        <form action="{{ route('user.task.comment.update', [$task, $comment]) }}" method="POST">
                                             @csrf
                                             @method('PUT')
 
-                                            <textarea
-                                                    name="content"
-                                                    id="editTextarea-{{ $comment->id }}"
-                                                    class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition resize-none"
-                                                    rows="3"
-                                                    required
-                                            ></textarea>
+                                            <textarea name="content" id="editTextarea-{{ $comment->id }}" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition resize-none" rows="3" required></textarea>
 
                                             <div class="flex justify-end gap-2 mt-3">
-                                                <button
-                                                        type="button"
-                                                        onclick="cancelEdit({{ $comment->id }})"
-                                                        class="px-4 py-2 rounded-md bg-gray-600 text-gray-300 text-sm font-semibold hover:bg-gray-500 transition"
-                                                >
+                                                <button type="button" onclick="cancelEdit({{ $comment->id }})" class="px-4 py-2 rounded-md bg-gray-600 text-gray-300 text-sm font-semibold hover:bg-gray-500 transition">
                                                     Cancel
                                                 </button>
 
-                                                <button
-                                                        type="submit"
-                                                        class="px-4 py-2 rounded-md filament-primary-bg filament-primary-text text-sm font-semibold hover:opacity-80 transition"
-                                                >
+                                                <button type="submit" class="px-4 py-2 rounded-md filament-primary-bg filament-primary-text text-sm font-semibold hover:opacity-80 transition">
                                                     Update
                                                 </button>
                                             </div>
@@ -258,31 +176,19 @@
                             @endforeach
                         </div>
 
-                        {{-- No Comments Message --}}
                         @if($task->comments->count() === 0)
                             <p id="noComments" class="text-gray-500 mb-4">
                                 No comments yet.
                             </p>
                         @endif
 
-                        {{-- Add Comment Form --}}
                         <form id="commentForm" onsubmit="addComment(event)">
                             @csrf
 
-                            <textarea
-                                    name="content"
-                                    id="commentContent"
-                                    placeholder="Write a comment..."
-                                    class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition resize-none"
-                                    rows="3"
-                                    required
-                            ></textarea>
+                            <textarea name="content" id="commentContent" placeholder="Write a comment..." class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition resize-none" rows="3" required></textarea>
 
                             <div class="flex justify-end mt-3">
-                                <button
-                                        type="submit"
-                                        class="px-4 py-2 rounded-md filament-primary-bg filament-primary-text text-sm font-semibold hover:opacity-80 transition"
-                                >
+                                <button type="submit" class="px-4 py-2 rounded-md filament-primary-bg filament-primary-text text-sm font-semibold hover:opacity-80 transition">
                                     Comment
                                 </button>
                             </div>
@@ -368,6 +274,7 @@
                             </div>
                         </div>
 
+                        @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
                         <div class="mt-6 pt-4 border-t border-gray-800">
                             <form action="{{ route('user.task.destroy', $task) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this task?')">
                                 @csrf
@@ -377,6 +284,7 @@
                                 </button>
                             </form>
                         </div>
+                        @endif
                     </div>
                 </div>
             </div>

@@ -38,6 +38,8 @@ class DatabaseSeeder extends Seeder
             ProjectSeeder::class,
             TaskSeeder::class,
             TaskStatusSeeder::class,
+            RolePermissionSeeder::class,
+            SuperAdminSeeder::class,
         ]);
     }
 }

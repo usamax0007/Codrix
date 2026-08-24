@@ -5,6 +5,7 @@
         <main class="p-6">
             <script>
                 window.taskStatusUpdateRoute = '{{ route('user.task.status.update', ':id') }}';
+                window.canDeleteTasks = {{ auth()->user()->hasPermissionTo('delete-tasks') ? 'true' : 'false' }};
             </script>
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                 <div>
@@ -12,12 +13,16 @@
                     <p class="text-gray-400 text-sm mt-1">Drag cards between columns, or click a task for details and comments.</p>
                 </div>
                 <div class="flex gap-3">
+                    @if(auth()->user()->hasPermissionTo('view-task-status'))
                     <a href="{{ route('user.task-status.index') }}" class="px-4 py-2 rounded-md bg-gray-800 border border-gray-700 text-white text-sm font-medium hover:bg-gray-700 transition">
                         Manage Status
                     </a>
+                    @endif
+                    @if(auth()->user()->hasPermissionTo('create-tasks'))
                     <button onclick="document.getElementById('addTaskModal').classList.remove('hidden')" class="px-4 py-2 rounded-md filament-primary-bg filament-primary-text text-sm font-semibold hover:opacity-80 transition flex items-center gap-1">
                         <span class="text-lg leading-none">+</span> Add Task
                     </button>
+                    @endif
                 </div>
             </div>
 
@@ -52,12 +57,14 @@
                                 @endphp
                                 <div class="bg-gray-900 border border-gray-700 rounded-lg p-4 relative hover:border-gray-600 transition cursor-pointer mb-3 task-card" draggable="true" data-task-id="{{ $task->id }}" data-current-status="{{ $task->status }}" onclick="window.location.href='{{ route('user.task.show', $task) }}'">
                                     <div class="absolute top-3 right-3 flex gap-2">
+                                        @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
                                         <button type="button" onclick="event.stopPropagation(); deleteTask({{ $task->id }})" class="text-gray-500 hover:text-red-400">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <line x1="18" y1="6" x2="6" y2="18"/>
                                                 <line x1="6" y1="6" x2="18" y2="18"/>
                                             </svg>
                                         </button>
+                                        @endif
                                     </div>
                                     @if($task->project)
                                         <p class="text-xs font-semibold text-emerald-400 tracking-wide mb-1">{{ strtoupper($task->project->name) }}</p>
@@ -190,14 +197,7 @@
         }
 
         function initializeDragAndDropForCard(card) {
-            const columns = document.querySelectorAll('.status-column');
-            let draggedCard = null;
-            let clone = null;
-            let offsetX = 0;
-            let offsetY = 0;
-
             card.addEventListener('dragstart', function(e) {
-                draggedCard = this;
                 this.style.opacity = '0.4';
                 this.style.transform = 'scale(0.95) rotate(2deg)';
                 e.dataTransfer.effectAllowed = 'move';
@@ -206,20 +206,86 @@
             card.addEventListener('dragend', function() {
                 this.style.opacity = '';
                 this.style.transform = '';
-                draggedCard = null;
+                
+                // Clear all column highlights
+                const columns = document.querySelectorAll('.status-column');
                 columns.forEach(column => {
                     const list = column.querySelector('.task-list');
                     list.style.backgroundColor = '';
                     list.style.border = '';
                 });
             });
+        }
 
-            card.addEventListener('dragover', function(e) {
-                e.preventDefault();
-            });
+        // Initialize column drag and drop handlers
+        function initializeColumnDropHandlers() {
+            const columns = document.querySelectorAll('.status-column');
+            columns.forEach(column => {
+                column.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const list = column.querySelector('.task-list');
+                    list.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                    list.style.border = '2px dashed #10B981';
+                });
 
-            card.addEventListener('drop', function(e) {
-                e.preventDefault();
+                column.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const list = column.querySelector('.task-list');
+                    list.style.backgroundColor = '';
+                    list.style.border = '';
+                });
+
+                column.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const list = column.querySelector('.task-list');
+                    list.style.backgroundColor = '';
+                    list.style.border = '';
+
+                    const draggedCard = document.querySelector('.task-card[style*="opacity: 0.4"]');
+                    if (draggedCard) {
+                        const taskId = draggedCard.getAttribute('data-task-id');
+                        const newStatus = column.getAttribute('data-status');
+                        const oldStatus = draggedCard.getAttribute('data-current-status');
+
+                        if (newStatus !== oldStatus) {
+                            // Update task status in database
+                            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                            fetch(`/user/task/${taskId}/status`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken
+                                },
+                                body: JSON.stringify({ status: newStatus })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Move card to new column
+                                    const taskList = column.querySelector('.task-list');
+                                    taskList.appendChild(draggedCard);
+                                    draggedCard.setAttribute('data-current-status', newStatus);
+
+                                    // Update task counts
+                                    const oldColumn = document.querySelector(`.status-column[data-status="${oldStatus}"]`);
+                                    const oldTaskCount = oldColumn.querySelector('.task-count');
+                                    const newTaskCount = column.querySelector('.task-count');
+
+                                    oldTaskCount.textContent = parseInt(oldTaskCount.textContent) - 1;
+                                    newTaskCount.textContent = parseInt(newTaskCount.textContent) + 1;
+                                } else {
+                                    console.error('Failed to update task status');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error updating task status:', error);
+                            });
+                        }
+                    }
+                });
             });
         }
 
@@ -256,12 +322,14 @@
                         
                         newTaskCard.innerHTML = `
                             <div class="absolute top-3 right-3 flex gap-2">
+                                ${window.canDeleteTasks ? `
                                 <button type="button" onclick="event.stopPropagation(); deleteTask(${task.id})" class="text-gray-500 hover:text-red-400">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <line x1="18" y1="6" x2="6" y2="18"/>
                                         <line x1="6" y1="6" x2="18" y2="18"/>
                                     </svg>
                                 </button>
+                                ` : ''}
                             </div>
                             ${task.project ? `<p class="text-xs font-semibold text-emerald-400 tracking-wide mb-1">${task.project.name.toUpperCase()}</p>` : ''}
                             <h3 class="text-white font-semibold mb-1">${task.summary}</h3>
@@ -282,6 +350,12 @@
                         
                         // Initialize drag and drop for new task
                         initializeDragAndDropForCard(newTaskCard);
+                        
+                        // Initialize column drop handlers if not already done
+                        if (!window.columnHandlersInitialized) {
+                            initializeColumnDropHandlers();
+                            window.columnHandlersInitialized = true;
+                        }
                     }
                     
                     document.getElementById('addTaskForm').reset();
@@ -375,8 +449,14 @@
 
         // Also check localStorage on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize column drop handlers
+            initializeColumnDropHandlers();
+            
             const taskCards = document.querySelectorAll('.task-card');
             taskCards.forEach(card => {
+                // Initialize drag and drop for existing cards
+                initializeDragAndDropForCard(card);
+                
                 const taskId = card.getAttribute('data-task-id');
                 const storedData = localStorage.getItem(`task_${taskId}_subtasks`);
                 

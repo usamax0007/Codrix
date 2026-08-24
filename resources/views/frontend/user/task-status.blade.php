@@ -16,6 +16,7 @@
                 </div>
             @endif
 
+            @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
             <div class="bg-gray-800 rounded-lg p-6 mb-6">
                 <h2 class="text-lg font-semibold text-white mb-4">Add New Status</h2>
                 <form action="{{ route('user.task-status.store') }}" method="POST">
@@ -43,6 +44,7 @@
                     </div>
                 </form>
             </div>
+            @endif
 
             <div class="bg-gray-800 rounded-lg overflow-hidden overflow-x-auto scrollbar-hide">
                 <table class="w-full">
@@ -56,8 +58,9 @@
                     </thead>
                     <tbody class="divide-y divide-gray-700" id="statusTableBody">
                         @forelse($statuses as $status)
-                            <tr class="hover:bg-gray-750 cursor-move status-row" data-id="{{ $status->id }}" draggable="true">
+                            <tr class="hover:bg-gray-750 @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()) cursor-move status-row @endif" data-id="{{ $status->id }}" @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()) draggable="true" @endif>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-300">
+                                    @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2 text-gray-500">
                                         <circle cx="9" cy="12" r="1"/>
                                         <circle cx="9" cy="5" r="1"/>
@@ -66,6 +69,7 @@
                                         <circle cx="15" cy="5" r="1"/>
                                         <circle cx="15" cy="19" r="1"/>
                                     </svg>
+                                    @endif
                                     {{ $status->name }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -73,6 +77,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-300">{{ $status->tasks->count() }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
+                                    @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
                                     <form action="{{ route('user.task-status.destroy', $status) }}" method="POST" class="inline">
                                         @csrf
                                         @method('DELETE')
@@ -84,6 +89,7 @@
                                             </svg>
                                         </button>
                                     </form>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

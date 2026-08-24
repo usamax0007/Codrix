@@ -71,6 +71,18 @@
                             <span class="text-sm text-gray-400">Email Address</span>
                             <span class="text-sm font-medium text-white">{{ Auth::user()->email }}</span>
                         </div>
+                        <div class="flex items-center justify-between py-2 border-b border-gray-700">
+                            <span class="text-sm text-gray-400">Role</span>
+                            <div class="flex space-x-2">
+                                @foreach(Auth::user()->roles as $role)
+                                    <span class="px-2 py-1 text-xs rounded-full 
+                                        {{ $role->name === 'super-admin' ? 'bg-purple-900 text-purple-300' : 
+                                           ($role->name === 'admin' ? 'bg-blue-900 text-blue-300' : 'bg-gray-700 text-gray-300') }}">
+                                        {{ ucfirst(str_replace('-', ' ', $role->name)) }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
                         <div class="flex items-center justify-between py-2">
                             <span class="text-sm text-gray-400">User ID</span>
                             <span class="text-sm font-medium text-white">#{{ Auth::id() }}</span>

@@ -49,6 +49,7 @@
                                                 <circle cx="12" cy="12" r="3"/>
                                             </svg>
                                         </a>
+                                        @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
                                         <a href="{{ route('user.add-project.edit', $project) }}" class="text-green-400 hover:text-green-300">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M12 20h9"/>
@@ -76,6 +77,7 @@
                                                 </svg>
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

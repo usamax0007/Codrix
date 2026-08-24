@@ -1,6 +1,6 @@
 <aside id="sidebar" class="w-64 bg-gray-800 border-r border-gray-700 fixed h-[91%] lg:block hidden z-50 transition-transform duration-300">
     <div class="flex flex-col h-full justify-between">
-        <div class="p-6 flex-1 overflow-y-auto min-h-0">
+        <div class="p-6 flex-1 overflow-y-auto min-h-0 scrollbar-hide">
             <nav class="space-y-2">
                 <a href="{{ route('user.dashboard') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg {{ request()->routeIs('user.dashboard') ? 'filament-primary-bg filament-primary-text font-medium' : 'text-gray-300 hover:bg-gray-700 transition' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -9,41 +9,48 @@
                     <span>Dashboard</span>
                 </a>
 
+                @if(auth()->user()->hasPermissionTo('view-projects'))
                 <a href="{{ route('user.add-project.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg {{ request()->routeIs('user.add-project.*') ? 'filament-primary-bg filament-primary-text font-medium' : 'text-gray-300 hover:bg-gray-700 transition' }}">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                         xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 6C4 4.89543 4.89543 4 6 4H10L12 6H18C19.1046 6 20 6.89543 20 8V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                        <path d="M12 10V16M9 13H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
                     </svg>
                     <span>Add Project</span>
                 </a>
+                @endif
 
+                @if(auth()->user()->hasPermissionTo('view-tasks'))
                 <a href="{{ route('user.task.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg {{ request()->routeIs('user.task.*') ? 'filament-primary-bg filament-primary-text font-medium' : 'text-gray-300 hover:bg-gray-700 transition' }}">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M5 3H19C20.1 3 21 3.9 21 5V19C21 20.1 20.1 21 19 21H5C3.9 21 3 20.1 3 19V5C3 3.9 3.9 3 5 3Z" stroke="currentColor" stroke-width="2"/>
-                        <path d="M7 8L8.5 9.5L11 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M13 8H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M7 13L8.5 14.5L11 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M13 13H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M7 18H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                     </svg>
                     <span>Task</span>
                 </a>
+                @endif
 
+                @if(auth()->user()->hasPermissionTo('view-task-status'))
                 <a href="{{ route('user.task-status.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg {{ request()->routeIs('user.task-status.*') ? 'filament-primary-bg filament-primary-text font-medium' : 'text-gray-300 hover:bg-gray-700 transition' }}">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-                        <path d="M12 7V12L15 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                     </svg>
-                    <span>Task status</span>
+                    <span>Task Status</span>
                 </a>
+                @endif
+
+                @if(auth()->user()->hasPermissionTo('view-orders'))
+                <a href="{{ route('user.orders.index') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg {{ request()->routeIs('user.orders.*') ? 'filament-primary-bg filament-primary-text font-medium' : 'text-gray-300 hover:bg-gray-700 transition' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    <span>My Orders</span>
+                </a>
+                @endif
             </nav>
         </div>
 
         <div class="px-6 py-1 border-t border-gray-700 bg-gray-800">
-            <form method="POST" action="{{ route('user.logout') }}">
+            <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 text-gray-300 hover:bg-gray-700 transition w-full">
+                <button type="submit" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-700 transition w-full">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                     </svg>

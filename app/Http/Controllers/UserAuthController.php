@@ -17,6 +17,16 @@ class UserAuthController extends Controller
         $credentials = $request->validated();
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
+            $user = Auth::user();
+            
+            // Check if user is regular user (not Super Admin or Admin)
+            if ($user->isSuperAdmin() || $user->isAdmin()) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Super Admin and Admin should use the admin portal at /admin/login',
+                ])->withInput($request->except('password'));
+            }
+
             $request->session()->regenerate();
             return redirect()->intended(route('user.dashboard'));
         }
@@ -31,7 +41,7 @@ class UserAuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('user.login')->with('success', 'You have been logged out successfully.');
+        return redirect()->route('login')->with('success', 'You have been logged out successfully.');
     }
 
     public function dashboard()

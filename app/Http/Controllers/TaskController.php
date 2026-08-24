@@ -12,23 +12,41 @@ class TaskController extends Controller
 {
     public function index()
     {
+        if (!auth()->user()->hasPermissionTo('view-tasks')) {
+            abort(403, 'You do not have permission to view tasks.');
+        }
+
         $tasks = Task::with(['project', 'assignee', 'subtasks'])->latest()->get();
         $statuses = \App\Models\TaskStatus::orderBy('position')->get();
         $projects = \App\Models\Project::all();
         $users = \App\Models\User::all();
-        return view('frontend.user.add-task.index', compact('tasks', 'statuses', 'projects', 'users'));
+        
+        $isAdmin = request()->routeIs('admin.tasks.*');
+        $view = $isAdmin ? 'frontend.admin.tasks.index' : 'frontend.user.add-task.index';
+        return view($view, compact('tasks', 'statuses', 'projects', 'users'));
     }
 
     public function create()
     {
+        if (!auth()->user()->hasPermissionTo('create-tasks')) {
+            abort(403, 'You do not have permission to create tasks.');
+        }
+
         $projects = \App\Models\Project::all();
         $users = \App\Models\User::all();
         $statuses = \App\Models\TaskStatus::orderBy('position')->get();
-        return view('frontend.user.add-task.create', compact('projects', 'users', 'statuses'));
+        
+        $isAdmin = request()->routeIs('admin.tasks.*');
+        $view = $isAdmin ? 'frontend.admin.tasks.create' : 'frontend.user.add-task.create';
+        return view($view, compact('projects', 'users', 'statuses'));
     }
 
     public function store(TaskRequest $request)
     {
+        if (!auth()->user()->hasPermissionTo('create-tasks')) {
+            abort(403, 'You do not have permission to create tasks.');
+        }
+
         $data = $request->validated();
 
         if ($request->hasFile('attachment')) {
@@ -51,26 +69,51 @@ class TaskController extends Controller
 
     public function show(Task $task)
     {
+        if (!auth()->user()->hasPermissionTo('view-tasks')) {
+            abort(403, 'You do not have permission to view tasks.');
+        }
+
         $task->load(['project', 'assignee', 'comments.user', 'subtasks']);
-        return view('frontend.user.add-task.show', compact('task'));
+        
+        $isAdmin = request()->routeIs('admin.tasks.*');
+        $view = $isAdmin ? 'frontend.admin.tasks.show' : 'frontend.user.add-task.show';
+        return view($view, compact('task'));
     }
 
     public function edit(Task $task)
     {
+        if (!auth()->user()->hasPermissionTo('edit-tasks')) {
+            abort(403, 'You do not have permission to edit tasks.');
+        }
+
         $projects = \App\Models\Project::all();
         $users = \App\Models\User::all();
         $statuses = \App\Models\TaskStatus::all();
-        return view('frontend.user.add-task.edit', compact('task', 'projects', 'users', 'statuses'));
+        
+        $isAdmin = request()->routeIs('admin.tasks.*');
+        $view = $isAdmin ? 'frontend.admin.tasks.edit' : 'frontend.user.add-task.edit';
+        return view($view, compact('task', 'projects', 'users', 'statuses'));
     }
 
     public function update(TaskRequest $request, Task $task)
     {
+        if (!auth()->user()->hasPermissionTo('edit-tasks')) {
+            abort(403, 'You do not have permission to edit tasks.');
+        }
+
         $task->update($request->validated());
-        return redirect()->route('user.task.index')->with('success', 'Task updated successfully.');
+        
+        $isAdmin = request()->routeIs('admin.tasks.*');
+        $route = $isAdmin ? 'admin.tasks.index' : 'user.task.index';
+        return redirect()->route($route)->with('success', 'Task updated successfully.');
     }
 
     public function destroy(Task $task)
     {
+        if (!auth()->user()->hasPermissionTo('delete-tasks')) {
+            abort(403, 'You do not have permission to delete tasks.');
+        }
+
         $task->delete();
         return response()->json([
             'success' => true,
@@ -80,13 +123,17 @@ class TaskController extends Controller
 
     public function addComment(Request $request, Task $task)
     {
+        if (!auth()->user()->hasPermissionTo('view-tasks')) {
+            abort(403, 'You do not have permission to add comments.');
+        }
+
         $request->validate([
             'content' => 'required|string|max:1000',
         ]);
 
         $content = $request->input('content');
-        
-        // Decode if content is JSON-encoded
+
+
         if (is_string($content) && (str_starts_with($content, '{') || str_starts_with($content, '['))) {
             $decoded = json_decode($content, true);
             if (is_array($decoded) && isset($decoded['content'])) {
@@ -140,12 +187,17 @@ class TaskController extends Controller
 
     public function addSubtask(Request $request, Task $task)
     {
+        if (!auth()->user()->hasPermissionTo('create-subtask')) {
+            abort(403, 'You do not have permission to create subtasks.');
+        }
+
         $request->validate([
             'title' => 'required|string|max:255',
         ]);
 
         $subtask = $task->subtasks()->create([
             'title' => $request->title,
+            'user_id' => auth()->id(),
         ]);
 
         return response()->json([
@@ -157,39 +209,35 @@ class TaskController extends Controller
 
     public function toggleSubtask(Task $task, Subtask $subtask)
     {
+        // Admin can toggle any subtask
+        if (auth()->user()->isAdmin() || auth()->user()->isSuperAdmin()) {
+            if (!auth()->user()->hasPermissionTo('edit-subtask')) {
+                abort(403, 'You do not have permission to edit subtasks.');
+            }
+        } else {
+            // Regular users can only toggle subtasks they created
+            if ($subtask->user_id !== auth()->id()) {
+                abort(403, 'You can only toggle your own subtasks.');
+            }
+        }
+
         $subtask->update([
             'is_completed' => !$subtask->is_completed,
         ]);
 
-        $totalSubtasks = $task->subtasks()->count();
-        $completedSubtasks = $task->subtasks()
-            ->where('is_completed', true)
-            ->count();
-
-        if ($totalSubtasks > 0 && $completedSubtasks === $totalSubtasks) {
-            $task->update([
-                'status' => 'Completed',
-            ]);
-        } elseif ($completedSubtasks > 0) {
-            $task->update([
-                'status' => 'In Progress',
-            ]);
-        } else {
-            $task->update([
-                'status' => 'Pending',
-            ]);
-        }
-
         return response()->json([
             'success' => true,
             'message' => 'Subtask toggled successfully.',
-            'task_status' => $task->status,
         ]);
     }
 
 
     public function deleteSubtask(Task $task, Subtask $subtask)
     {
+        if (!auth()->user()->hasPermissionTo('delete-subtask')) {
+            abort(403, 'You do not have permission to delete subtasks.');
+        }
+
         $subtask->delete();
         return response()->json([
             'success' => true,
@@ -199,6 +247,15 @@ class TaskController extends Controller
 
     public function updateStatus(Request $request, Task $task)
     {
+        // Only admin and super-admin can update task status
+        if (!auth()->user()->isAdmin() && !auth()->user()->isSuperAdmin()) {
+            abort(403, 'You do not have permission to update task status.');
+        }
+
+        if (!auth()->user()->hasPermissionTo('edit-tasks')) {
+            abort(403, 'You do not have permission to update task status.');
+        }
+
         $request->validate([
             'status' => 'required|string|exists:task_statuses,name',
         ]);
