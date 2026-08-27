@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ServiceSeeder::class,
             ServiceSettingSeeder::class,
             ProcessSettingSeeder::class,
+            PermissionSeeder::class,
             FaqSeeder::class,
             FaqSettingSeeder::class,
             PortfolioSeeder::class,
