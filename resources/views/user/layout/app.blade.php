@@ -10,6 +10,7 @@
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
+
         .no-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
@@ -65,10 +66,12 @@
             </a>
 
             <!-- Task Status -->
-            <a href="{{ route('task-statuses.index') }}"
-               class="flex items-center gap-3 px-4 py-2.5 rounded transition {{ request()->routeIs('task-statuses.*') || request()->is('user/task-status*') ? 'bg-emerald-500/10 text-emerald-400 font-semibold border-l-4 border-emerald-400' : 'text-gray-300 hover:bg-gray-700' }}">
-                <span>Task Status</span>
-            </a>
+            @can('Manage-task-statuses')
+                <a href="{{ route('task-statuses.index') }}"
+                   class="flex items-center gap-3 px-4 py-2.5 rounded transition {{ request()->routeIs('task-statuses.*') || request()->is('user/task-status*') ? 'bg-emerald-500/10 text-emerald-400 font-semibold border-l-4 border-emerald-400' : 'text-gray-300 hover:bg-gray-700' }}">
+                    <span>Task Status</span>
+                </a>
+            @endcan
         </nav>
     </aside>
 

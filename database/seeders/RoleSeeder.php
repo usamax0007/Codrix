@@ -15,17 +15,15 @@ class RoleSeeder extends Seeder
 
         $managerRole = Role::firstOrCreate(['name' => 'Manager', 'guard_name' => 'web']);
         $managerRole->syncPermissions([
-            'create-task',
-            'edit-task',
-            'reorder-status',
+            'Manage-task',
+            'Manage-task-statuses',
+            'Manage-sub-tasks',
         ]);
 
         $userRole = Role::firstOrCreate(['name' => 'User', 'guard_name' => 'web']);
         $userRole->syncPermissions([
-            'create-task',
-            'edit-task',
-            'delete-task',
-            'reorder-status',
+            'Manage-task',
+            'Manage-sub-tasks',
         ]);
     }
 }

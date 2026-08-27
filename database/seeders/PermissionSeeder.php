@@ -7,16 +7,14 @@ use Spatie\Permission\Models\Permission;
 
 class PermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         $permissions = [
-            'create-task',
-            'edit-task',
-            'delete-task',
-            'reorder-status',
+            'Manage-task',
+            'Manage-task-statuses',
+            'Manage-sub-tasks',
         ];
 
         foreach ($permissions as $permission) {

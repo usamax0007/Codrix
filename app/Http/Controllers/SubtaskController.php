@@ -10,6 +10,13 @@ class SubtaskController extends Controller
     // Subtask Create //
     public function store(Request $request)
     {
+        if (!auth()->user()->can('Manage-sub-tasks')) {
+            return response()->json([
+                'success' => false,
+                'error' => 'You do not have permission to create subtasks.'
+            ], 403);
+        }
+
         $request->validate([
             'task_id' => 'required|exists:tasks,id',
             'title' => 'required|string|max:255',
@@ -30,6 +37,13 @@ class SubtaskController extends Controller
     // Subtask Status Toggle //
     public function toggle(Request $request, $id)
     {
+        if (!auth()->user()->can('Manage-sub-tasks')) {
+            return response()->json([
+                'success' => false,
+                'error' => 'You do not have permission to update subtasks.'
+            ], 403);
+        }
+
         $subtask = Subtask::findOrFail($id);
         $subtask->is_completed = $request->boolean('is_completed');
         $subtask->save();
@@ -43,6 +57,13 @@ class SubtaskController extends Controller
     // Delete Subtask //
     public function destroy($id)
     {
+        if (!auth()->user()->can('Manage-sub-tasks')) {
+            return response()->json([
+                'success' => false,
+                'error' => 'You do not have permission to delete subtasks.'
+            ], 403);
+        }
+
         $subtask = Subtask::findOrFail($id);
         $subtask->delete();
 

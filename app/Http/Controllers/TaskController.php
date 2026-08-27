@@ -46,7 +46,7 @@ class TaskController extends Controller
 
     public function store(Request $request)
     {
-        if (!auth()->user()->can('create-task')) {
+        if (!auth()->user()->can('Manage-task')) {
             abort(403, "You don't have permission to create task!.");
         }
 
@@ -149,18 +149,27 @@ class TaskController extends Controller
 
     public function destroy($id)
     {
-        if (! auth()->user()->can('delete-task')) {
-            return back()->with('error', 'You do not have permission to delete this task..');
+        if (!auth()->user()->can('Manage-task')) {
+            return response()->json([
+                'success' => false,
+                'error' => 'You do not have permission to delete this task.'
+            ], 403);
         }
 
         try {
             $task = Task::findOrFail($id);
             $task->delete();
 
-            return back()->with('success', 'Task deleted successfully');
+            return response()->json([
+                'success' => true,
+                'message' => 'Task deleted successfully'
+            ]);
 
         } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 

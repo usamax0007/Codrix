@@ -78,10 +78,10 @@ Route::middleware('auth')->group(function () {
 
     // Tasks Routes //
     Route::get('/user/tasks', [TaskController::class, 'index'])->name('tasks.index');
-    Route::post('/user/tasks', [TaskController::class, 'store'])->middleware('can:create-task')->name('tasks.store');
-    Route::put('/user/tasks/{id}', [TaskController::class, 'update'])->middleware('can:edit-task')->name('tasks.update');
-    Route::delete('/user/tasks/{id}', [TaskController::class, 'destroy'])->middleware('can:delete-task')->name('tasks.destroy');
-    Route::post('/user/tasks/update-status', [TaskController::class, 'updateStatus'])->middleware('can:reorder-status')->name('tasks.updateStatus');
+    Route::post('/user/tasks', [TaskController::class, 'store'])->middleware('can:Manage-task')->name('tasks.store');
+    Route::put('/user/tasks/{id}', [TaskController::class, 'update'])->middleware('can:Manage-task')->name('tasks.update');
+    Route::delete('/user/tasks/{id}', [TaskController::class, 'destroy'])->middleware('can:Manage-task')->name('tasks.destroy');
+    Route::post('/user/tasks/update-status', [TaskController::class, 'updateStatus'])->middleware('can:Manage-task')->name('tasks.updateStatus');
 
     // Subtasks Routes //
     Route::post('/user/subtasks', [SubtaskController::class, 'store'])->name('subtasks.store');
@@ -93,9 +93,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/user/comments/{id}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
     // Task Status Routes //
-    Route::get('/user/task-statuses', [TaskStatusController::class, 'index'])->name('task-statuses.index');
-    Route::post('/user/task-statuses', [TaskStatusController::class, 'store'])->name('task-statuses.store');
-    Route::post('/user/task-statuses/reorder', [TaskStatusController::class, 'reorder'])->middleware('can:reorder-status')->name('task-statuses.reorder');
-    Route::put('/user/task-statuses/{taskStatus}', [TaskStatusController::class, 'update'])->name('task-statuses.update');
-    Route::delete('/user/task-statuses/{taskStatus}', [TaskStatusController::class, 'destroy'])->name('task-statuses.destroy');
+    Route::middleware(['auth', 'can:Manage-task-statuses'])->group(function () {
+        Route::get('/user/task-statuses', [TaskStatusController::class, 'index'])->name('task-statuses.index');
+        Route::post('/user/task-statuses', [TaskStatusController::class, 'store'])->name('task-statuses.store');
+        Route::post('/user/task-statuses/reorder', [TaskStatusController::class, 'reorder'])->name('task-statuses.reorder');
+        Route::put('/user/task-statuses/{taskStatus}', [TaskStatusController::class, 'update'])->name('task-statuses.update');
+        Route::delete('/user/task-statuses/{taskStatus}', [TaskStatusController::class, 'destroy'])->name('task-statuses.destroy');
+    });
 });

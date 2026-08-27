@@ -24,14 +24,14 @@
                 <p class="text-gray-400 text-sm">Drag cards between columns, or click a task for details.</p>
             </div>
             <div class="flex gap-3">
-                @can('reorder-status')
+                @can('Manage-task-statuses')
                     <a href="{{ route('task-statuses.index') }}"
                        class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 font-medium px-4 py-2 rounded-lg transition text-sm flex items-center">
                         Manage Statuses
                     </a>
                 @endcan
 
-                @can('create-task')
+                @can('Manage-task')
                     <button id="openTaskModal"
                             class="bg-emerald-500 hover:bg-emerald-600 text-gray-900 font-semibold px-4 py-2 rounded-lg transition text-sm">
                         + Add Task
@@ -76,7 +76,7 @@
 
                                     <div class="flex items-center gap-2">
                                         {{-- Edit Task Button --}}
-                                        @can('edit-task')
+                                        @can('Manage-task')
                                             <button type="button"
                                                     onclick="event.stopPropagation(); openEditModalFromCard(this)"
                                                     class="text-gray-500 hover:text-[#00B8D9] transition p-1 cursor-pointer"
@@ -92,7 +92,7 @@
                                         @endcan
 
                                         {{-- Delete Task Button --}}
-                                        @can('delete-task')
+                                        @can('Manage-task')
                                             <form action="{{ route('tasks.destroy', $task->id) }}" method="POST"
                                                   onsubmit="return confirm('Delete this task?')" class="inline"
                                                   onclick="event.stopPropagation()">
