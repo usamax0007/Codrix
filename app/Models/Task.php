@@ -37,4 +37,17 @@ class Task extends Model
     {
         return $this->hasMany(TaskAttachment::class);
     }
+
+    public function getSubtaskProgressPercentageAttribute()
+    {
+        $total = $this->subtasks->count();
+
+        if ($total === 0) {
+            return 0;
+        }
+
+        $completed = $this->subtasks->where('is_completed', true)->count();
+
+        return round(($completed / $total) * 100);
+    }
 }

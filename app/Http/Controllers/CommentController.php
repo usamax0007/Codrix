@@ -35,4 +35,17 @@ class CommentController extends Controller
             ], 500);
         }
     }
+
+    public function destroy($id)
+    {
+        $comment = Comment::findOrFail($id);
+
+        if ($comment->user_id !== auth()->id() && !auth()->user()->hasRole('Admin')) {
+            return response()->json(['success' => false, 'error' => 'Unauthorized'], 403);
+        }
+
+        $comment->delete();
+
+        return response()->json(['success' => true]);
+    }
 }

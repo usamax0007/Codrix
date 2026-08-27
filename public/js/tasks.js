@@ -117,24 +117,24 @@ function renderSubtasks(subtasks) {
 
     container.innerHTML = subtasks.map(st => `
             <div class="subtask-item flex items-center justify-between bg-[#16202E] p-2.5 rounded-lg border border-gray-800 mb-2" data-subtask-id="${st.id}">
-                <div class="flex items-center gap-2.5">
-                    <input type="checkbox"
-                           class="w-4 h-4 rounded border-gray-700 bg-gray-900 text-[#00B8D9] focus:ring-0 cursor-pointer"
-                           ${st.is_completed ? 'checked' : ''}
-                           onchange="toggleSubtask(${st.id}, this)">
-                    <span class="text-xs ${st.is_completed ? 'line-through text-gray-500' : 'text-gray-200'}">
-                        ${st.title}
-                    </span>
-                </div>
-                <button type="button"
-                        onclick="deleteSubtask(${st.id}, this)"
-                        class="text-gray-500 hover:text-red-400 p-1 transition cursor-pointer"
-                        title="Delete Subtask">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
-                </button>
+            <div class="flex items-center gap-2.5">
+              <input type="checkbox"
+               class="w-4 h-4 rounded border-gray-700 bg-gray-900 text-[#00B8D9] focus:ring-0 cursor-pointer"
+               ${(st.is_completed == 1 || st.is_completed === true || st.is_completed === '1') ? 'checked' : ''}
+               onchange="toggleSubtask(${st.id}, this)">
+               <span class="text-xs ${(st.is_completed == 1 || st.is_completed === true || st.is_completed === '1') ? 'line-through text-gray-500' : 'text-gray-200'}">
+               ${st.title}
+               </span>
             </div>
+    <button type="button"
+            onclick="deleteSubtask(${st.id}, this)"
+            class="text-gray-500 hover:text-red-400 p-1 transition cursor-pointer"
+            title="Delete Subtask">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+    </button>
+</div>
         `).join('');
 
     updateSubtaskStats();
@@ -254,10 +254,23 @@ function toggleSubtask(subtaskId, checkbox) {
 
                 checkbox.defaultChecked = isCompleted;
 
+                // 2. Global JS Object Update
                 if (window.currentTask && window.currentTask.subtasks) {
                     const subtask = window.currentTask.subtasks.find(s => s.id == subtaskId);
                     if (subtask) {
                         subtask.is_completed = isCompleted ? 1 : 0;
+                    }
+                }
+
+                if (currentTaskId) {
+                    const taskCard = document.querySelector(`[data-task-id="${currentTaskId}"]`);
+                    if (taskCard) {
+                        let taskData = JSON.parse(taskCard.getAttribute('data-task'));
+                        if (taskData && taskData.subtasks) {
+                            let st = taskData.subtasks.find(s => s.id == subtaskId);
+                            if (st) st.is_completed = isCompleted ? 1 : 0;
+                            taskCard.setAttribute('data-task', JSON.stringify(taskData));
+                        }
                     }
                 }
 
@@ -304,6 +317,7 @@ function deleteSubtask(subtaskId, btnElement) {
         .catch(err => console.error('Error deleting subtask:', err));
 }
 
+// Replace renderComments function
 function renderComments(comments) {
     let container = document.getElementById('detailComments');
     if (!comments || comments.length === 0) {
@@ -312,17 +326,68 @@ function renderComments(comments) {
     }
 
     container.innerHTML = comments.map(c => `
-        <div class="bg-[#03060B] border border-gray-800 p-2.5 rounded-lg text-xs text-gray-300 mb-2">
+        <div class="bg-[#03060B] border border-gray-800 p-2.5 rounded-lg text-xs text-gray-300 mb-2 comment-item" data-comment-id="${c.id}">
             <div class="flex justify-between items-center mb-1 text-[10px] text-gray-500">
                 <span class="font-semibold text-gray-400">${c.user ? c.user.name : 'User'}</span>
-                <span>${c.created_at ? new Date(c.created_at).toLocaleTimeString([], {
+                <div class="flex items-center gap-2">
+                    <span>${c.created_at ? new Date(c.created_at).toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit'
     }) : ''}</span>
+                    <button type="button" 
+                            onclick="deleteComment(${c.id}, this)" 
+                            class="text-gray-500 hover:text-red-400 transition p-0.5 cursor-pointer" 
+                            title="Delete comment">
+                        ✕
+                    </button>
+                </div>
             </div>
             <p class="text-gray-300">${c.comment}</p>
         </div>
     `).join('');
+}
+
+// DeleteComment function //
+function deleteComment(commentId, btnElement) {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+
+    fetch(`/user/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': window.csrfToken || document.querySelector('meta[name="csrf-token"]')?.content
+        }
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const commentRow = btnElement.closest('.comment-item');
+                if (commentRow) commentRow.remove();
+
+                const container = document.getElementById('detailComments');
+                if (container && container.querySelectorAll('.comment-item').length === 0) {
+                    container.innerHTML = '<span class="text-gray-500 block text-xs">No comments yet.</span>';
+                }
+
+                if (window.currentTask && window.currentTask.comments) {
+                    window.currentTask.comments = window.currentTask.comments.filter(c => c.id != commentId);
+                }
+
+                if (typeof currentTaskId !== 'undefined' && currentTaskId) {
+                    const taskCard = document.querySelector(`[data-task-id="${currentTaskId}"]`);
+                    if (taskCard) {
+                        let taskData = JSON.parse(taskCard.getAttribute('data-task'));
+                        if (taskData && taskData.comments) {
+                            taskData.comments = taskData.comments.filter(c => c.id != commentId);
+                            taskCard.setAttribute('data-task', JSON.stringify(taskData));
+                        }
+                    }
+                }
+            } else {
+                alert('Error: ' + (data.error || 'Could not delete comment'));
+            }
+        })
+        .catch(err => console.error('Error deleting comment:', err));
 }
 
 function saveComment() {
@@ -344,7 +409,7 @@ function saveComment() {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': window.csrfToken || document.querySelector('meta[name="csrf-token"]')?.content
         },
         body: JSON.stringify({
             task_id: currentTaskId,
@@ -357,24 +422,45 @@ function saveComment() {
                 commentInput.value = '';
 
                 const container = document.getElementById('detailComments');
-                if (container.innerText.includes('No comments yet.')) {
+                if (container && container.innerText.includes('No comments yet.')) {
                     container.innerHTML = '';
                 }
 
-                container.innerHTML += `
-                <div class="bg-[#03060B] border border-gray-800 p-2.5 rounded-lg text-xs text-gray-300 mb-2">
-                    <div class="flex justify-between items-center mb-1 text-[10px] text-gray-500">
-                        <span class="font-semibold text-gray-400">${data.comment.user ? data.comment.user.name : 'You'}</span>
-                        <span>Just now</span>
+                const newComment = data.comment;
+
+                if (container) {
+                    const commentHtml = `
+                    <div class="bg-[#03060B] border border-gray-800 p-2.5 rounded-lg text-xs text-gray-300 mb-2 comment-item" data-comment-id="${newComment.id}">
+                        <div class="flex justify-between items-center mb-1 text-[10px] text-gray-500">
+                            <span class="font-semibold text-gray-400">${newComment.user ? newComment.user.name : 'You'}</span>
+                            <div class="flex items-center gap-2">
+                                <span>Just now</span>
+                                <button type="button" 
+                                        onclick="deleteComment(${newComment.id}, this)" 
+                                        class="text-gray-500 hover:text-red-400 transition p-0.5 cursor-pointer" 
+                                        title="Delete comment">
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-gray-300">${newComment.comment || comment}</p>
                     </div>
-                    <p class="text-gray-300">${data.comment.comment || comment}</p>
-                </div>
-            `;
+                `;
+                    container.insertAdjacentHTML('beforeend', commentHtml);
+                }
+
+                // Sync with Global Task Object (Active Modal)
+                if (window.currentTask) {
+                    if (!window.currentTask.comments) window.currentTask.comments = [];
+                    window.currentTask.comments.push(newComment);
+                }
+
+                // Sync with Outer Card Attribute
                 const taskCard = document.querySelector(`[data-task-id="${currentTaskId}"]`);
                 if (taskCard) {
                     let taskData = JSON.parse(taskCard.getAttribute('data-task'));
                     if (!taskData.comments) taskData.comments = [];
-                    taskData.comments.push(data.comment);
+                    taskData.comments.push(newComment);
                     taskCard.setAttribute('data-task', JSON.stringify(taskData));
                 }
             } else {
@@ -525,7 +611,6 @@ function addSubtask() {
 }
 
 
-
 document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('.kanban-column').forEach(column => {
@@ -548,6 +633,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 updateColumnState(oldColumn);
                 updateColumnState(newColumn);
 
+                let rawTask = itemEl.getAttribute('data-task');
+                if (rawTask) {
+                    let taskData = JSON.parse(rawTask);
+
+                    taskData.task_status_id = newStatusId;
+                    if (!taskData.status) taskData.status = {};
+                    taskData.status.id = newStatusId;
+
+                    itemEl.setAttribute('data-task', JSON.stringify(taskData));
+
+                    if (window.currentTask && window.currentTask.id == taskId) {
+                        window.currentTask.task_status_id = newStatusId;
+                        window.currentTask.status_id = newStatusId;
+                        if (window.currentTask.status) {
+                            window.currentTask.status.id = newStatusId;
+                        }
+                    }
+                }
+
                 fetch(window.routes.updateStatus, {
                     method: 'POST',
                     headers: {
@@ -562,20 +666,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            let rawTask = itemEl.getAttribute('data-task');
                             if (rawTask) {
-                                let taskData = JSON.parse(rawTask);
-
-                                taskData.task_status_id = newStatusId;
-                                taskData.status = {
-                                    id: newStatusId,
-                                    name: data.status_name || (data.status ? data.status.name : ''),
-                                    color: data.status_color || (data.status ? data.status.color : '#3B82F6')
-                                };
-
+                                let taskData = JSON.parse(itemEl.getAttribute('data-task'));
+                                taskData.status.name = data.status_name || (data.status ? data.status.name : taskData.status.name);
+                                taskData.status.color = data.status_color || (data.status ? data.status.color : '#3B82F6');
                                 itemEl.setAttribute('data-task', JSON.stringify(taskData));
                             }
                         } else {
+                            // Revert on failure
                             oldColumn.appendChild(itemEl);
                             updateColumnState(oldColumn);
                             updateColumnState(newColumn);
@@ -632,6 +730,7 @@ function updateSubtaskStats() {
     const remaining = total - completed;
     const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
+    // Sidebar Stats Text //
     const progressText = document.getElementById('stat-progress-text');
     const totalEl = document.getElementById('stat-total');
     const completedEl = document.getElementById('stat-completed');
@@ -645,6 +744,28 @@ function updateSubtaskStats() {
     if (totalEl) totalEl.innerText = total;
     if (completedEl) completedEl.innerText = completed;
     if (remainingEl) remainingEl.innerText = remaining;
+
+    const barContainer = document.getElementById('subtaskProgressBarContainer');
+    const barFill = document.getElementById('subtaskProgressBarFill');
+    const percentText = document.getElementById('subtaskProgressPercentText');
+
+    if (barContainer && barFill && percentText) {
+        if (total > 0) {
+            barContainer.classList.remove('hidden');
+            barFill.style.width = `${percentage}%`;
+            percentText.innerText = `${completed}/${total} (${percentage}%)`;
+        } else {
+            barContainer.classList.add('hidden');
+        }
+    }
+
+    // Outer Kanban Card Progress Bar Update
+    if (currentTaskId) {
+        const cardBarFill = document.getElementById(`card-progress-fill-${currentTaskId}`);
+        const cardPercentText = document.getElementById(`card-progress-text-${currentTaskId}`);
+        if (cardBarFill) cardBarFill.style.width = `${percentage}%`;
+        if (cardPercentText) cardPercentText.innerText = `${percentage}%`;
+    }
 }
 
 document.addEventListener('change', function (e) {
@@ -654,44 +775,45 @@ document.addEventListener('change', function (e) {
 });
 
 
-document.addEventListener('DOMContentLoaded', () => {
-    /** @type {HTMLElement} */
-    const container = document.querySelector('#kanbanBoard') || document.querySelector('.kanban-container');
+document.addEventListener('DOMContentLoaded'
+    , () => {
+        /** @type {HTMLElement} */
+        const container = document.querySelector('#kanbanBoard') || document.querySelector('.kanban-container');
 
-    if (!container) return;
+        if (!container) return;
 
-    let isDown = false;
-    let startX;
-    let scrollLeft;
+        let isDown = false;
+        let startX;
+        let scrollLeft;
 
-    container.addEventListener('mousedown', (e) => {
-        if (e.target.closest('button, a, input, select, textarea, .task-card')) return;
+        container.addEventListener('mousedown', (e) => {
+            if (e.target.closest('button, a, input, select, textarea, .task-card')) return;
 
-        isDown = true;
-        container.style.cursor = 'grabbing';
-        container.style.userSelect = 'none';
-        startX = e.pageX - container.offsetLeft;
-        scrollLeft = container.scrollLeft;
+            isDown = true;
+            container.style.cursor = 'grabbing';
+            container.style.userSelect = 'none';
+            startX = e.pageX - container.offsetLeft;
+            scrollLeft = container.scrollLeft;
+        });
+
+        container.addEventListener('mouseleave', () => {
+            isDown = false;
+            container.style.cursor = 'default';
+        });
+
+        container.addEventListener('mouseup', () => {
+            isDown = false;
+            container.style.cursor = 'default';
+        });
+
+        container.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - container.offsetLeft;
+            const walk = (x - startX) * 1.5;
+            container.scrollLeft = scrollLeft - walk;
+        });
     });
-
-    container.addEventListener('mouseleave', () => {
-        isDown = false;
-        container.style.cursor = 'default';
-    });
-
-    container.addEventListener('mouseup', () => {
-        isDown = false;
-        container.style.cursor = 'default';
-    });
-
-    container.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - container.offsetLeft;
-        const walk = (x - startX) * 1.5;
-        container.scrollLeft = scrollLeft - walk;
-    });
-});
 
 
 // Dropdown Open / Close Toggle //

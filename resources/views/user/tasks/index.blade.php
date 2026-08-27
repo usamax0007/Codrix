@@ -49,14 +49,14 @@
                     <!-- Status Column Header -->
                     <div class="px-4 py-3 border-b border-gray-800/80 flex justify-between items-center shrink-0">
                         <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full"
-                          style="background-color: {{ $status->color ?? '#3B82F6' }}"></span>
+                            <span class="w-2.5 h-2.5 rounded-full"
+                                  style="background-color: {{ $status->color ?? '#3B82F6' }}"></span>
                             <h3 class="font-bold text-white text-xs tracking-wide">{{ $status->name }}</h3>
                         </div>
                         <!-- Badge for count -->
                         <span class="task-count text-[11px] bg-[#16202E] text-gray-400 px-2 py-0.5 rounded text-center min-w-[20px]">
-                    {{ $status->tasks->count() }}
-                </span>
+                            {{ $status->tasks->count() }}
+                        </span>
                     </div>
 
                     <!-- Kanban Body -->
@@ -70,12 +70,11 @@
 
                                 <!-- Project Tag & Delete Button -->
                                 <div class="flex justify-between items-start mb-1.5">
-                                    <span class="text-[16px] font-bold text-[#00B8D9] tracking-wider uppercase">
-                                        {{ $task->project->name ?? 'NO PROJECT' }}
-                                    </span>
+                            <span class="text-[16px] font-bold text-[#00B8D9] tracking-wider uppercase">
+                                {{ $task->project->name ?? 'NO PROJECT' }}
+                            </span>
 
                                     <div class="flex items-center gap-2">
-
                                         {{-- Edit Task Button --}}
                                         @can('edit-task')
                                             <button type="button"
@@ -84,8 +83,7 @@
                                                     title="Edit Task">
                                                 <svg class="w-4 h-4 text-gray-500" aria-hidden="true"
                                                      xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                     fill="none"
-                                                     viewBox="0 0 24 24">
+                                                     fill="none" viewBox="0 0 24 24">
                                                     <path stroke="currentColor" stroke-linecap="round"
                                                           stroke-linejoin="round" stroke-width="2"
                                                           d="m14.304 4.844 2.852 2.852M7 7H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-4.5m2.409-9.91a2.017 2.017 0 0 1 0 2.853l-6.844 6.844L8 14l.713-3.565 6.844-6.844a2.015 2.015 0 0 1 2.852 0Z"/>
@@ -119,25 +117,28 @@
 
                                 <!-- Priority Badge -->
                                 <div class="mb-3">
-                                    <span class="text-[12px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider
-                                    @if($task->priority == 'Urgent' || $task->priority == 'High') border-red-500/50 text-red-400 bg-red-500/10
-                                    @elseif($task->priority == 'Medium') border-amber-500/50 text-amber-400 bg-amber-500/10
-                                    @else border-gray-600 text-gray-400 bg-gray-800/50 @endif">
-                                        {{ $task->priority }}
-                                    </span>
+                            <span class="text-[12px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider
+                            @if($task->priority == 'Urgent' || $task->priority == 'High') border-red-500/50 text-red-400 bg-red-500/10
+                            @elseif($task->priority == 'Medium') border-amber-500/50 text-amber-400 bg-amber-500/10
+                            @else border-gray-600 text-gray-400 bg-gray-800/50 @endif">
+                                {{ $task->priority }}
+                            </span>
                                 </div>
 
-                                <!-- Subtasks Section -->
+                                <!-- Subtasks Progress Bar -->
                                 <div class="mb-3">
-                                    <span class="text-[12px] font-bold text-gray-400 tracking-wider uppercase block mb-0.5">SUBTASKS</span>
-                                    <div id="card-subtasks-{{ $task->id }}">
-                                        @if($task->subtasks && $task->subtasks->count() > 0)
-                                            <span class="text-[11px] text-[#00B8D9] font-medium">
-                                                {{ $task->subtasks->count() }} Subtask(s)
-                                            </span>
-                                        @else
-                                            <span class="text-[11px] text-gray-400">No subtasks</span>
-                                        @endif
+                                    <div class="flex justify-between items-center text-[11px] text-gray-400 mb-1">
+                                        <span class="text-[12px] font-bold text-gray-400 tracking-wider uppercase">SUBTASKS</span>
+                                        <span id="card-progress-text-{{ $task->id }}"
+                                              class="text-[11px] text-[#00B8D9] font-semibold">
+                                    {{ $task->subtask_progress_percentage }}%
+                                </span>
+                                    </div>
+
+                                    <div class="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden border border-gray-700/50">
+                                        <div id="card-progress-fill-{{ $task->id }}"
+                                             class="bg-[#00B8D9] h-1.5 rounded-full transition-all duration-300"
+                                             style="width: {{ $task->subtask_progress_percentage }}%;"></div>
                                     </div>
                                 </div>
 
@@ -377,6 +378,21 @@
                                 </button>
                             </div>
                         </div>
+
+
+                        <!-- Dynamic Subtask Progress Bar -->
+                        <div id="subtaskProgressBarContainer" class="mb-3 hidden">
+                            <div class="flex justify-between items-center text-[11px] text-gray-400 mb-1">
+                                <span>Progress</span>
+                                <span id="subtaskProgressPercentText">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-900 rounded-full h-2 overflow-hidden border border-gray-800">
+                                <div id="subtaskProgressBarFill"
+                                     class="bg-[#00B8D9] h-2 rounded-full transition-all duration-300"
+                                     style="width: 0%;"></div>
+                            </div>
+                        </div>
+
 
                         <!-- Subtasks List Container -->
                         <div id="detailSubtasks" class="space-y-2">

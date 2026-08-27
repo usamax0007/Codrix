@@ -90,6 +90,7 @@ Route::middleware('auth')->group(function () {
 
     // Comments Routes //
     Route::post('/user/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::delete('/user/comments/{id}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
     // Task Status Routes //
     Route::get('/user/task-statuses', [TaskStatusController::class, 'index'])->name('task-statuses.index');
