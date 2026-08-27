@@ -1,4 +1,4 @@
-@extends('frontend.admin.layout.app')
+@extends('frontend.super-admin.layout.app')
 
 @section('content')
     <div class="flex-1 lg:ml-64">
@@ -6,7 +6,7 @@
             <div class="bg-gradient-to-r from-[#00E5C0] to-[#0066FF] rounded-2xl p-6 mb-6 text-white">
                 <h2 class="text-2xl font-bold mb-2">Welcome back, {{ Auth::user()->name }}!</h2>
                 <p class="opacity-90">
-                    Admin Dashboard - Management Access
+                    Super Admin Dashboard - Full Access
                 </p>
             </div>
 
@@ -81,8 +81,7 @@
                             <span class="text-sm text-gray-400">Role</span>
                             <div class="flex space-x-2">
                                 @foreach(Auth::user()->roles as $role)
-                                    <span class="px-2 py-1 text-xs rounded-full 
-                                        {{ $role->name === 'super-admin' ? 'bg-purple-900 text-purple-300' : 'bg-blue-900 text-blue-300' }}">
+                                    <span class="px-2 py-1 text-xs rounded-full bg-purple-900 text-purple-300">
                                         {{ ucfirst(str_replace('-', ' ', $role->name)) }}
                                     </span>
                                 @endforeach
@@ -106,7 +105,7 @@
                     </div>
                     <div class="space-y-2">
                         @if(auth()->user()->can('create-users'))
-                        <a href="{{ route('admin.users.create') }}" class="w-full px-4 py-3 filament-primary-bg filament-primary-text rounded-lg font-medium transition hover:opacity-80 flex items-center">
+                        <a href="{{ route('super-admin.users.create') }}" class="w-full px-4 py-3 filament-primary-bg filament-primary-text rounded-lg font-medium transition hover:opacity-80 flex items-center">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                             </svg>
@@ -114,20 +113,21 @@
                         </a>
                         @endif
                         @if(auth()->user()->can('view-users'))
-                        <a href="{{ route('admin.users.index') }}" class="w-full px-4 py-3 filament-info-bg filament-info-text rounded-lg font-medium transition hover:opacity-80 flex items-center">
+                        <a href="{{ route('super-admin.users.index') }}" class="w-full px-4 py-3 filament-info-bg filament-info-text rounded-lg font-medium transition hover:opacity-80 flex items-center">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                             </svg>
                             Manage Users
                         </a>
                         @endif
-                        <button class="w-full px-4 py-3 bg-gray-700 text-gray-300 rounded-lg font-medium transition hover:bg-gray-600 flex items-center">
+                        @if(auth()->user()->can('view-admins'))
+                        <a href="{{ route('super-admin.admins.index') }}" class="w-full px-4 py-3 filament-info-bg filament-info-text rounded-lg font-medium transition hover:opacity-80 flex items-center">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                             </svg>
-                            Account Settings
-                        </button>
+                            Manage Admins
+                        </a>
+                        @endif
                     </div>
                 </div>
             </div>

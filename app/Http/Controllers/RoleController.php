@@ -10,30 +10,44 @@ class RoleController extends Controller
 {
     public function index()
     {
-        $this->authorize('view-roles');
+        if (!auth()->user()->isSuperAdmin()) {
+            $this->authorize('view-roles');
+        }
 
-        $roles = Role::with('permissions')->get();
+        $roles = Role::with('permissions', 'users')->get();
         $permissions = Permission::all()->groupBy(function ($permission) {
             return explode(' ', str_replace('-', ' ', $permission->name))[0];
         });
 
-        return view('frontend.admin.roles.index', compact('roles', 'permissions'));
+        $view = request()->routeIs('super-admin.roles.*') 
+            ? 'frontend.super-admin.roles.index' 
+            : 'frontend.admin.roles.index';
+
+        return view($view, compact('roles', 'permissions'));
     }
 
     public function create()
     {
-        $this->authorize('create-roles');
+        if (!auth()->user()->isSuperAdmin()) {
+            $this->authorize('create-roles');
+        }
 
         $permissions = Permission::all()->groupBy(function ($permission) {
             return explode(' ', str_replace('-', ' ', $permission->name))[0];
         });
 
-        return view('frontend.admin.roles.create', compact('permissions'));
+        $view = request()->routeIs('super-admin.roles.*') 
+            ? 'frontend.super-admin.roles.create' 
+            : 'frontend.admin.roles.create';
+
+        return view($view, compact('permissions'));
     }
 
     public function store(Request $request)
     {
-        $this->authorize('create-roles');
+        if (!auth()->user()->isSuperAdmin()) {
+            $this->authorize('create-roles');
+        }
 
         $request->validate([
             'name' => 'required|string|max:255|unique:roles,name',
@@ -50,12 +64,18 @@ class RoleController extends Controller
             $role->syncPermissions($request->permissions);
         }
 
-        return redirect()->route('admin.roles.index')->with('success', 'Role created successfully.');
+        $route = request()->routeIs('super-admin.roles.*') 
+            ? 'super-admin.roles.index' 
+            : 'admin.roles.index';
+
+        return redirect()->route($route)->with('success', 'Role created successfully.');
     }
 
     public function edit(Role $role)
     {
-        $this->authorize('edit-roles');
+        if (!auth()->user()->isSuperAdmin()) {
+            $this->authorize('edit-roles');
+        }
 
         $permissions = Permission::all()->groupBy(function ($permission) {
             return explode(' ', str_replace('-', ' ', $permission->name))[0];
@@ -63,12 +83,18 @@ class RoleController extends Controller
 
         $role->load('permissions');
 
-        return view('frontend.admin.roles.edit', compact('role', 'permissions'));
+        $view = request()->routeIs('super-admin.roles.*') 
+            ? 'frontend.super-admin.roles.edit' 
+            : 'frontend.admin.roles.edit';
+
+        return view($view, compact('role', 'permissions'));
     }
 
     public function update(Request $request, Role $role)
     {
-        $this->authorize('edit-roles');
+        if (!auth()->user()->isSuperAdmin()) {
+            $this->authorize('edit-roles');
+        }
 
         $request->validate([
             'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
@@ -86,12 +112,18 @@ class RoleController extends Controller
             $role->syncPermissions([]);
         }
 
-        return redirect()->route('admin.roles.index')->with('success', 'Role updated successfully.');
+        $route = request()->routeIs('super-admin.roles.*') 
+            ? 'super-admin.roles.index' 
+            : 'admin.roles.index';
+
+        return redirect()->route($route)->with('success', 'Role updated successfully.');
     }
 
     public function destroy(Role $role)
     {
-        $this->authorize('delete-roles');
+        if (!auth()->user()->isSuperAdmin()) {
+            $this->authorize('delete-roles');
+        }
 
         // Prevent deletion of default roles
         if (in_array($role->name, ['super-admin', 'admin', 'user'])) {
@@ -100,6 +132,10 @@ class RoleController extends Controller
 
         $role->delete();
 
-        return redirect()->route('admin.roles.index')->with('success', 'Role deleted successfully.');
+        $route = request()->routeIs('super-admin.roles.*') 
+            ? 'super-admin.roles.index' 
+            : 'admin.roles.index';
+
+        return redirect()->route($route)->with('success', 'Role deleted successfully.');
     }
 }

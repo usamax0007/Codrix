@@ -262,7 +262,7 @@
             const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
             const title = document.getElementById('subtaskTitle').value;
 
-            fetch(`{{ route('user.task.subtask', $task) }}`, {
+            fetch(`{{ route('admin.tasks.subtask', $task) }}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -286,7 +286,7 @@
             const checkbox = document.getElementById('subtask-' + subtaskId);
             const label = checkbox.nextElementSibling;
 
-            fetch(`{{ route('user.task.subtask.toggle', [$task, ':subtask']) }}`.replace(':subtask', subtaskId), {
+            fetch(`{{ route('admin.tasks.subtask.toggle', [$task, ':subtask']) }}`.replace(':subtask', subtaskId), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -317,7 +317,7 @@
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-            fetch(`{{ route('user.task.comment.delete', [$task, ':comment']) }}`.replace(':comment', commentId), {
+            fetch(`{{ route('admin.tasks.comment.delete', [$task, ':comment']) }}`.replace(':comment', commentId), {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -342,7 +342,7 @@
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-            fetch(`{{ route('user.task.subtask.delete', [$task, ':subtask']) }}`.replace(':subtask', subtaskId), {
+            fetch(`{{ route('admin.tasks.subtask.delete', [$task, ':subtask']) }}`.replace(':subtask', subtaskId), {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -357,6 +357,30 @@
             })
             .catch(error => {
                 console.error('Error deleting subtask:', error);
+            });
+        }
+
+        function addComment(event) {
+            event.preventDefault();
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            const content = document.getElementById('commentContent').value;
+
+            fetch(`{{ route('admin.tasks.comment', $task) }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ content: content })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error adding comment:', error);
             });
         }
 

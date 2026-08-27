@@ -16,8 +16,9 @@ class UserManagementController extends Controller
         $users = User::with('roles')->get();
         $assignableRoles = auth()->user()->getAssignableRoles();
 
-        // Return admin view if accessed from admin routes
-        if (request()->is('admin/*')) {
+        if (request()->is('super-admin/*')) {
+            return view('frontend.super-admin.users.index', compact('users', 'assignableRoles'));
+        } elseif (request()->is('admin/*')) {
             return view('frontend.admin.users.index', compact('users', 'assignableRoles'));
         }
 
@@ -31,8 +32,9 @@ class UserManagementController extends Controller
         $assignableRoles = auth()->user()->getAssignableRoles();
         $roles = Role::whereIn('name', $assignableRoles)->get();
 
-        // Return admin view if accessed from admin routes
-        if (request()->is('admin/*')) {
+        if (request()->is('super-admin/*')) {
+            return view('frontend.super-admin.users.create', compact('roles'));
+        } elseif (request()->is('admin/*')) {
             return view('frontend.admin.users.create', compact('roles'));
         }
 
@@ -64,8 +66,9 @@ class UserManagementController extends Controller
 
         $user->assignRole($request->role);
 
-        // Redirect to appropriate route based on request
-        if (request()->is('admin/*')) {
+        if (request()->is('super-admin/*')) {
+            return redirect()->route('super-admin.users.index')->with('success', 'User created successfully.');
+        } elseif (request()->is('admin/*')) {
             return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
         }
 
@@ -83,8 +86,9 @@ class UserManagementController extends Controller
         $assignableRoles = auth()->user()->getAssignableRoles();
         $roles = Role::whereIn('name', $assignableRoles)->get();
 
-        // Return admin view if accessed from admin routes
-        if (request()->is('admin/*')) {
+        if (request()->is('super-admin/*')) {
+            return view('frontend.super-admin.users.edit', compact('user', 'roles'));
+        } elseif (request()->is('admin/*')) {
             return view('frontend.admin.users.edit', compact('user', 'roles'));
         }
 
@@ -122,8 +126,9 @@ class UserManagementController extends Controller
 
         $user->syncRoles($request->role);
 
-        // Redirect to appropriate route based on request
-        if (request()->is('admin/*')) {
+        if (request()->is('super-admin/*')) {
+            return redirect()->route('super-admin.users.index')->with('success', 'User updated successfully.');
+        } elseif (request()->is('admin/*')) {
             return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
         }
 
@@ -144,8 +149,9 @@ class UserManagementController extends Controller
 
         $user->delete();
 
-        // Redirect to appropriate route based on request
-        if (request()->is('admin/*')) {
+        if (request()->is('super-admin/*')) {
+            return redirect()->route('super-admin.users.index')->with('success', 'User deleted successfully.');
+        } elseif (request()->is('admin/*')) {
             return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
         }
 
@@ -174,13 +180,16 @@ class UserManagementController extends Controller
         return back()->with('success', 'Role assigned successfully.');
     }
 
-    // Admin Management Methods (Super Admin only)
     public function adminsIndex()
     {
         $this->authorize('view-admins');
 
         $admins = User::role('admin')->with('roles')->get();
         $assignableRoles = ['admin'];
+
+        if (request()->is('super-admin/*')) {
+            return view('frontend.super-admin.admins.index', compact('admins', 'assignableRoles'));
+        }
 
         return view('frontend.admin.admins.index', compact('admins', 'assignableRoles'));
     }
@@ -190,6 +199,10 @@ class UserManagementController extends Controller
         $this->authorize('create-admins');
 
         $roles = Role::where('name', 'admin')->get();
+
+        if (request()->is('super-admin/*')) {
+            return view('frontend.super-admin.admins.create', compact('roles'));
+        }
 
         return view('frontend.admin.admins.create', compact('roles'));
     }
@@ -213,6 +226,10 @@ class UserManagementController extends Controller
 
         $user->assignRole('admin');
 
+        if (request()->is('super-admin/*')) {
+            return redirect()->route('super-admin.admins.index')->with('success', 'Admin created successfully.');
+        }
+
         return redirect()->route('admin.admins.index')->with('success', 'Admin created successfully.');
     }
 
@@ -225,6 +242,10 @@ class UserManagementController extends Controller
         }
 
         $roles = Role::where('name', 'admin')->get();
+
+        if (request()->is('super-admin/*')) {
+            return view('frontend.super-admin.admins.edit', compact('user', 'roles'));
+        }
 
         return view('frontend.admin.admins.edit', compact('user', 'roles'));
     }
@@ -252,6 +273,10 @@ class UserManagementController extends Controller
             $user->update(['password' => Hash::make($request->password)]);
         }
 
+        if (request()->is('super-admin/*')) {
+            return redirect()->route('super-admin.admins.index')->with('success', 'Admin updated successfully.');
+        }
+
         return redirect()->route('admin.admins.index')->with('success', 'Admin updated successfully.');
     }
 
@@ -268,6 +293,10 @@ class UserManagementController extends Controller
         }
 
         $user->delete();
+
+        if (request()->is('super-admin/*')) {
+            return redirect()->route('super-admin.admins.index')->with('success', 'Admin deleted successfully.');
+        }
 
         return redirect()->route('admin.admins.index')->with('success', 'Admin deleted successfully.');
     }

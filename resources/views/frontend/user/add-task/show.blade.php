@@ -529,6 +529,30 @@
             });
         }
 
+        function addComment(event) {
+            event.preventDefault();
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            const content = document.getElementById('commentContent').value;
+
+            fetch(`{{ route('user.task.comment', $task) }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ content: content })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error adding comment:', error);
+            });
+        }
+
         function updateProgress() {
             const subtaskList = document.querySelector('.space-y-2.mb-4');
             const totalSubtasks = subtaskList ? subtaskList.querySelectorAll('.flex').length : 0;

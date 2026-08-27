@@ -15,6 +15,13 @@ class TaskStatusController extends Controller
         }
 
         $statuses = TaskStatus::orderBy('position')->get();
+        
+        if (request()->routeIs('admin.task-status.*')) {
+            return view('frontend.admin.task-status', compact('statuses'));
+        } elseif (request()->routeIs('super-admin.task-status.*')) {
+            return view('frontend.super-admin.task-status', compact('statuses'));
+        }
+        
         return view('frontend.user.task-status', compact('statuses'));
     }
 

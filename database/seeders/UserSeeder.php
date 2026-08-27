@@ -11,10 +11,10 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $user = User::query()->updateOrCreate(
-            ['email' => 'abdullah@gmail.com'],
+            ['email' => 'user@xcodrix.com'],
             [
                 'name' => 'Abdullah',
-                'password' => Hash::make('88888888'),
+                'password' => Hash::make('password'),
                 'email_verified_at' => now(),
             ]
         );
@@ -22,7 +22,7 @@ class UserSeeder extends Seeder
         $user->assignRole('user');
 
         $this->command->info('Regular user created successfully.');
-        $this->command->info('Email: abdullah@gmail.com');
-        $this->command->info('Password: 88888888');
+        $this->command->info('Email: user@xcodrix.com');
+        $this->command->info('Password: password');
     }
 }

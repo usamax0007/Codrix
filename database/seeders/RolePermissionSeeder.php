@@ -3,14 +3,13 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-
         $permissions = [
             'view-users',
             'create-users',
@@ -68,6 +67,7 @@ class RolePermissionSeeder extends Seeder
 
             'view-profile',
             'edit-profile',
+
             'view-orders',
             'manage-orders',
 
@@ -76,6 +76,7 @@ class RolePermissionSeeder extends Seeder
             'projects access',
         ];
 
+        // Create permissions
         foreach ($permissions as $permissionName) {
             Permission::firstOrCreate([
                 'name' => $permissionName,
@@ -83,7 +84,7 @@ class RolePermissionSeeder extends Seeder
             ]);
         }
 
-
+        // Create roles
         $superAdmin = Role::firstOrCreate([
             'name' => 'super-admin',
             'guard_name' => 'web',
@@ -99,52 +100,45 @@ class RolePermissionSeeder extends Seeder
             'guard_name' => 'web',
         ]);
 
+        // Super Admin permissions
         $superAdminPermissions = [
-            // User management
             'view-users',
             'create-users',
             'edit-users',
             'delete-users',
             'manage-users',
-            
-            // Admin management
+
             'view-admins',
             'create-admins',
             'edit-admins',
             'delete-admins',
             'manage-admins',
-            
-            // Task management
+
             'view-tasks',
             'create-tasks',
             'edit-tasks',
             'delete-tasks',
             'assign-task',
             'manage-task-statuses',
-            
-            // Task status management
+
             'view-task-status',
             'create-task-status',
             'edit-task-status',
             'delete-task-status',
-            
-            // Project management
+
             'view-projects',
             'create-projects',
             'edit-projects',
             'delete-projects',
             'manage-projects',
-            
-            // Subtask management
+
             'create-subtask',
             'edit-subtask',
             'delete-subtask',
-            
-            // Attendance
+
             'view-attendance',
             'manage-attendance',
-            
-            // Roles & Permissions
+
             'view-roles',
             'create-roles',
             'edit-roles',
@@ -152,64 +146,74 @@ class RolePermissionSeeder extends Seeder
             'view-permissions',
             'manage-permissions',
             'assign-roles-to-users',
-            
-            // Access management
+
             'manage-admin-access',
             'manage-user-access',
-            
-            // Reports
+
             'view-reports',
             'generate-reports',
-            
-            // Settings
+
             'view-settings',
             'manage-settings',
-            
-            // Profile & Orders
+
             'view-profile',
             'edit-profile',
+
             'view-orders',
             'manage-orders',
-            
-            // Access permissions
+
             'attendance access',
             'tasks access',
             'projects access',
         ];
+
         $superAdmin->syncPermissions($superAdminPermissions);
 
+        // Admin permissions
         $adminPermissions = [
             'view-users',
             'create-users',
             'edit-users',
             'delete-users',
             'manage-users',
+
             'view-reports',
             'generate-reports',
             'manage-user-access',
+
             'view-projects',
             'create-projects',
             'edit-projects',
             'delete-projects',
+
             'view-tasks',
             'create-tasks',
             'edit-tasks',
             'delete-tasks',
+
             'view-task-status',
             'create-task-status',
             'edit-task-status',
             'delete-task-status',
             'manage-task-statuses',
+
+            'create-subtask',
+            'edit-subtask',
+            'delete-subtask',
         ];
+
         $admin->syncPermissions($adminPermissions);
 
+        // User permissions
         $userPermissions = [
             'view-profile',
             'edit-profile',
             'view-projects',
             'view-tasks',
             'view-task-status',
+            'edit-subtask',
         ];
+
         $user->syncPermissions($userPermissions);
 
         $this->command->info('Roles and permissions seeded successfully.');

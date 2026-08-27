@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            RolePermissionSeeder::class,
             AdminUserSeeder::class,
             UserSeeder::class,
             BlogPostSeeder::class,
@@ -38,7 +39,6 @@ class DatabaseSeeder extends Seeder
             ProjectSeeder::class,
             TaskSeeder::class,
             TaskStatusSeeder::class,
-            RolePermissionSeeder::class,
             SuperAdminSeeder::class,
         ]);
     }

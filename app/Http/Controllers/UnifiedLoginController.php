@@ -25,8 +25,9 @@ class UnifiedLoginController extends Controller
             $user = Auth::user();
             $request->session()->regenerate();
 
-            // Redirect based on user role
-            if ($user->isSuperAdmin() || $user->isAdmin()) {
+            if ($user->isSuperAdmin()) {
+                return redirect()->intended(route('super-admin.dashboard'));
+            } elseif ($user->isAdmin()) {
                 return redirect()->intended(route('admin.dashboard'));
             }
 

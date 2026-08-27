@@ -15,9 +15,14 @@ class AddProjectController extends Controller
         }
 
         $projects = Project::latest()->get();
-        $isAdmin = request()->routeIs('admin.projects.*');
-        $view = $isAdmin ? 'frontend.admin.projects.index' : 'frontend.user.add-project.index';
-        return view($view, compact('projects'));
+        
+        if (request()->routeIs('admin.projects.*')) {
+            return view('frontend.admin.projects.index', compact('projects'));
+        } elseif (request()->routeIs('super-admin.projects.*')) {
+            return view('frontend.super-admin.projects.index', compact('projects'));
+        }
+        
+        return view('frontend.user.add-project.index', compact('projects'));
     }
 
     public function create()
@@ -26,9 +31,13 @@ class AddProjectController extends Controller
             abort(403, 'You do not have permission to create projects.');
         }
 
-        $isAdmin = request()->routeIs('admin.projects.*');
-        $view = $isAdmin ? 'frontend.admin.projects.create' : 'frontend.user.add-project.create';
-        return view($view);
+        if (request()->routeIs('admin.projects.*')) {
+            return view('frontend.admin.projects.create');
+        } elseif (request()->routeIs('super-admin.projects.*')) {
+            return view('frontend.super-admin.projects.create');
+        }
+        
+        return view('frontend.user.add-project.create');
     }
 
     public function store(ProjectRequest $request)
@@ -38,15 +47,6 @@ class AddProjectController extends Controller
         }
 
         $project = Project::create($request->validated());
-        
-        $isAdmin = request()->routeIs('admin.projects.*');
-        if ($isAdmin) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Project created successfully.',
-                'project' => $project,
-            ]);
-        }
         
         return response()->json([
             'success' => true,
@@ -61,9 +61,13 @@ class AddProjectController extends Controller
             abort(403, 'You do not have permission to view projects.');
         }
 
-        $isAdmin = request()->routeIs('admin.projects.*');
-        $view = $isAdmin ? 'frontend.admin.projects.show' : 'frontend.user.add-project.show';
-        return view($view, compact('project'));
+        if (request()->routeIs('admin.projects.*')) {
+            return view('frontend.admin.projects.show', compact('project'));
+        } elseif (request()->routeIs('super-admin.projects.*')) {
+            return view('frontend.super-admin.projects.show', compact('project'));
+        }
+        
+        return view('frontend.user.add-project.show', compact('project'));
     }
 
     public function edit(Project $project)
@@ -72,9 +76,13 @@ class AddProjectController extends Controller
             abort(403, 'You do not have permission to edit projects.');
         }
 
-        $isAdmin = request()->routeIs('admin.projects.*');
-        $view = $isAdmin ? 'frontend.admin.projects.edit' : 'frontend.user.add-project.edit';
-        return view($view, compact('project'));
+        if (request()->routeIs('admin.projects.*')) {
+            return view('frontend.admin.projects.edit', compact('project'));
+        } elseif (request()->routeIs('super-admin.projects.*')) {
+            return view('frontend.super-admin.projects.edit', compact('project'));
+        }
+        
+        return view('frontend.user.add-project.edit', compact('project'));
     }
 
     public function update(ProjectRequest $request, Project $project)
@@ -85,9 +93,13 @@ class AddProjectController extends Controller
 
         $project->update($request->validated());
         
-        $isAdmin = request()->routeIs('admin.projects.*');
-        $route = $isAdmin ? 'admin.projects.index' : 'user.add-project.index';
-        return redirect()->route($route)->with('success', 'Project updated successfully.');
+        if (request()->routeIs('admin.projects.*')) {
+            return redirect()->route('admin.projects.index')->with('success', 'Project updated successfully.');
+        } elseif (request()->routeIs('super-admin.projects.*')) {
+            return redirect()->route('super-admin.projects.index')->with('success', 'Project updated successfully.');
+        }
+        
+        return redirect()->route('user.add-project.index')->with('success', 'Project updated successfully.');
     }
 
     public function destroy(Project $project)
@@ -98,8 +110,12 @@ class AddProjectController extends Controller
 
         $project->delete();
         
-        $isAdmin = request()->routeIs('admin.projects.*');
-        $route = $isAdmin ? 'admin.projects.index' : 'user.add-project.index';
-        return redirect()->route($route)->with('success', 'Project deleted successfully.');
+        if (request()->routeIs('admin.projects.*')) {
+            return redirect()->route('admin.projects.index')->with('success', 'Project deleted successfully.');
+        } elseif (request()->routeIs('super-admin.projects.*')) {
+            return redirect()->route('super-admin.projects.index')->with('success', 'Project deleted successfully.');
+        }
+        
+        return redirect()->route('user.add-project.index')->with('success', 'Project deleted successfully.');
     }
 }

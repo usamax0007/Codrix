@@ -21,9 +21,13 @@ class TaskController extends Controller
         $projects = \App\Models\Project::all();
         $users = \App\Models\User::all();
         
-        $isAdmin = request()->routeIs('admin.tasks.*');
-        $view = $isAdmin ? 'frontend.admin.tasks.index' : 'frontend.user.add-task.index';
-        return view($view, compact('tasks', 'statuses', 'projects', 'users'));
+        if (request()->routeIs('admin.tasks.*')) {
+            return view('frontend.admin.tasks.index', compact('tasks', 'statuses', 'projects', 'users'));
+        } elseif (request()->routeIs('super-admin.tasks.*')) {
+            return view('frontend.super-admin.tasks.index', compact('tasks', 'statuses', 'projects', 'users'));
+        }
+        
+        return view('frontend.user.add-task.index', compact('tasks', 'statuses', 'projects', 'users'));
     }
 
     public function create()
@@ -36,9 +40,13 @@ class TaskController extends Controller
         $users = \App\Models\User::all();
         $statuses = \App\Models\TaskStatus::orderBy('position')->get();
         
-        $isAdmin = request()->routeIs('admin.tasks.*');
-        $view = $isAdmin ? 'frontend.admin.tasks.create' : 'frontend.user.add-task.create';
-        return view($view, compact('projects', 'users', 'statuses'));
+        if (request()->routeIs('admin.tasks.*')) {
+            return view('frontend.admin.tasks.create', compact('projects', 'users', 'statuses'));
+        } elseif (request()->routeIs('super-admin.tasks.*')) {
+            return view('frontend.super-admin.tasks.create', compact('projects', 'users', 'statuses'));
+        }
+        
+        return view('frontend.user.add-task.create', compact('projects', 'users', 'statuses'));
     }
 
     public function store(TaskRequest $request)
@@ -75,9 +83,13 @@ class TaskController extends Controller
 
         $task->load(['project', 'assignee', 'comments.user', 'subtasks']);
         
-        $isAdmin = request()->routeIs('admin.tasks.*');
-        $view = $isAdmin ? 'frontend.admin.tasks.show' : 'frontend.user.add-task.show';
-        return view($view, compact('task'));
+        if (request()->routeIs('admin.tasks.*')) {
+            return view('frontend.admin.tasks.show', compact('task'));
+        } elseif (request()->routeIs('super-admin.tasks.*')) {
+            return view('frontend.super-admin.tasks.show', compact('task'));
+        }
+        
+        return view('frontend.user.add-task.show', compact('task'));
     }
 
     public function edit(Task $task)
@@ -90,9 +102,13 @@ class TaskController extends Controller
         $users = \App\Models\User::all();
         $statuses = \App\Models\TaskStatus::all();
         
-        $isAdmin = request()->routeIs('admin.tasks.*');
-        $view = $isAdmin ? 'frontend.admin.tasks.edit' : 'frontend.user.add-task.edit';
-        return view($view, compact('task', 'projects', 'users', 'statuses'));
+        if (request()->routeIs('admin.tasks.*')) {
+            return view('frontend.admin.tasks.edit', compact('task', 'projects', 'users', 'statuses'));
+        } elseif (request()->routeIs('super-admin.tasks.*')) {
+            return view('frontend.super-admin.tasks.edit', compact('task', 'projects', 'users', 'statuses'));
+        }
+        
+        return view('frontend.user.add-task.edit', compact('task', 'projects', 'users', 'statuses'));
     }
 
     public function update(TaskRequest $request, Task $task)
@@ -103,9 +119,13 @@ class TaskController extends Controller
 
         $task->update($request->validated());
         
-        $isAdmin = request()->routeIs('admin.tasks.*');
-        $route = $isAdmin ? 'admin.tasks.index' : 'user.task.index';
-        return redirect()->route($route)->with('success', 'Task updated successfully.');
+        if (request()->routeIs('admin.tasks.*')) {
+            return redirect()->route('admin.tasks.index')->with('success', 'Task updated successfully.');
+        } elseif (request()->routeIs('super-admin.tasks.*')) {
+            return redirect()->route('super-admin.tasks.index')->with('success', 'Task updated successfully.');
+        }
+        
+        return redirect()->route('user.task.index')->with('success', 'Task updated successfully.');
     }
 
     public function destroy(Task $task)

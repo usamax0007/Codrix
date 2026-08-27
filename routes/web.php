@@ -12,6 +12,7 @@ use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\SuperAdminAuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UnifiedLoginController;
 
@@ -36,19 +37,18 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 
 Route::redirect('/team', '/about', 301);
 
-// Unified Login Routes
 Route::get('/login', [UnifiedLoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [UnifiedLoginController::class, 'login'])->name('login.post');
 Route::post('/logout', [UnifiedLoginController::class, 'logout'])->name('logout');
 
-// Legacy Routes (redirect to unified login)
 Route::redirect('/user/login', '/login', 301);
 Route::redirect('/admin/login', '/login', 301);
 
 Route::get('/user/dashboard', [UserAuthController::class, 'dashboard'])->name('user.dashboard')->middleware('auth');
 
-// Admin Routes (Super Admin & Admin only)
-Route::get('/admin/dashboard', [AdminAuthController::class, 'dashboard'])->name('admin.dashboard')->middleware('auth');
+Route::get('/admin/dashboard', [AdminAuthController::class, 'dashboard'])->name('admin.dashboard')->middleware(['auth', 'admin']);
+
+Route::get('/super-admin/dashboard', [SuperAdminAuthController::class, 'dashboard'])->name('super-admin.dashboard')->middleware(['auth', 'super-admin']);
 
 
 Route::prefix('user/task-status')->name('user.task-status.')->middleware('auth')->group(function () {
@@ -95,8 +95,7 @@ Route::prefix('user/users')->name('user.users.')->middleware('auth')->group(func
     Route::post('/{user}/assign-role', [UserManagementController::class, 'assignRole'])->name('assign-role');
 });
 
-// Admin User Management Routes
-Route::prefix('admin/users')->name('admin.users.')->middleware('auth')->group(function () {
+Route::prefix('admin/users')->name('admin.users.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [UserManagementController::class, 'index'])->name('index');
     Route::get('/create', [UserManagementController::class, 'create'])->name('create');
     Route::post('/', [UserManagementController::class, 'store'])->name('store');
@@ -106,7 +105,16 @@ Route::prefix('admin/users')->name('admin.users.')->middleware('auth')->group(fu
     Route::post('/{user}/assign-role', [UserManagementController::class, 'assignRole'])->name('assign-role');
 });
 
-// Admin Projects Routes
+Route::prefix('super-admin/users')->name('super-admin.users.')->middleware(['auth', 'super-admin'])->group(function () {
+    Route::get('/', [UserManagementController::class, 'index'])->name('index');
+    Route::get('/create', [UserManagementController::class, 'create'])->name('create');
+    Route::post('/', [UserManagementController::class, 'store'])->name('store');
+    Route::get('/{user}/edit', [UserManagementController::class, 'edit'])->name('edit');
+    Route::put('/{user}', [UserManagementController::class, 'update'])->name('update');
+    Route::delete('/{user}', [UserManagementController::class, 'destroy'])->name('destroy');
+    Route::post('/{user}/assign-role', [UserManagementController::class, 'assignRole'])->name('assign-role');
+});
+
 Route::prefix('admin/projects')->name('admin.projects.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [AddProjectController::class, 'index'])->name('index');
     Route::get('/create', [AddProjectController::class, 'create'])->name('create');
@@ -117,7 +125,16 @@ Route::prefix('admin/projects')->name('admin.projects.')->middleware(['auth', 'a
     Route::delete('/{project}', [AddProjectController::class, 'destroy'])->name('destroy');
 });
 
-// Admin Tasks Routes
+Route::prefix('super-admin/projects')->name('super-admin.projects.')->middleware(['auth', 'super-admin'])->group(function () {
+    Route::get('/', [AddProjectController::class, 'index'])->name('index');
+    Route::get('/create', [AddProjectController::class, 'create'])->name('create');
+    Route::post('/', [AddProjectController::class, 'store'])->name('store');
+    Route::get('/{project}', [AddProjectController::class, 'show'])->name('show');
+    Route::get('/{project}/edit', [AddProjectController::class, 'edit'])->name('edit');
+    Route::put('/{project}', [AddProjectController::class, 'update'])->name('update');
+    Route::delete('/{project}', [AddProjectController::class, 'destroy'])->name('destroy');
+});
+
 Route::prefix('admin/tasks')->name('admin.tasks.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [TaskController::class, 'index'])->name('index');
     Route::get('/create', [TaskController::class, 'create'])->name('create');
@@ -126,9 +143,32 @@ Route::prefix('admin/tasks')->name('admin.tasks.')->middleware(['auth', 'admin']
     Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('edit');
     Route::put('/{task}', [TaskController::class, 'update'])->name('update');
     Route::delete('/{task}', [TaskController::class, 'destroy'])->name('destroy');
+    Route::post('/{task}/comment', [TaskController::class, 'addComment'])->name('comment');
+    Route::put('/{task}/comment/{comment}', [TaskController::class, 'updateComment'])->name('comment.update');
+    Route::delete('/{task}/comment/{comment}', [TaskController::class, 'deleteComment'])->name('comment.delete');
+    Route::post('/{task}/subtask', [TaskController::class, 'addSubtask'])->name('subtask');
+    Route::put('/{task}/subtask/{subtask}', [TaskController::class, 'toggleSubtask'])->name('subtask.toggle');
+    Route::delete('/{task}/subtask/{subtask}', [TaskController::class, 'deleteSubtask'])->name('subtask.delete');
+    Route::put('/{task}/status', [TaskController::class, 'updateStatus'])->name('status.update');
 });
 
-// Admin Task Status Routes
+Route::prefix('super-admin/tasks')->name('super-admin.tasks.')->middleware(['auth', 'super-admin'])->group(function () {
+    Route::get('/', [TaskController::class, 'index'])->name('index');
+    Route::get('/create', [TaskController::class, 'create'])->name('create');
+    Route::post('/', [TaskController::class, 'store'])->name('store');
+    Route::get('/{task}', [TaskController::class, 'show'])->name('show');
+    Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('edit');
+    Route::put('/{task}', [TaskController::class, 'update'])->name('update');
+    Route::delete('/{task}', [TaskController::class, 'destroy'])->name('destroy');
+    Route::post('/{task}/comment', [TaskController::class, 'addComment'])->name('comment');
+    Route::put('/{task}/comment/{comment}', [TaskController::class, 'updateComment'])->name('comment.update');
+    Route::delete('/{task}/comment/{comment}', [TaskController::class, 'deleteComment'])->name('comment.delete');
+    Route::post('/{task}/subtask', [TaskController::class, 'addSubtask'])->name('subtask');
+    Route::put('/{task}/subtask/{subtask}', [TaskController::class, 'toggleSubtask'])->name('subtask.toggle');
+    Route::delete('/{task}/subtask/{subtask}', [TaskController::class, 'deleteSubtask'])->name('subtask.delete');
+    Route::put('/{task}/status', [TaskController::class, 'updateStatus'])->name('status.update');
+});
+
 Route::prefix('admin/task-status')->name('admin.task-status.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [TaskStatusController::class, 'index'])->name('index');
     Route::post('/', [TaskStatusController::class, 'store'])->name('store');
@@ -136,14 +176,20 @@ Route::prefix('admin/task-status')->name('admin.task-status.')->middleware(['aut
     Route::post('/reorder', [TaskStatusController::class, 'reorder'])->name('reorder');
 });
 
-// Admin Attendance Routes (placeholder)
+Route::prefix('super-admin/task-status')->name('super-admin.task-status.')->middleware(['auth', 'super-admin'])->group(function () {
+    Route::get('/', [TaskStatusController::class, 'index'])->name('index');
+    Route::post('/', [TaskStatusController::class, 'store'])->name('store');
+    Route::delete('/{status}', [TaskStatusController::class, 'destroy'])->name('destroy');
+    Route::post('/reorder', [TaskStatusController::class, 'reorder'])->name('reorder');
+});
+
+
 Route::prefix('admin/attendance')->name('admin.attendance.')->middleware('auth')->group(function () {
     Route::get('/', function() {
         return redirect()->route('admin.dashboard')->with('info', 'Attendance module coming soon');
     })->name('index');
 });
 
-// Admin Admins Routes (Super Admin only)
 Route::prefix('admin/admins')->name('admin.admins.')->middleware('auth')->group(function () {
     Route::get('/', [UserManagementController::class, 'adminsIndex'])->name('index');
     Route::get('/create', [UserManagementController::class, 'adminsCreate'])->name('create');
@@ -153,21 +199,27 @@ Route::prefix('admin/admins')->name('admin.admins.')->middleware('auth')->group(
     Route::delete('/{user}', [UserManagementController::class, 'adminsDestroy'])->name('destroy');
 });
 
-// Admin Reports Routes (Super Admin and Admin)
+Route::prefix('super-admin/admins')->name('super-admin.admins.')->middleware(['auth', 'super-admin'])->group(function () {
+    Route::get('/', [UserManagementController::class, 'adminsIndex'])->name('index');
+    Route::get('/create', [UserManagementController::class, 'adminsCreate'])->name('create');
+    Route::post('/', [UserManagementController::class, 'adminsStore'])->name('store');
+    Route::get('/{user}/edit', [UserManagementController::class, 'adminsEdit'])->name('edit');
+    Route::put('/{user}', [UserManagementController::class, 'adminsUpdate'])->name('update');
+    Route::delete('/{user}', [UserManagementController::class, 'adminsDestroy'])->name('destroy');
+});
+
 Route::prefix('admin/reports')->name('admin.reports.')->middleware('auth')->group(function () {
     Route::get('/', function() {
         return view('frontend.admin.reports.index');
     })->name('index');
 });
 
-// Admin Settings Routes (Super Admin only)
 Route::prefix('admin/settings')->name('admin.settings.')->middleware('auth')->group(function () {
     Route::get('/', function() {
         return view('frontend.admin.settings.index');
     })->name('index');
 });
 
-// Admin Roles Routes (Super Admin only)
 Route::prefix('admin/roles')->name('admin.roles.')->middleware('auth')->group(function () {
     Route::get('/', [RoleController::class, 'index'])->name('index');
     Route::get('/create', [RoleController::class, 'create'])->name('create');
@@ -177,14 +229,40 @@ Route::prefix('admin/roles')->name('admin.roles.')->middleware('auth')->group(fu
     Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy');
 });
 
-// User Profile Routes
+Route::prefix('super-admin/reports')->name('super-admin.reports.')->middleware(['auth', 'super-admin'])->group(function () {
+    Route::get('/', function() {
+        return view('frontend.super-admin.reports.index');
+    })->name('index');
+});
+
+Route::prefix('super-admin/settings')->name('super-admin.settings.')->middleware(['auth', 'super-admin'])->group(function () {
+    Route::get('/', function() {
+        return view('frontend.super-admin.settings.index');
+    })->name('index');
+});
+
+Route::prefix('super-admin/roles')->name('super-admin.roles.')->middleware(['auth', 'super-admin'])->group(function () {
+    Route::get('/', [RoleController::class, 'index'])->name('index');
+    Route::get('/create', [RoleController::class, 'create'])->name('create');
+    Route::post('/', [RoleController::class, 'store'])->name('store');
+    Route::get('/{role}/edit', [RoleController::class, 'edit'])->name('edit');
+    Route::put('/{role}', [RoleController::class, 'update'])->name('update');
+    Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy');
+});
+
+Route::prefix('super-admin/permissions')->name('super-admin.permissions.')->middleware(['auth', 'super-admin'])->group(function () {
+    Route::get('/', function() {
+        $permissions = \Spatie\Permission\Models\Permission::with('roles')->get();
+        return view('frontend.super-admin.permissions.index', compact('permissions'));
+    })->name('index');
+});
+
 Route::prefix('user/profile')->name('user.profile.')->middleware('auth')->group(function () {
     Route::get('/', function() {
         return view('frontend.user.profile.index');
     })->name('index');
 });
 
-// User Orders Routes
 Route::prefix('user/orders')->name('user.orders.')->middleware('auth')->group(function () {
     Route::get('/', function() {
         return view('frontend.user.orders.index');

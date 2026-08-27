@@ -19,7 +19,6 @@ class AdminAuthController extends Controller
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $user = Auth::user();
             
-            // Check if user is Super Admin or Admin
             if (!$user->isSuperAdmin() && !$user->isAdmin()) {
                 Auth::logout();
                 return back()->withErrors([
@@ -28,6 +27,12 @@ class AdminAuthController extends Controller
             }
 
             $request->session()->regenerate();
+            
+
+            if ($user->isSuperAdmin()) {
+                return redirect()->intended(route('super-admin.dashboard'));
+            }
+            
             return redirect()->intended(route('admin.dashboard'));
         }
 
