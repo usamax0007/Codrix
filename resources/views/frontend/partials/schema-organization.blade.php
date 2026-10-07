@@ -1,25 +1,45 @@
 @php
-    $domain = config('xcodrix.domain');
-    $org = [
-        '@context' => 'https://schema.org',
+    $domain = config('app.url');
+    $orgSchema = [
+        '@' . 'context' => 'https://schema.org',
         '@type' => 'Organization',
         '@id' => $domain . '/#organization',
-        'name' => $siteSettings->site_name,
+        'name' => 'Xcodrix',
         'url' => $domain,
-        'logo' => $siteSettings->logoUrl(),
-        'description' => $siteSettings->short_description,
-        'email' => $siteSettings->email,
-        'telephone' => $siteSettings->phone,
-        'sameAs' => array_values($siteSettings->socialLinks()),
-    ];
-
-    if ($siteSettings->address) {
-        $org['address'] = [
+        'logo' => asset('images/xcodrix-logo-dark.svg'),
+        'description' => 'Software studio in Multan, Pakistan building AI voice agents, VoIP systems, and WhatsApp automation for startups and SMBs.',
+        'email' => config('xcodrix.email'),
+        'address' => [
             '@type' => 'PostalAddress',
-            'streetAddress' => $siteSettings->address,
-        ];
-    }
-
-    $org = array_filter($org, fn ($value) => filled($value));
+            'addressLocality' => 'Multan',
+            'addressRegion' => 'Punjab',
+            'addressCountry' => 'PK',
+        ],
+        'sameAs' => [
+            config('xcodrix.social.linkedin'),
+            config('xcodrix.social.linkedin_founder'),
+        ],
+    ];
+    
+    $professionalSchema = [
+        '@' . 'context' => 'https://schema.org',
+        '@type' => 'ProfessionalService',
+        'name' => 'Xcodrix',
+        'url' => $domain,
+        'founder' => [
+            '@type' => 'Person',
+            'name' => 'Usama Tahir',
+            'sameAs' => config('xcodrix.social.linkedin_founder'),
+        ],
+        'address' => [
+            '@type' => 'PostalAddress',
+            'addressLocality' => 'Multan',
+            'addressRegion' => 'Punjab',
+            'addressCountry' => 'PK',
+        ],
+        'areaServed' => ['US', 'GB', 'CA', 'AE', 'SA'],
+        'serviceType' => ['AI Voice Agents', 'VoIP Development', 'Call Center Systems', 'WhatsApp Automation'],
+    ];
 @endphp
-<script type="application/ld+json">{!! json_encode($org, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}</script>
+<script type="application/ld+json">{!! json_encode($orgSchema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}</script>
+<script type="application/ld+json">{!! json_encode($professionalSchema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}</script>

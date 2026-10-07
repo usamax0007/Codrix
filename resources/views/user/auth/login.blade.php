@@ -1,5 +1,5 @@
 <x-user.guest-layout title="Sign in">
-    <x-user.card title="Welcome back" description="Sign in to your XCodrix portal.">
+    <x-user.card title="Welcome back" description="Sign in to your Xcodrix portal.">
         <form method="POST" action="{{ route('user.login.store') }}" class="space-y-5">
             @csrf
 

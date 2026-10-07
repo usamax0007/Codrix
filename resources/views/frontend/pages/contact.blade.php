@@ -11,7 +11,7 @@
 {!! json_encode([
     '@context' => 'https://schema.org',
     '@type' => 'ContactPage',
-    'name' => 'Contact XCodrix',
+    'name' => 'Contact Xcodrix',
     'url' => config('xcodrix.domain') . '/contact',
     'description' => config('xcodrix.pages.contact.description'),
 ], JSON_UNESCAPED_SLASHES) !!}

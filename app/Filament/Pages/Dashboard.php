@@ -18,7 +18,7 @@ class Dashboard extends BaseDashboard
 
     public function getHeading(): string|\Illuminate\Contracts\Support\Htmlable
     {
-        return 'XCodrix Admin Dashboard';
+        return 'Xcodrix Admin Dashboard';
     }
 
     public function getSubheading(): string|\Illuminate\Contracts\Support\Htmlable|null

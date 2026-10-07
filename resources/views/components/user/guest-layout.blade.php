@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ? $title.' — ' : '' }}XCodrix</title>
+    <title>{{ $title ? $title.' — ' : '' }}Xcodrix</title>
     <link rel="icon" href="{{ asset('images/xcodrix-logo.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -30,7 +30,7 @@
 <body class="min-h-screen bg-xc-darker text-white antialiased">
     <div class="min-h-screen flex flex-col items-center justify-center px-4 py-10">
         <a href="{{ url('/') }}" class="mb-8 flex items-center gap-3">
-            <img src="{{ asset('images/xcodrix-logo.png') }}" alt="XCodrix" class="h-10 w-auto">
+            <img src="{{ asset('images/xcodrix-logo.png') }}" alt="Xcodrix" class="h-10 w-auto">
         </a>
 
         <div class="w-full max-w-md">

@@ -44,16 +44,16 @@ class AboutSetting extends Model
     {
         return [
             'hero_badge' => 'About Us',
-            'hero_title' => 'About XCodrix',
+            'hero_title' => 'About Xcodrix',
             'hero_subtitle' => 'A premium software development agency with 12+ years of experience building products that matter.',
-            'section_badge' => 'About XCodrix',
+            'section_badge' => 'About Xcodrix',
             'section_title' => "Who We <span class='xc-gradient-text'>Are</span>",
             'section_subtitle' => 'A premium software development agency helping businesses build scalable digital products.',
             'intro_heading' => 'We Build Digital Products That Drive Growth',
-            'intro_paragraph_1' => 'XCodrix is a software development agency that partners with startups and enterprises to design, build, and scale custom software. We specialize in AI-powered applications, SaaS platforms, Laravel backends, Vue.js frontends, mobile apps, and Twilio communication systems.',
+            'intro_paragraph_1' => 'Xcodrix is a software development agency that partners with startups and enterprises to design, build, and scale custom software. We specialize in AI-powered applications, SaaS platforms, Laravel backends, Vue.js frontends, mobile apps, and Twilio communication systems.',
             'intro_paragraph_2' => 'With 12+ years of experience and 150+ projects delivered, our team combines deep technical expertise with a transparent, client-first approach. We don\'t just write code — we solve business problems.',
             'who_we_help_title' => 'Who We Help',
-            'who_we_help_content' => 'XCodrix partners with SaaS startups launching their first product, mid-size companies scaling existing platforms, and enterprises modernizing legacy systems. We serve clients in healthcare, FinTech, e-commerce, education, logistics, and telecommunications.',
+            'who_we_help_content' => 'Xcodrix partners with SaaS startups launching their first product, mid-size companies scaling existing platforms, and enterprises modernizing legacy systems. We serve clients in healthcare, FinTech, e-commerce, education, logistics, and telecommunications.',
             'what_we_do_title' => 'What We Do',
             'what_we_do_content' => 'We provide end-to-end software development — from discovery and UI/UX design to development, testing, deployment, and ongoing support. Our core expertise includes AI development, SaaS platforms, Laravel backends, Vue.js and Nuxt.js frontends, mobile apps, Twilio communication systems, CRM development, API design, and cloud DevOps.',
             'mission_title' => 'Our Mission',
@@ -66,8 +66,8 @@ class AboutSetting extends Model
             'stat_3_label' => 'Years Experience',
             'stat_4_value' => '98%',
             'stat_4_label' => 'Client Retention',
-            'meta_title' => 'About XCodrix — Expert Software Development Team',
-            'meta_description' => 'Learn about XCodrix, a premium software development agency with 12+ years of experience building SaaS, AI, Laravel, and mobile solutions for startups and enterprises.',
+            'meta_title' => 'About Xcodrix — Expert Software Development Team',
+            'meta_description' => 'Learn about Xcodrix, a premium software development agency with 12+ years of experience building SaaS, AI, Laravel, and mobile solutions for startups and enterprises.',
         ];
     }
 

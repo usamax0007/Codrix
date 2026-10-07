@@ -28,7 +28,7 @@
 
 <section class="py-20 bg-xc-dark/40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center scroll-reveal">
-        <img src="{{ $whyChooseUsSettings->partnerImageUrl() }}" alt="Why choose XCodrix for software development" class="rounded-2xl w-full" width="560" height="400" loading="lazy">
+        <img src="{{ $whyChooseUsSettings->partnerImageUrl() }}" alt="Why choose Xcodrix for software development" class="rounded-2xl w-full" width="560" height="400" loading="lazy">
         <div class="space-y-6">
             @if($whyChooseUsSettings->partner_title)
                 <h2 class="text-3xl font-bold text-white">{{ $whyChooseUsSettings->partner_title }}</h2>

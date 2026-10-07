@@ -3,36 +3,36 @@
 
 @section('title', config('xcodrix.pages.home.title'))
 @section('meta_description', config('xcodrix.pages.home.description'))
-@section('canonical', config('xcodrix.domain'))
+@section('canonical', config('app.url'))
 
 @push('head')
 @include('frontend.partials.schema-organization')
 <script type="application/ld+json">
 {!! json_encode([
-    '@context' => 'https://schema.org',
+    '@' . 'context' => 'https://schema.org',
     '@type' => 'WebSite',
-    'name' => 'XCodrix',
-    'url' => config('xcodrix.domain'),
+    'name' => 'Xcodrix',
+    'url' => config('app.url'),
     'description' => config('xcodrix.pages.home.description'),
-    'publisher' => ['@type' => 'Organization', 'name' => 'XCodrix'],
+    'publisher' => ['@type' => 'Organization', 'name' => 'Xcodrix'],
 ], JSON_UNESCAPED_SLASHES) !!}
 </script>
 @endpush
 
 @section('content')
     @include('frontend.sections.hero')
-    @include('frontend.sections.clients')
-    @include('frontend.sections.stats')
+    @include('frontend.sections.built-with')
     @include('frontend.sections.about', ['preview' => true])
     @include('frontend.sections.services', ['services' => $services, 'preview' => true])
     @include('frontend.sections.why-choose-us', ['items' => $whyChooseUsItems, 'preview' => true])
     @include('frontend.sections.process', ['preview' => true])
-    @include('frontend.sections.industries-preview', ['industries' => $industries, 'preview' => true])
-    @include('frontend.sections.technologies', ['technologyCategories' => $technologyCategories, 'preview' => true])
-    @include('frontend.sections.portfolio', ['portfolios' => $portfolios, 'preview' => true])
-    @include('frontend.sections.testimonials', ['testimonials' => $testimonials, 'preview' => true])
+    @if(count($portfolios) > 0)
+        @include('frontend.sections.portfolio', ['portfolios' => $portfolios, 'preview' => true])
+    @endif
     @include('frontend.sections.faq', ['faqs' => $faqs, 'preview' => true])
-    @include('frontend.sections.blog', ['posts' => $blogPosts, 'preview' => true])
+    @if(count($blogPosts) > 0)
+        @include('frontend.sections.blog', ['posts' => $blogPosts, 'preview' => true])
+    @endif
     @include('frontend.components.cta-banner')
     @include('frontend.sections.contact', ['preview' => true])
 @endsection

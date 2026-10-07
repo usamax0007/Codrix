@@ -53,7 +53,7 @@ class ProcessSetting extends Model
             'section_title' => "How We <span class='xc-gradient-text'>Build</span> Software",
             'section_subtitle' => 'A proven 6-step process from idea to launch and beyond.',
             'footer_title' => 'How Does Our Development Process Work?',
-            'footer_content_1' => 'XCodrix follows an agile methodology tailored for software agencies. After an initial discovery call, we deliver a detailed proposal within 48 hours. Once approved, we move through design, development sprints, QA, and launch — with weekly demos so you always see real progress.',
+            'footer_content_1' => 'Xcodrix follows an agile methodology tailored for software agencies. After an initial discovery call, we deliver a detailed proposal within 48 hours. Once approved, we move through design, development sprints, QA, and launch — with weekly demos so you always see real progress.',
             'footer_content_2' => 'Our process is designed for clarity: you know what\'s being built, when it ships, and how much it costs at every stage. No surprises, no scope creep without discussion.',
             'meta_title' => config('xcodrix.pages.process.title'),
             'meta_description' => config('xcodrix.pages.process.description'),

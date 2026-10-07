@@ -23,6 +23,8 @@
 
 @include('frontend.partials.footer')
 
+@include('frontend.components.whatsapp-button')
+
 <button id="backToTop" type="button" aria-label="Back to top"
         class="fixed bottom-6 right-6 p-3 rounded-lg bg-gradient-to-r from-xc-cyan to-xc-blue text-white opacity-0 invisible transition-all duration-300 z-50 shadow-lg">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -32,5 +34,19 @@
 
 @stack('scripts')
 <script src="{{ asset('js/xcodrix.js') }}" defer></script>
+
+@if(config('site.analytics.enabled'))
+    @if(config('site.analytics.provider') === 'plausible')
+        <script defer data-domain="{{ parse_url(config('app.url'), PHP_URL_HOST) }}" src="https://plausible.io/js/script.js"></script>
+    @elseif(config('site.analytics.provider') === 'ga4')
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ config('site.analytics.id') }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{ config('site.analytics.id') }}');
+        </script>
+    @endif
+@endif
 </body>
 </html>

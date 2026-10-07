@@ -26,7 +26,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('XCodrix')
+            ->brandName('Xcodrix')
             ->brandLogo('/images/xcodrix-logo.png')
             ->brandLogoHeight('2rem')
             ->darkModeBrandLogo('/images/xcodrix-logo.png')

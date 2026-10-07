@@ -25,10 +25,10 @@ class FaqSetting extends Model
         return [
             'hero_badge' => 'FAQ',
             'hero_title' => "Frequently Asked <span class='xc-gradient-text'>Questions</span>",
-            'hero_subtitle' => 'Everything you need to know about working with XCodrix.',
+            'hero_subtitle' => 'Everything you need to know about working with Xcodrix.',
             'section_badge' => 'FAQ',
             'section_title' => "Frequently Asked <span class='xc-gradient-text'>Questions</span>",
-            'section_subtitle' => 'Common questions about XCodrix services, process, and pricing.',
+            'section_subtitle' => 'Common questions about Xcodrix services, process, and pricing.',
             'meta_title' => config('xcodrix.pages.faq.title'),
             'meta_description' => config('xcodrix.pages.faq.description'),
         ];

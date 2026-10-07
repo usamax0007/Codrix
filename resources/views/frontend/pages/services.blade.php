@@ -11,7 +11,7 @@
 {!! json_encode([
     '@context' => 'https://schema.org',
     '@type' => 'ItemList',
-    'name' => ($siteSettings->site_name ?? 'XCodrix') . ' Services',
+    'name' => ($siteSettings->site_name ?? 'Xcodrix') . ' Services',
     'itemListElement' => collect($services)->map(fn($s, $i) => [
         '@type' => 'ListItem',
         'position' => $i + 1,

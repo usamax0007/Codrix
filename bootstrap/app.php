@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Middleware\EnsureUserRole;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\RedirectIfWww;
+use App\Http\Middleware\ForceHttps;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +24,12 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [
+            SecurityHeaders::class,
+            RedirectIfWww::class,
+            ForceHttps::class,
+        ]);
+        
         $middleware->alias([
             'user' => EnsureUserRole::class,
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
