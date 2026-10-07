@@ -26,6 +26,9 @@ Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store']);
 
+Route::get('/privacy', fn() => view('frontend.pages.privacy'));
+Route::get('/terms', fn() => view('frontend.pages.terms'));
+
 Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 
 Route::redirect('/team', '/about', 301);

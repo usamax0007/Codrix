@@ -11,9 +11,9 @@
 {!! json_encode([
     '@context' => 'https://schema.org',
     '@type' => 'Blog',
-    'name' => 'XCodrix Blog & Insights',
+    'name' => 'Xcodrix Blog & Insights',
     'url' => config('xcodrix.domain') . '/blog',
-    'publisher' => ['@type' => 'Organization', 'name' => 'XCodrix'],
+    'publisher' => ['@type' => 'Organization', 'name' => 'Xcodrix'],
 ], JSON_UNESCAPED_SLASHES) !!}
 </script>
 @endpush

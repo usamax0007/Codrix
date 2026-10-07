@@ -36,14 +36,14 @@ class WhyChooseUsSetting extends Model
     {
         return [
             'hero_badge' => 'Why Choose Us',
-            'hero_title' => "Why Choose <span class='xc-gradient-text'>XCodrix</span>",
-            'hero_subtitle' => '85+ companies trust XCodrix to build their most important software products.',
+            'hero_title' => "Why Choose <span class='xc-gradient-text'>Xcodrix</span>",
+            'hero_subtitle' => '85+ companies trust Xcodrix to build their most important software products.',
             'section_badge' => 'Why Choose Us',
-            'section_title' => "Why Companies Trust <span class='xc-gradient-text'>XCodrix</span>",
+            'section_title' => "Why Companies Trust <span class='xc-gradient-text'>Xcodrix</span>",
             'section_subtitle' => 'We combine technical excellence with a partnership mindset.',
             'partner_image' => null,
             'partner_title' => 'A Partner, Not Just a Vendor',
-            'partner_content' => 'XCodrix takes ownership of your project\'s success. We proactively suggest improvements, flag risks early, and align our work with your business goals — not just your feature list.',
+            'partner_content' => 'Xcodrix takes ownership of your project\'s success. We proactively suggest improvements, flag risks early, and align our work with your business goals — not just your feature list.',
             'partner_points' => [
                 'Direct access to senior developers',
                 'Weekly progress demos and transparent reporting',

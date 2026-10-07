@@ -1,23 +1,23 @@
 @php $pageKey = 'blog'; @endphp
 @extends('frontend.layout.app')
 
-@section('title', ($post->meta_title ?: $post->title) . ' | XCodrix')
+@section('title', ($post->meta_title ?: $post->title))
 @section('meta_description', $post->meta_description ?: $post->excerpt)
-@section('canonical', config('xcodrix.domain') . '/blog/' . $post->slug)
+@section('canonical', config('app.url') . '/blog/' . $post->slug)
 
 @push('head')
     @include('frontend.partials.schema-organization')
     <script type="application/ld+json">
         {!! json_encode([
-            '@context' => 'https://schema.org',
+            '@' . 'context' => 'https://schema.org',
             '@type' => 'BlogPosting',
             'headline' => $post->title,
             'description' => $post->excerpt,
             'datePublished' => $post->published_at?->toIso8601String(),
             'dateModified' => $post->updated_at?->toIso8601String(),
-            'url' => config('xcodrix.domain') . '/blog/' . $post->slug,
-            'author' => ['@type' => 'Organization', 'name' => 'XCodrix'],
-            'publisher' => ['@type' => 'Organization', 'name' => 'XCodrix'],
+            'url' => config('app.url') . '/blog/' . $post->slug,
+            'author' => ['@type' => 'Organization', 'name' => 'Xcodrix'],
+            'publisher' => ['@type' => 'Organization', 'name' => 'Xcodrix'],
         ], JSON_UNESCAPED_SLASHES) !!}
     </script>
 @endpush

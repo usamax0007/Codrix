@@ -9,20 +9,17 @@ class SitemapController extends Controller
 {
     public function index(): Response
     {
-        $domain = config('xcodrix.domain');
+        $domain = config('app.url');
         $pages = [
             ['loc' => '/', 'priority' => '1.0', 'changefreq' => 'weekly'],
             ['loc' => '/about', 'priority' => '0.9', 'changefreq' => 'monthly'],
             ['loc' => '/services', 'priority' => '0.9', 'changefreq' => 'monthly'],
             ['loc' => '/why-choose-us', 'priority' => '0.8', 'changefreq' => 'monthly'],
             ['loc' => '/process', 'priority' => '0.8', 'changefreq' => 'monthly'],
-            ['loc' => '/industries', 'priority' => '0.8', 'changefreq' => 'monthly'],
-            ['loc' => '/portfolio', 'priority' => '0.8', 'changefreq' => 'monthly'],
-            ['loc' => '/technologies', 'priority' => '0.7', 'changefreq' => 'monthly'],
-            ['loc' => '/testimonials', 'priority' => '0.7', 'changefreq' => 'monthly'],
             ['loc' => '/faq', 'priority' => '0.8', 'changefreq' => 'monthly'],
-            ['loc' => '/blog', 'priority' => '0.7', 'changefreq' => 'weekly'],
             ['loc' => '/contact', 'priority' => '0.9', 'changefreq' => 'monthly'],
+            ['loc' => '/privacy', 'priority' => '0.5', 'changefreq' => 'yearly'],
+            ['loc' => '/terms', 'priority' => '0.5', 'changefreq' => 'yearly'],
         ];
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";

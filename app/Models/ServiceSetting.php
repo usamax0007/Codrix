@@ -31,10 +31,10 @@ class ServiceSetting extends Model
             'section_badge' => 'Our Services',
             'section_title' => "What We <span class='xc-gradient-text'>Build</span>",
             'section_subtitle' => 'End-to-end software development services for modern businesses.',
-            'footer_title' => 'Why Choose XCodrix for Your Project?',
-            'footer_content' => 'Every XCodrix service is delivered by senior engineers with deep domain expertise. We don\'t outsource, we don\'t cut corners, and we don\'t disappear after launch. From the first consultation to post-launch support, you work directly with the team building your product.',
-            'meta_title' => 'Our Services — AI, SaaS, Laravel, Vue.js & More | XCodrix',
-            'meta_description' => 'Explore XCodrix services: AI development, SaaS platforms, Laravel backends, Vue.js frontends, Twilio voice systems, CRM, APIs, cloud DevOps, and mobile apps.',
+            'footer_title' => 'Why Choose Xcodrix for Your Project?',
+            'footer_content' => 'Every Xcodrix service is delivered by senior engineers with deep domain expertise. We don\'t outsource, we don\'t cut corners, and we don\'t disappear after launch. From the first consultation to post-launch support, you work directly with the team building your product.',
+            'meta_title' => 'Our Services — AI, SaaS, Laravel, Vue.js & More | Xcodrix',
+            'meta_description' => 'Explore Xcodrix services: AI development, SaaS platforms, Laravel backends, Vue.js frontends, Twilio voice systems, CRM, APIs, cloud DevOps, and mobile apps.',
         ];
     }
 }

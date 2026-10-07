@@ -101,7 +101,7 @@ HTML,
                     'read_time' => $post['read_time'],
                     'is_published' => true,
                     'published_at' => $post['published_at'],
-                    'meta_title' => $post['title'].' | XCodrix',
+                    'meta_title' => $post['title'].' | Xcodrix',
                     'meta_description' => $post['excerpt'],
                 ]
             );

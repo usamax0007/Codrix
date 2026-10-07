@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ? $title.' — ' : '' }}XCodrix</title>
+    <title>{{ $title ? $title.' — ' : '' }}Xcodrix</title>
     <link rel="icon" href="{{ asset('images/xcodrix-logo.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -44,7 +44,7 @@
         >
             <div class="flex h-16 items-center gap-3 border-b border-white/10 px-5 shrink-0">
                 <a href="{{ route('user.dashboard') }}" class="flex items-center gap-3 min-w-0">
-                    <img src="{{ asset('images/xcodrix-logo.png') }}" alt="XCodrix" class="h-8 w-auto shrink-0">
+                    <img src="{{ asset('images/xcodrix-logo.png') }}" alt="Xcodrix" class="h-8 w-auto shrink-0">
                     <span class="font-semibold tracking-tight truncate">Portal</span>
                 </a>
                 <button

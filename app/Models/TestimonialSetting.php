@@ -25,7 +25,7 @@ class TestimonialSetting extends Model
         return [
             'hero_badge' => 'Testimonials',
             'hero_title' => "Client <span class='xc-gradient-text'>Testimonials</span>",
-            'hero_subtitle' => 'Hear from the founders and CTOs who trusted XCodrix with their most important projects.',
+            'hero_subtitle' => 'Hear from the founders and CTOs who trusted Xcodrix with their most important projects.',
             'section_badge' => 'Testimonials',
             'section_title' => "What Our <span class='xc-gradient-text'>Clients Say</span>",
             'section_subtitle' => 'Trusted by startups and enterprises worldwide.',

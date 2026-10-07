@@ -34,10 +34,6 @@
                             <span>{{ $siteSettings->address }}</span>
                         </div>
                     @endif
-                    <div class="flex items-center gap-3 text-slate-300">
-                        <svg class="w-5 h-5 text-xc-cyan shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/></svg>
-                        <a href="{{ config('xcodrix.domain') }}" class="hover:text-xc-cyan transition-colors">xcodrix.com</a>
-                    </div>
                 </div>
                 @if($preview)
                     <a href="{{ url('/contact') }}" class="xc-btn-primary inline-flex">Go to Contact Page</a>

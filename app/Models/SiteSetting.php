@@ -25,9 +25,9 @@ class SiteSetting extends Model
     public static function defaults(): array
     {
         return [
-            'site_name' => config('xcodrix.name', 'XCodrix'),
+            'site_name' => config('xcodrix.name', 'Xcodrix'),
             'email' => config('xcodrix.email'),
-            'short_description' => 'XCodrix is a premium software development agency building AI-powered SaaS platforms, Laravel backends, Vue.js frontends, mobile apps, and Twilio communication systems.',
+            'short_description' => 'Xcodrix is a premium software development agency building AI-powered SaaS platforms, Laravel backends, Vue.js frontends, mobile apps, and Twilio communication systems.',
             'linkedin' => config('xcodrix.social.linkedin'),
             'twitter' => config('xcodrix.social.twitter'),
             'github' => config('xcodrix.social.github'),
